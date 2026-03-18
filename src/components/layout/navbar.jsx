@@ -4,49 +4,45 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button.jsx";
 import { cn } from "@/lib/utils/cn.js";
+import { Menu } from "lucide-react";
 
 /**
  * Navbar Component
  * Matches the main Axile site header.
- * Dark background, glass effect, primary red CTA.
+ * Added mobile menu toggle for protected pages.
  */
-export function Navbar() {
+export function Navbar({ onMenuClick }) {
   const pathname = usePathname();
   const isAuthPage = pathname.includes("/login") || pathname.includes("/signup");
+  const isProtected = pathname.includes("/dashboard") || pathname.includes("/events");
 
   if (isAuthPage) return null;
-
-  const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "Find Events", href: "/events/referral-enabled" },
-    { name: "Features", href: "#features" },
-    { name: "Hiring", href: "#hiring" },
-  ];
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5 bg-[#0a0a14]/80 backdrop-blur-md">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex items-center">
-          <img 
-            src="/axile-logo-main.png" 
-            alt="Axile" 
-            className="h-10 w-auto object-contain"
-          />
-        </Link>
-
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              href={link.href}
-              className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
+        <div className="flex items-center gap-4">
+          {/* Mobile Menu Toggle (Only for protected pages) */}
+          {isProtected && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="lg:hidden text-gray-400 hover:text-white"
+              onClick={onMenuClick}
             >
-              {link.name}
-            </Link>
-          ))}
-        </nav>
+              <Menu size={24} />
+            </Button>
+          )}
+
+          {/* Logo */}
+          <Link href="/" className="flex items-center">
+            <img 
+              src="/axile-logo-main.png" 
+              alt="Axile" 
+              className="h-9 w-auto object-contain"
+            />
+          </Link>
+        </div>
 
         {/* Auth Actions */}
         <div className="flex items-center gap-4">

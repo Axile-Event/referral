@@ -63,7 +63,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Empty State Section */}
-        <div className="p-20 flex flex-col items-center justify-center text-center space-y-6">
+        <div className="p-12 sm:p-20 flex flex-col items-center justify-center text-center space-y-6">
           <div className="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-600">
             <Ticket size={40} className="stroke-[1.5]" />
           </div>
