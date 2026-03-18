@@ -22,10 +22,10 @@ export function Sidebar() {
   const pathname = usePathname();
 
   const menuItems = [
-    { name: "Overview", href: "/dashboard", icon: Home },
-    { name: "Events", href: "/events/referral-enabled", icon: Calendar },
-    { name: "My Tickets", href: "#", icon: Ticket },
-    { name: "Profile", href: "#", icon: User },
+    { name: "Dashboard", href: "/dashboard", icon: Home },
+    { name: "Referral Events", href: "/events/referral-enabled", icon: Calendar },
+    { name: "My Referrals", href: "/dashboard/referrals", icon: Ticket },
+    { name: "Wallet", href: "/dashboard/wallet", icon: BarChart3 },
   ];
 
   const bottomItems = [
@@ -34,9 +34,20 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className="w-64 bg-[#0a0a14] border-r border-white/5 flex flex-col h-screen fixed top-0 left-0 pt-20">
+    <aside className="w-64 bg-[#0a0a14] border-r border-white/5 flex flex-col h-screen fixed top-0 left-0">
+      {/* Logo Section */}
+      <div className="p-8 border-b border-white/5 flex items-center justify-center">
+        <Link href="/">
+          <img 
+            src="/axile-logo-main-cropped.png" 
+            alt="Axile" 
+            className="h-9 w-auto object-contain"
+          />
+        </Link>
+      </div>
+
       {/* Main Nav */}
-      <div className="flex-1 px-4 space-y-2">
+      <div className="flex-1 px-4 py-8 space-y-2">
         {menuItems.map((item) => {
           const isActive = pathname === item.href;
           return (

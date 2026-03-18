@@ -12,6 +12,10 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 export const metadata = {
   title: "Axile Referral System",
   description: "Earn money by referring events to your network",
+  icons: {
+    icon: "/axile-logo-main-cropped.png",
+    apple: "/axile-logo-main-cropped.png",
+  },
   robots: "index, follow",
 };
 

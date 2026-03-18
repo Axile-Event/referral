@@ -1,7 +1,7 @@
 import { Search, Filter, Sparkles } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { EventCard } from "@/components/event/event-card";
+import { Input } from "@/components/ui/input.jsx";
+import { Button } from "@/components/ui/button.jsx";
+import { EventCard } from "@/components/event/event-card.jsx";
 
 /**
  * Events List Page
@@ -9,10 +9,10 @@ import { EventCard } from "@/components/event/event-card";
  */
 export default function EventsPage() {
   const events = [
-    { id: "1", name: "Axile Creative Hangout 2026", date: "April 12, 2026", reward: 2500, image: "https://images.unsplash.com/photo-1540575861501-7ce0e22042f9?q=80&w=2070&auto=format&fit=crop" },
-    { id: "2", name: "Tech Summit Lagos", date: "May 5, 2026", reward: 5000, image: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=2073&auto=format&fit=crop" },
-    { id: "3", name: "Music Festival Week", date: "June 20, 2026", reward: 1500, image: "https://images.unsplash.com/photo-1459749411177-042180ce673c?q=80&w=2070&auto=format&fit=crop" },
-    { id: "4", name: "Startup Pitch Day", date: "July 15, 2026", reward: 3000, image: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop" },
+    { id: "1", name: "Axile Creative Hangout 2026", date: "April 12, 2026", reward: 250, image: "https://images.unsplash.com/photo-1540575861501-7ce0e22042f9?q=80&w=2070&auto=format&fit=crop" },
+    { id: "2", name: "Tech Summit Lagos", date: "May 5, 2026", reward: 500, image: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=2073&auto=format&fit=crop" },
+    { id: "3", name: "Music Festival Week", date: "June 20, 2026", reward: 150, image: "https://images.unsplash.com/photo-1459749411177-042180ce673c?q=80&w=2070&auto=format&fit=crop" },
+    { id: "4", name: "Startup Pitch Day", date: "July 15, 2026", reward: 300, image: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop" },
   ];
 
   return (

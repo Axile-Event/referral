@@ -27,11 +27,12 @@ export function Navbar() {
     <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5 bg-[#0a0a14]/80 backdrop-blur-md">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded bg-primary flex items-center justify-center">
-            <span className="text-white font-bold text-xl">A</span>
-          </div>
-          <span className="text-white font-bold text-xl tracking-tight">Axile</span>
+        <Link href="/" className="flex items-center">
+          <img 
+            src="/axile-logo-main-cropped.png" 
+            alt="Axile" 
+            className="h-10 w-auto object-contain"
+          />
         </Link>
 
         {/* Desktop Nav */}

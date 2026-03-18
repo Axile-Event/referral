@@ -16,7 +16,7 @@ export default function DashboardPage() {
           <h1 className="text-4xl font-extrabold text-white tracking-tight flex items-center gap-3">
             Welcome back, Ezekiel! <span className="animate-bounce">👋</span>
           </h1>
-          <p className="text-gray-400 font-medium">Here's an overview of your event activity</p>
+          <p className="text-gray-400 font-medium">Earn rewards by referring attendees. Your AP is credited after check-in.</p>
         </div>
 
         <Button className="bg-primary hover:bg-primary/90 text-white gap-2 h-12 px-6 rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-95 group">
@@ -28,24 +28,24 @@ export default function DashboardPage() {
       {/* Grid Stats (Optional but useful) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard 
-          title="Total Earnings" 
-          value="₦0.00" 
+          title="Total AP Earned" 
+          value="0.00 AP" 
           icon={TrendingUp} 
-          trend="+0% from last month"
+          trend="Lifetime earnings"
           color="text-primary"
         />
         <StatCard 
-          title="Active Referrals" 
-          value="0" 
+          title="Pending AP" 
+          value="0.00 AP" 
           icon={ArrowRight} 
-          trend="0 active links"
+          trend="Awaiting check-in"
           color="text-blue-500"
         />
         <StatCard 
-          title="Conversions" 
-          value="0" 
+          title="Withdrawable AP" 
+          value="0.00 AP" 
           icon={Ticket} 
-          trend="Ready to earn"
+          trend="Min 50 AP required"
           color="text-green-500"
         />
       </div>

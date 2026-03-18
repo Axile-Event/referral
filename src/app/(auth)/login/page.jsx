@@ -27,8 +27,13 @@ export default function LoginPage() {
         
         <div className="relative z-10 p-16 flex flex-col justify-end h-full">
           <div className="space-y-4 max-w-lg">
+            <img 
+              src="/axile-logo-main-cropped.png" 
+              alt="Axile" 
+              className="h-16 w-auto object-contain mb-4"
+            />
             <h1 className="text-6xl font-extrabold text-white tracking-tight leading-tight">
-              Welcome to <span className="text-primary">Axile</span>
+              Welcome to the <span className="text-primary">Referral System</span>
             </h1>
             <p className="text-xl text-gray-200 font-medium">
               Discover amazing events and create unforgettable experiences

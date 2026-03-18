@@ -26,8 +26,13 @@ export default function SignUpPage() {
         
         <div className="relative z-10 p-16 flex flex-col justify-end h-full">
           <div className="space-y-4 max-w-lg">
+            <img 
+              src="/axile-logo-main-cropped.png" 
+              alt="Axile" 
+              className="h-16 w-auto object-contain mb-4"
+            />
             <h1 className="text-6xl font-extrabold text-white tracking-tight leading-tight">
-              Join <span className="text-primary">Axile</span>
+              Join the <span className="text-primary">Referral System</span>
             </h1>
             <p className="text-xl text-gray-200 font-medium">
               Start earning by referring the best events to your community

@@ -22,8 +22,8 @@ export default function WalletPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Wallet</h1>
-          <p className="text-sm text-gray-400 font-medium">Manage your earnings and withdrawals.</p>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">Points Wallet</h1>
+          <p className="text-sm text-gray-400 font-medium">Manage your earned points. 10 AP = ₦100. Min withdrawal: 50 AP.</p>
         </div>
         <Button className="rounded-xl gap-2 font-bold px-8">
           <Plus size={18} />
@@ -41,8 +41,9 @@ export default function WalletPage() {
           
           <div className="relative z-10 space-y-12">
             <div className="space-y-2">
-              <p className="text-white/70 text-sm font-bold uppercase tracking-widest">Available Balance</p>
-              <h2 className="text-5xl lg:text-7xl font-black text-white tracking-tighter">₦0.00</h2>
+              <p className="text-white/70 text-sm font-bold uppercase tracking-widest">Available Points (AP)</p>
+              <h2 className="text-5xl lg:text-7xl font-black text-white tracking-tighter">0.00 AP</h2>
+              <p className="text-white/50 text-xl font-bold">≈ ₦0.00</p>
             </div>
 
             <div className="flex flex-wrap gap-4">
@@ -58,8 +59,8 @@ export default function WalletPage() {
 
         {/* Secondary Stats */}
         <div className="space-y-6">
-           <SmallBalanceCard label="Pending Earnings" value="₦0.00" icon={ClockIcon} />
-           <SmallBalanceCard label="Total Withdrawn" value="₦0.00" icon={Landmark} />
+           <SmallBalanceCard label="Pending AP" value="0.00 AP" icon={ClockIcon} />
+           <SmallBalanceCard label="Total Withdrawn" value="0.00 AP" icon={Landmark} />
         </div>
       </div>
 

@@ -38,10 +38,10 @@ export default function ReferralsPage() {
 
       {/* Stats Quick View */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <MiniStat label="Total Links" value="0" />
-        <MiniStat label="Total Clicks" value="0" />
-        <MiniStat label="Conversions" value="0" />
-        <MiniStat label="Conversion Rate" value="0%" />
+        <MiniStat label="Total AP Earned" value="0.00 AP" />
+        <MiniStat label="Pending AP" value="0.00 AP" />
+        <MiniStat label="Withdrawable AP" value="0.00 AP" />
+        <MiniStat label="Check-ins Pending" value="0" />
       </div>
 
       {/* Table Section */}
