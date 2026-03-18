@@ -8,17 +8,8 @@ import { Input } from "@/components/ui/input";
  * Comprehensive event view with referral tools.
  */
 export default function EventDetailPage({ params }) {
-  // Demo data
-  const event = {
-    id: "1",
-    name: "Axile Creative Hangout 2026",
-    description: "Join the biggest creative gathering in Lagos. A night of networking, music, and innovation for Africa's most brilliant minds.",
-    date: "April 12, 2026",
-    time: "6:00 PM",
-    location: "Eko Convention Center, Lagos",
-    reward: 2500,
-    image: "https://images.unsplash.com/photo-1540575861501-7ce0e22042f9?q=80&w=2070&auto=format&fit=crop"
-  };
+  // Data would be fetched based on id
+  const event = null; // Placeholder state
 
   return (
     <div className="max-w-6xl mx-auto space-y-12">
@@ -31,27 +22,29 @@ export default function EventDetailPage({ params }) {
         {/* Left Column: Details */}
         <div className="lg:col-span-2 space-y-10">
           {/* Banner */}
-          <div className="relative h-80 rounded-[2.5rem] overflow-hidden shadow-2xl">
-            <img 
-              src={event.image} 
-              className="w-full h-full object-cover" 
-              alt={event.name}
-            />
+          <div className="relative h-80 rounded-[2.5rem] overflow-hidden shadow-2xl bg-white/5">
+            {event?.image && (
+              <img 
+                src={event.image} 
+                className="w-full h-full object-cover" 
+                alt={event.name}
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14] via-transparent to-transparent" />
           </div>
 
           {/* Info */}
           <div className="space-y-6">
             <h1 className="text-4xl lg:text-6xl font-black text-white tracking-tighter leading-tight">
-              {event.name}
+              {event?.name || "Event Name"}
             </h1>
             <p className="text-lg text-gray-400 leading-relaxed font-medium">
-              {event.description}
+              {event?.description || "Event description will appear here..."}
             </p>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-6">
-              <InfoItem icon={Calendar} label="Date & Time" value={`${event.date} • ${event.time}`} />
-              <InfoItem icon={MapPin} label="Location" value={event.location} />
+              <InfoItem icon={Calendar} label="Date & Time" value={event ? `${event.date} • ${event.time}` : "--- --, ---- • --:-- --"} />
+              <InfoItem icon={MapPin} label="Location" value={event?.location || "Location TBD"} />
             </div>
           </div>
         </div>
@@ -65,7 +58,7 @@ export default function EventDetailPage({ params }) {
               </div>
               <h3 className="text-2xl font-bold text-white tracking-tight">Refer & Earn</h3>
               <p className="text-gray-400 text-sm font-medium">
-                Refer someone to this event and earn <span className="text-primary font-bold">₦{event.reward}</span> immediately upon their successful ticket purchase.
+                Refer someone to this event and earn <span className="text-primary font-bold">{event?.reward ? `₦${event.reward}` : "奖励"}</span> immediately upon their successful ticket purchase.
               </p>
             </div>
 
@@ -73,7 +66,7 @@ export default function EventDetailPage({ params }) {
               <div className="space-y-2">
                 <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Your Referral Link</label>
                 <div className="flex gap-2">
-                  <Input readOnly value={`referral.axile.ng/ref/XYZ123/event/${event.id}`} className="bg-white/5 rounded-xl border-white/10 text-xs py-3" />
+                  <Input readOnly value={event ? `referral.axile.ng/ref/XYZ123/event/${event.id}` : "Link will appear here"} className="bg-white/5 rounded-xl border-white/10 text-xs py-3" />
                   <Button size="icon" className="rounded-xl w-12 h-12 shrink-0">
                     <Copy size={18} />
                   </Button>

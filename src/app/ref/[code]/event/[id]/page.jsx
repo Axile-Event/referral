@@ -8,15 +8,8 @@ import { Button } from "@/components/ui/button";
  * Matches Axile branding (Image 2 style).
  */
 export default function ReferralLandingPage({ params }) {
-  // Demo data
-  const event = {
-    id: "1",
-    name: "Axile Creative Hangout 2026",
-    date: "April 12, 2026",
-    location: "Eko Convention Center, Lagos",
-    reward: 2500,
-    referrer: "Ezekiel"
-  };
+  // Data would be fetched based on code/id
+  const event = null; // Placeholder state
 
   return (
     <div className="min-h-screen bg-[#0a0a14] text-white flex flex-col items-center justify-center p-6 lg:p-12 relative overflow-hidden">
@@ -38,14 +31,14 @@ export default function ReferralLandingPage({ params }) {
         <div className="space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-primary uppercase tracking-widest">
             <UserCheck size={14} />
-            You've been invited by {event.referrer}
+            You've been invited {event?.referrer ? `by ${event.referrer}` : ""}
           </div>
           <h1 className="text-5xl lg:text-7xl font-black tracking-tighter leading-[0.85]">
             Experience <br />
-            <span className="text-primary">{event.name}</span>
+            <span className="text-primary">{event?.name || "Event Name"}</span>
           </h1>
           <p className="text-lg text-gray-400 font-medium max-w-lg mx-auto leading-relaxed">
-            Join Africa's most brilliant minds for a night of innovation and netwoking.
+            {event?.description || "Join Africa's most brilliant minds for a night of innovation and networking."}
           </p>
         </div>
 
@@ -58,11 +51,11 @@ export default function ReferralLandingPage({ params }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
             <div className="space-y-1">
               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Date</p>
-              <p className="text-lg font-bold text-white tracking-tight">{event.date}</p>
+              <p className="text-lg font-bold text-white tracking-tight">{event?.date || "--- --, ----"}</p>
             </div>
             <div className="space-y-1">
               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Location</p>
-              <p className="text-lg font-bold text-white tracking-tight">{event.location}</p>
+              <p className="text-lg font-bold text-white tracking-tight">{event?.location || "Location TBD"}</p>
             </div>
           </div>
 

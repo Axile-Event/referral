@@ -8,12 +8,7 @@ import { EventCard } from "@/components/event/event-card.jsx";
  * Displays referral-enabled events in a grid.
  */
 export default function EventsPage() {
-  const events = [
-    { id: "1", name: "Axile Creative Hangout 2026", date: "April 12, 2026", reward: 250, image: "https://images.unsplash.com/photo-1540575861501-7ce0e22042f9?q=80&w=2070&auto=format&fit=crop" },
-    { id: "2", name: "Tech Summit Lagos", date: "May 5, 2026", reward: 500, image: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=2073&auto=format&fit=crop" },
-    { id: "3", name: "Music Festival Week", date: "June 20, 2026", reward: 150, image: "https://images.unsplash.com/photo-1459749411177-042180ce673c?q=80&w=2070&auto=format&fit=crop" },
-    { id: "4", name: "Startup Pitch Day", date: "July 15, 2026", reward: 300, image: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop" },
-  ];
+  const events = []; // Empty for now to use placeholders
 
   return (
     <div className="space-y-12">
@@ -37,19 +32,33 @@ export default function EventsPage() {
         </div>
       </div>
 
-      {/* Events Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-        {events.map((event) => (
-          <EventCard 
-            key={event.id}
-            eventId={event.id}
-            name={event.name}
-            date={event.date}
-            reward={event.reward}
-            image={event.image}
-          />
-        ))}
-      </div>
+      {/* Events Grid / Empty State */}
+      {events.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+          {events.map((event) => (
+            <EventCard 
+              key={event.id}
+              eventId={event.id}
+              name={event.name}
+              date={event.date}
+              reward={event.reward}
+              image={event.image}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="p-20 bg-[#12121f] border border-white/5 rounded-[2.5rem] flex flex-col items-center justify-center text-center space-y-6">
+          <div className="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-600">
+            <Sparkles size={40} className="stroke-[1.5]" />
+          </div>
+          <div className="space-y-2">
+            <h4 className="text-lg font-bold text-white">No referral events found</h4>
+            <p className="text-gray-400 max-w-xs mx-auto text-sm leading-relaxed">
+              Check back later for new events with active referral programs.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
