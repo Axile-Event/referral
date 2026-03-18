@@ -107,7 +107,7 @@ Points credited
 
 User withdraws
 
-🔹 FRONTEND TASKS (Assign to team)
+🔹 FRONTEND TASKS (will be assigned to team)
 🧱 1. Event Creation (HIGH PRIORITY)
 
 Add toggle: Enable Referral
