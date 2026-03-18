@@ -10,9 +10,9 @@ import {
   Gift, 
   Users 
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
+import { Button } from "@/components/ui/button.jsx";
+import { Navbar } from "@/components/layout/navbar.jsx";
+import { Footer } from "@/components/layout/footer.jsx";
 
 /**
  * Landing Page

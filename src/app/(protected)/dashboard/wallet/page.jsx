@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { 
   Wallet, 
   ArrowUpRight, 
@@ -5,9 +6,11 @@ import {
   Plus, 
   History,
   TrendingUp,
-  Landmark
+  Landmark,
+  Clock
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button.jsx";
+import { cn } from "@/lib/utils/cn.js";
 
 /**
  * Wallet Page

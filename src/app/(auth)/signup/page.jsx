@@ -3,9 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Mail, Lock, User, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils/cn";
+import { Button } from "@/components/ui/button.jsx";
+import { Input } from "@/components/ui/input.jsx";
+import { cn } from "@/lib/utils/cn.js";
 
 /**
  * SignUp Page

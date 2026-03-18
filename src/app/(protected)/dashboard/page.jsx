@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Calendar, Plus, Ticket, ArrowRight, TrendingUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button.jsx";
+import { cn } from "@/lib/utils/cn.js";
 
 /**
  * Dashboard Page

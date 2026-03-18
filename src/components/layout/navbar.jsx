@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils/cn";
+import { Button } from "@/components/ui/button.jsx";
+import { cn } from "@/lib/utils/cn.js";
 
 /**
  * Navbar Component

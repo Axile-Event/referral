@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { 
   BarChart3, 
   ArrowUpRight, 
@@ -8,8 +9,9 @@ import {
   Filter,
   Plus
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button.jsx";
+import { Input } from "@/components/ui/input.jsx";
+import { cn } from "@/lib/utils/cn.js";
 
 /**
  * Referrals Management Page
