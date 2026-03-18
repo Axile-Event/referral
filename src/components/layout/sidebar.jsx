@@ -2,41 +2,77 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { 
+  BarChart3, 
+  Calendar, 
+  Ticket, 
+  User, 
+  Settings, 
+  LogOut,
+  Home
+} from "lucide-react";
+import { cn } from "@/lib/utils/cn";
 
 /**
  * Sidebar Component
- *
- * Features:
- * - Menu items with icons (lucide-react)
- * - Active state highlight
- * - Collapsible on mobile (TODO)
+ * Matches the main Axile dashboard sidebar (Image 5).
+ * Dark background, primary red active states, clean icons.
  */
-
-const menuItems = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/dashboard/referrals", label: "Referrals" },
-  { href: "/dashboard/wallet", label: "Wallet" },
-  { href: "/events/referral-enabled", label: "Events" },
-];
-
 export function Sidebar() {
   const pathname = usePathname();
 
+  const menuItems = [
+    { name: "Overview", href: "/dashboard", icon: Home },
+    { name: "Events", href: "/events/referral-enabled", icon: Calendar },
+    { name: "My Tickets", href: "#", icon: Ticket },
+    { name: "Profile", href: "#", icon: User },
+  ];
+
+  const bottomItems = [
+    { name: "Settings", href: "#", icon: Settings },
+    { name: "Logout", href: "/login", icon: LogOut, className: "text-red-500 hover:bg-red-500/10 hover:text-red-500" },
+  ];
+
   return (
-    <aside className="w-64 bg-card border-r border-border min-h-screen p-4 flex flex-col gap-1">
-      {menuItems.map((item) => (
-        <Link
-          key={item.href}
-          href={item.href}
-          className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-            pathname === item.href
-              ? "bg-primary/10 text-primary"
-              : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-          }`}
-        >
-          {item.label}
-        </Link>
-      ))}
+    <aside className="w-64 bg-[#0a0a14] border-r border-white/5 flex flex-col h-screen fixed top-0 left-0 pt-20">
+      {/* Main Nav */}
+      <div className="flex-1 px-4 space-y-2">
+        {menuItems.map((item) => {
+          const isActive = pathname === item.href;
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
+                isActive 
+                  ? "bg-primary text-white shadow-lg shadow-primary/20" 
+                  : "text-gray-400 hover:bg-white/5 hover:text-white"
+              )}
+            >
+              <item.icon size={20} className={cn(isActive ? "text-white" : "text-gray-400 group-hover:text-white")} />
+              <span className="font-medium">{item.name}</span>
+            </Link>
+          );
+        })}
+      </div>
+
+      {/* Bottom Nav */}
+      <div className="px-4 py-8 space-y-2 border-t border-white/5">
+        {bottomItems.map((item) => (
+          <Link
+            key={item.name}
+            href={item.href}
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
+              item.className || "text-gray-400 hover:bg-white/5 hover:text-white"
+            )}
+          >
+            <item.icon size={20} />
+            <span className="font-medium">{item.name}</span>
+          </Link>
+        ))}
+      </div>
     </aside>
   );
 }

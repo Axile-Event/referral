@@ -2,59 +2,64 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils/cn";
 
 /**
- * Navigation Bar Component
- *
- * Features:
- * - Logo/brand
- * - Navigation links (Dashboard, Referrals, Wallet, Events)
- * - User menu dropdown (TODO)
- * - Dark mode toggle (TODO)
- *
- * Colors:
- * - Background: #ffffff (light) / #12121f (dark)
- * - Border: #e4e4e7 (light) / #27272a (dark)
+ * Navbar Component
+ * Matches the main Axile site header.
+ * Dark background, glass effect, primary red CTA.
  */
-
-const navLinks = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/dashboard/referrals", label: "Referrals" },
-  { href: "/dashboard/wallet", label: "Wallet" },
-  { href: "/events/referral-enabled", label: "Events" },
-];
-
 export function Navbar() {
   const pathname = usePathname();
+  const isAuthPage = pathname.includes("/login") || pathname.includes("/signup");
+
+  if (isAuthPage) return null;
+
+  const navLinks = [
+    { name: "Home", href: "/" },
+    { name: "Find Events", href: "/events/referral-enabled" },
+    { name: "Features", href: "#features" },
+    { name: "Hiring", href: "#hiring" },
+  ];
 
   return (
-    <nav className="border-b border-border bg-card px-6 py-3 flex items-center justify-between sticky top-0 z-50">
-      <Link href="/dashboard" className="text-lg font-bold text-primary tracking-tight">
-        Axile <span className="text-foreground">Referral</span>
-      </Link>
+    <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5 bg-[#0a0a14]/80 backdrop-blur-md">
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded bg-primary flex items-center justify-center">
+            <span className="text-white font-bold text-xl">A</span>
+          </div>
+          <span className="text-white font-bold text-xl tracking-tight">Axile</span>
+        </Link>
 
-      <div className="hidden md:flex items-center gap-1">
-        {navLinks.map((link) => (
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex items-center gap-8">
+          {navLinks.map((link) => (
+            <Link
+              key={link.name}
+              href={link.href}
+              className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
+            >
+              {link.name}
+            </Link>
+          ))}
+        </nav>
+
+        {/* Auth Actions */}
+        <div className="flex items-center gap-4">
           <Link
-            key={link.href}
-            href={link.href}
-            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-              pathname === link.href
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-            }`}
+            href="/login"
+            className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
           >
-            {link.label}
+            Login
           </Link>
-        ))}
+          <Button asChild className="bg-primary hover:bg-primary/90 text-white border-none rounded-md px-6">
+            <Link href="/signup">Get Started</Link>
+          </Button>
+        </div>
       </div>
-
-      <div className="flex items-center gap-3">
-        {/* TODO: User avatar dropdown via useAuthStore */}
-        <button className="w-8 h-8 rounded-full bg-primary/20 text-primary text-sm font-bold flex items-center justify-center">
-          U
-        </button>
-      </div>
-    </nav>
+    </header>
   );
 }

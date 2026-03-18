@@ -1,90 +1,105 @@
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap");
+@import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular;
+}
 
 :root {
-  /* Brand: Rose/Crimson Red */
-  --primary: #e11d48;
-  --primary-foreground: #ffffff;
-
-  /* Backgrounds */
   --background: #ffffff;
   --foreground: #09090b;
-
-  /* Cards */
   --card: #ffffff;
   --card-foreground: #09090b;
-
-  /* Popover */
   --popover: #ffffff;
   --popover-foreground: #09090b;
-
-  /* Secondary */
+  --primary: #e11d48;
+  --primary-foreground: #ffffff;
   --secondary: #f4f4f5;
   --secondary-foreground: #18181b;
-
-  /* Muted */
   --muted: #f4f4f5;
   --muted-foreground: #71717a;
-
-  /* Accent */
   --accent: #f4f4f5;
   --accent-foreground: #18181b;
-
-  /* Destructive */
   --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-
-  /* Border / Input / Ring */
+  --destructive-foreground: #fafafa;
   --border: #e4e4e7;
   --input: #e4e4e7;
   --ring: #e11d48;
-
-  /* Radius */
   --radius: 0.5rem;
 }
 
 .dark {
   --background: #0a0a14;
   --foreground: #ffffff;
-
   --card: #12121f;
   --card-foreground: #ffffff;
-
   --popover: #12121f;
   --popover-foreground: #ffffff;
-
   --primary: #e11d48;
   --primary-foreground: #ffffff;
-
-  --secondary: #27272a;
+  --secondary: #1e1e2d;
   --secondary-foreground: #ffffff;
-
-  --muted: #27272a;
+  --muted: #1e1e2d;
   --muted-foreground: #a1a1aa;
-
-  --accent: #27272a;
+  --accent: #1e1e2d;
   --accent-foreground: #ffffff;
-
-  --destructive: #ef4444;
+  --destructive: #7f1d1d;
   --destructive-foreground: #ffffff;
-
   --border: #27272a;
   --input: #27272a;
   --ring: #e11d48;
 }
 
-* {
-  border-color: var(--border);
-  box-sizing: border-box;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
 }
 
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-plus-jakarta-sans), sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Custom Axile Styles */
+.glass {
+  @apply bg-background/80 backdrop-blur-md border border-white/10;
+}
+
+.gradient-card {
+  background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+}
+
+.sidebar-item-active {
+  @apply bg-primary text-white shadow-lg shadow-primary/20;
+}
+
+.sidebar-item-inactive {
+  @apply text-muted-foreground hover:bg-secondary hover:text-foreground;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-background;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground;
 }

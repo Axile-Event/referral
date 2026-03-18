@@ -1,64 +1,99 @@
+import Link from "next/link";
+import { Calendar, Plus, Ticket, ArrowRight, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
 /**
- * Main Dashboard Page
- *
- * Features:
- * - User profile summary
- * - Total referrals count
- * - Earnings overview
- * - Quick actions (Create Referral Link, View Events)
- * - Recent referrals list
- *
- * State: useAuthStore, useReferralStore, useWalletStore
- * Components: StatCard, RecentReferralsList
+ * Dashboard Page
+ * Matches the Axile dashboard (Image 5).
  */
-export default function Dashboard() {
+export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
-
-        {/* Stats Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          {[
-            { label: "Total Referrals", value: "—" },
-            { label: "Total Earnings", value: "—" },
-            { label: "Active Links", value: "—" },
-          ].map((stat) => (
-            <div key={stat.label} className="bg-card border border-border rounded-xl p-5">
-              <p className="text-sm text-muted-foreground">{stat.label}</p>
-              <p className="text-3xl font-bold mt-1">{stat.value}</p>
-            </div>
-          ))}
+    <div className="space-y-12">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-extrabold text-white tracking-tight flex items-center gap-3">
+            Welcome back, Ezekiel! <span className="animate-bounce">👋</span>
+          </h1>
+          <p className="text-gray-400 font-medium">Here's an overview of your event activity</p>
         </div>
 
-        {/* Quick Actions */}
-        <div className="flex gap-3 mb-8">
-          <a
-            href="/events/referral-enabled"
-            className="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
-          >
-            Browse Events
-          </a>
-          <a
-            href="/dashboard/referrals"
-            className="px-5 py-2.5 border border-border rounded-lg text-sm font-semibold hover:bg-secondary transition-colors"
-          >
-            My Referrals
-          </a>
-          <a
-            href="/dashboard/wallet"
-            className="px-5 py-2.5 border border-border rounded-lg text-sm font-semibold hover:bg-secondary transition-colors"
-          >
-            Wallet
-          </a>
+        <Button className="bg-primary hover:bg-primary/90 text-white gap-2 h-12 px-6 rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-95 group">
+          <Calendar size={18} className="group-hover:rotate-12 transition-transform" />
+          <Link href="/events/referral-enabled">Discover Events</Link>
+        </Button>
+      </div>
+
+      {/* Grid Stats (Optional but useful) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StatCard 
+          title="Total Earnings" 
+          value="₦0.00" 
+          icon={TrendingUp} 
+          trend="+0% from last month"
+          color="text-primary"
+        />
+        <StatCard 
+          title="Active Referrals" 
+          value="0" 
+          icon={ArrowRight} 
+          trend="0 active links"
+          color="text-blue-500"
+        />
+        <StatCard 
+          title="Conversions" 
+          value="0" 
+          icon={Ticket} 
+          trend="Ready to earn"
+          color="text-green-500"
+        />
+      </div>
+
+      {/* Upcoming Events Card */}
+      <div className="bg-[#12121f] border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
+        <div className="p-8 border-b border-white/5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h3 className="text-xl font-bold text-white tracking-tight">Your Upcoming Events</h3>
+            <span className="bg-primary/10 text-primary text-xs font-bold px-2.5 py-1 rounded-full border border-primary/20">0</span>
+          </div>
+          <Link href="#" className="text-sm font-bold text-gray-400 hover:text-white flex items-center gap-1 transition-colors">
+            View All <ArrowRight size={14} />
+          </Link>
         </div>
 
-        {/* TODO: Recent referrals list */}
-        <div className="bg-card border border-border rounded-xl p-6">
-          <h2 className="text-lg font-semibold mb-4">Recent Referrals</h2>
-          <p className="text-muted-foreground text-sm">No referrals yet. Browse events to get started.</p>
+        {/* Empty State Section */}
+        <div className="p-20 flex flex-col items-center justify-center text-center space-y-6">
+          <div className="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-600">
+            <Ticket size={40} className="stroke-[1.5]" />
+          </div>
+          <div className="space-y-2">
+            <h4 className="text-lg font-bold text-white">No upcoming events</h4>
+            <p className="text-gray-400 max-w-xs mx-auto text-sm leading-relaxed">
+              Ready for your next adventure? Browse available events and start earning referral rewards!
+            </p>
+          </div>
+          <Button variant="outline" className="border-primary/20 hover:border-primary text-primary hover:bg-primary/5 rounded-xl px-8 h-12">
+            <Link href="/events/referral-enabled">Explore Events</Link>
+          </Button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function StatCard({ title, value, icon: Icon, trend, color }) {
+  return (
+    <div className="bg-[#12121f] border border-white/5 p-6 rounded-3xl space-y-4 hover:border-primary/20 transition-all group">
+      <div className="flex items-center justify-between">
+        <div className={cn("p-2.5 rounded-xl bg-white/5 group-hover:bg-primary/10 transition-colors", color)}>
+          <Icon size={20} />
+        </div>
+      </div>
+      <div className="space-y-1">
+        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">{title}</p>
+        <h4 className="text-2xl font-extrabold text-white tracking-tight">{value}</h4>
+      </div>
+      <p className="text-xs text-gray-400 font-medium">{trend}</p>
     </div>
   );
 }
