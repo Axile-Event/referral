@@ -78,7 +78,7 @@ export default function LoginPage() {
               <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Email Address</label>
               <Input 
                 type="email" 
-                placeholder="Axile.nig@gmail.com" 
+                placeholder="your@email.com" 
                 icon={Mail}
                 className="group-focus-within:border-primary/50"
               />

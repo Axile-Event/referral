@@ -14,7 +14,7 @@ export default function DashboardPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-2">
           <h1 className="text-4xl font-extrabold text-white tracking-tight flex items-center gap-3">
-            Welcome back, User! <span className="animate-bounce">👋</span>
+            Welcome back, Ezekiel! <span className="animate-bounce">👋</span>
           </h1>
           <p className="text-gray-400 font-medium">Earn rewards by referring attendees. Your AP is credited after check-in.</p>
         </div>

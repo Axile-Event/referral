@@ -77,7 +77,7 @@ export default function SignUpPage() {
               <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Full Name</label>
               <Input 
                 type="text" 
-                placeholder="John Doe" 
+                placeholder="Enter your name" 
                 icon={User}
                 className="group-focus-within:border-primary/50"
               />
@@ -87,7 +87,7 @@ export default function SignUpPage() {
               <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Email Address</label>
               <Input 
                 type="email" 
-                placeholder="Axile.nig@gmail.com" 
+                placeholder="your@email.com" 
                 icon={Mail}
                 className="group-focus-within:border-primary/50"
               />

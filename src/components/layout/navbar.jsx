@@ -29,7 +29,7 @@ export function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <img 
-            src="/axile-logo-main-cropped.png" 
+            src="/axile-logo-main.png" 
             alt="Axile" 
             className="h-10 w-auto object-contain"
           />
