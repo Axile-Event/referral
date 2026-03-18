@@ -27,45 +27,23 @@ export default function ReferralLandingPage({ params }) {
           <span className="text-white font-bold text-2xl tracking-tight">Axile</span>
         </div>
 
-        {/* Invitation */}
-        <div className="space-y-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-primary uppercase tracking-widest">
-            <UserCheck size={14} />
-            You've been invited {event?.referrer ? `by ${event.referrer}` : ""}
+        {/* Page Under Development */}
+        <div className="bg-[#12121f] border border-white/5 rounded-[2.5rem] p-12 lg:p-20 space-y-6 shadow-2xl relative overflow-hidden flex flex-col items-center justify-center">
+          <div className="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center text-primary animate-pulse mb-4">
+            <Sparkles size={40} />
           </div>
-          <h1 className="text-5xl lg:text-7xl font-black tracking-tighter leading-[0.85]">
-            Experience <br />
-            <span className="text-primary">{event?.name || "Event Name"}</span>
+          <h1 className="text-3xl lg:text-5xl font-black tracking-tighter text-white">
+            Referral Page
           </h1>
-          <p className="text-lg text-gray-400 font-medium max-w-lg mx-auto leading-relaxed">
-            {event?.description || "Join Africa's most brilliant minds for a night of innovation and networking."}
+          <p className="text-lg text-gray-400 font-medium max-w-md mx-auto leading-relaxed">
+            This referral experience is currently under development. Please check back later.
           </p>
-        </div>
-
-        {/* Event Ticket Preview */}
-        <div className="bg-[#12121f] border border-white/5 rounded-[2.5rem] p-8 lg:p-12 space-y-8 shadow-2xl relative group overflow-hidden">
-          <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform">
-             <Sparkles size={120} className="text-primary" />
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
-            <div className="space-y-1">
-              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Date</p>
-              <p className="text-lg font-bold text-white tracking-tight">{event?.date || "--- --, ----"}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Location</p>
-              <p className="text-lg font-bold text-white tracking-tight">{event?.location || "Location TBD"}</p>
-            </div>
-          </div>
-
-          <div className="pt-8 border-t border-white/5 flex flex-col gap-4">
-             <Button size="lg" className="h-16 rounded-[1.25rem] text-lg font-black tracking-tight group">
-               Claim Your Ticket <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-             </Button>
-             <p className="text-sm text-gray-500 font-medium">
-               New to Axile? <Link href="/signup" className="text-primary font-bold hover:underline">Create an account</Link>
-             </p>
+          <div className="pt-8 w-full max-w-xs">
+            <Link href="/login">
+              <Button size="lg" className="w-full h-14 rounded-2xl font-black text-base">
+                Go to Dashboard
+              </Button>
+            </Link>
           </div>
         </div>
 

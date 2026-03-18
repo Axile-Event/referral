@@ -8,88 +8,13 @@ import { Input } from "@/components/ui/input";
  * Comprehensive event view with referral tools.
  */
 export default function EventDetailPage({ params }) {
-  // Data would be fetched based on id
-  const event = null; // Placeholder state
-
   return (
-    <div className="max-w-6xl mx-auto space-y-12">
-      {/* Navigation */}
-      <Link href="/events/referral-enabled" className="inline-flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-white transition-colors">
-        <ArrowLeft size={16} /> Back to Events
-      </Link>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        {/* Left Column: Details */}
-        <div className="lg:col-span-2 space-y-10">
-          {/* Banner */}
-          <div className="relative h-80 rounded-[2.5rem] overflow-hidden shadow-2xl bg-white/5">
-            {event?.image && (
-              <img 
-                src={event.image} 
-                className="w-full h-full object-cover" 
-                alt={event.name}
-              />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14] via-transparent to-transparent" />
-          </div>
-
-          {/* Info */}
-          <div className="space-y-6">
-            <h1 className="text-4xl lg:text-6xl font-black text-white tracking-tighter leading-tight">
-              {event?.name || "Event Name"}
-            </h1>
-            <p className="text-lg text-gray-400 leading-relaxed font-medium">
-              {event?.description || "Event description will appear here..."}
-            </p>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-6">
-              <InfoItem icon={Calendar} label="Date & Time" value={event ? `${event.date} • ${event.time}` : "--- --, ---- • --:-- --"} />
-              <InfoItem icon={MapPin} label="Location" value={event?.location || "Location TBD"} />
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Referral Box */}
-        <div className="space-y-6">
-          <div className="bg-[#12121f] border border-white/5 rounded-[2.5rem] p-8 lg:p-10 space-y-8 sticky top-24 shadow-2xl shadow-primary/5">
-            <div className="space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-4">
-                <Gift size={24} />
-              </div>
-              <h3 className="text-2xl font-bold text-white tracking-tight">Refer & Earn</h3>
-              <p className="text-gray-400 text-sm font-medium">
-                Refer someone to this event and earn <span className="text-primary font-bold">{event?.reward ? `₦${event.reward}` : "奖励"}</span> immediately upon their successful ticket purchase.
-              </p>
-            </div>
-
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Your Referral Link</label>
-                <div className="flex gap-2">
-                  <Input readOnly value={event ? `referral.axile.ng/ref/XYZ123/event/${event.id}` : "Link will appear here"} className="bg-white/5 rounded-xl border-white/10 text-xs py-3" />
-                  <Button size="icon" className="rounded-xl w-12 h-12 shrink-0">
-                    <Copy size={18} />
-                  </Button>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <SocialShare icon={Twitter} />
-                <SocialShare icon={Send} />
-                <SocialShare icon={Share2} />
-              </div>
-
-              <Button className="w-full h-14 rounded-2xl font-black text-base">
-                Promote This Event
-              </Button>
-            </div>
-
-            <p className="text-[10px] text-center text-gray-600 font-bold uppercase tracking-widest">
-              Terms & Conditions apply
-            </p>
-          </div>
-        </div>
+    <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+      <div className="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center text-primary animate-pulse">
+        <Gift size={40} />
       </div>
+      <h1 className="text-3xl font-extrabold text-white tracking-tight">Event Details</h1>
+      <p className="text-gray-400 font-medium tracking-tight">This page is currently under development.</p>
     </div>
   );
 }
