@@ -43,77 +43,22 @@ export default function SignUpPage() {
 
       {/* Right Side: SignUp Form */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 sm:px-16 lg:px-24 py-12">
-        <div className="max-w-md w-full mx-auto space-y-12 animate-fade-in">
-          <div className="space-y-2">
+        <div className="max-w-md w-full mx-auto space-y-12 animate-fade-in text-center lg:text-left">
+          <div className="space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-primary mb-4 mx-auto lg:mx-0 animate-pulse">
+               <User size={32} />
+            </div>
             <h2 className="text-4xl font-bold text-white tracking-tight">Create Account</h2>
-            <p className="text-gray-400">Join the Axile referral ecosystem</p>
+            <p className="text-gray-400 font-medium">This page is currently under development.</p>
           </div>
 
-          {/* User Type Toggle */}
-          <div className="flex p-1.5 bg-white/5 border border-white/10 rounded-2xl w-full">
-            <button
-              onClick={() => setUserType("user")}
-              className={cn(
-                "flex-1 py-3 text-sm font-semibold rounded-xl transition-all duration-200",
-                userType === "user" ? "bg-primary text-white shadow-lg" : "text-gray-400 hover:text-white"
-              )}
-            >
-              User
-            </button>
-            <button
-              onClick={() => setUserType("organizer")}
-              className={cn(
-                "flex-1 py-3 text-sm font-semibold rounded-xl transition-all duration-200",
-                userType === "organizer" ? "bg-primary text-white shadow-lg" : "text-gray-400 hover:text-white"
-              )}
-            >
-              Organizer
-            </button>
-          </div>
-
-          {/* Form */}
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Full Name</label>
-              <Input 
-                type="text" 
-                placeholder="Enter your name" 
-                icon={User}
-                className="group-focus-within:border-primary/50"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Email Address</label>
-              <Input 
-                type="email" 
-                placeholder="your@email.com" 
-                icon={Mail}
-                className="group-focus-within:border-primary/50"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Password</label>
-              <Input 
-                type="password" 
-                placeholder="••••••••••••" 
-                icon={Lock}
-                className="group-focus-within:border-primary/50"
-              />
-            </div>
-
-            <Button className="w-full group">
-              Create Account <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </div>
-
-          <p className="text-center text-sm text-gray-400">
-            Already have an account?{" "}
-            <Link href="/login" className="text-primary font-bold hover:underline tracking-tight">
-              Sign In
+          <div className="pt-8 w-full">
+            <Link href="/dashboard">
+              <Button size="lg" className="w-full h-14 rounded-2xl font-black text-base group">
+                Go to Dashboard <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
             </Link>
-          </p>
+          </div>
         </div>
       </div>
     </div>
