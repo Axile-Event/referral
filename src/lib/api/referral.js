@@ -10,6 +10,8 @@ import apiClient from "./client";
 export const referralApi = {
   getUserReferrals: () => apiClient.get("/referrals").then((r) => r.data),
 
+  getReferrableEvents: () => apiClient.get("/referee/events").then((r) => r.data),
+
   generateLink: (eventId) =>
     apiClient.post("/referrals/generate", { eventId }).then((r) => r.data),
 

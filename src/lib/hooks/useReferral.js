@@ -6,20 +6,24 @@ import { useReferralStore } from "@/store/referralStore";
  */
 export function useReferral() {
   const {
+    referrableEvents,
     referrals,
     myReferralCode,
     totalEarnings,
     isLoading,
+    fetchReferrableEvents,
     fetchUserReferrals,
     generateReferralLink,
     trackReferralClick,
   } = useReferralStore();
 
   return {
+    referrableEvents,
     referrals,
     myReferralCode,
     totalEarnings,
     isLoading,
+    fetchReferrableEvents,
     fetchUserReferrals,
     generateReferralLink,
     trackReferralClick,

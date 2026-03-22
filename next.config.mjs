@@ -6,6 +6,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "**.axile.ng",
       },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
     ],
   },
   async headers() {
