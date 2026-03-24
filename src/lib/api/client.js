@@ -9,7 +9,7 @@ import axios from "axios";
  * - Response: Handle 401 (logout), 500 (error toast)
  */
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "https://api.axile.ng",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "https://youdoc.onrender.com", // Fallback to Render dev backend
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",

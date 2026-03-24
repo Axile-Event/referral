@@ -74,7 +74,7 @@ export default function EventReferralDetailPage() {
     const load = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "https://api.axile.ng"}/referee/events/${slug}`
+          `${process.env.NEXT_PUBLIC_API_URL || "https://youdoc.onrender.com"}/referee/events/${slug}`
         );
         if (!res.ok) throw new Error("not found");
         setEvent(await res.json());

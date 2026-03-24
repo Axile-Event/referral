@@ -33,7 +33,7 @@ export const useReferralStore = create((set, get) => ({
     } catch (error) {
       console.log(error);
       set({ isLoading: false });
-      toast.error("failed to fetch events that are up for referrals")
+      // toast.error("failed to fetch events that are up for referrals")
     } finally {
       set({ isLoading: false });
     }
