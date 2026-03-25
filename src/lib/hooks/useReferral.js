@@ -7,11 +7,11 @@ import { useReferralStore } from "@/store/referralStore";
 export function useReferral() {
   const {
     referrableEvents,
+    selectedEvent,
     referrals,
-    myReferralCode,
-    totalEarnings,
     isLoading,
     fetchReferrableEvents,
+    fetchReferrableEventDetail,
     fetchUserReferrals,
     generateReferralLink,
     trackReferralClick,
@@ -19,11 +19,11 @@ export function useReferral() {
 
   return {
     referrableEvents,
+    selectedEvent,
     referrals,
-    myReferralCode,
-    totalEarnings,
     isLoading,
     fetchReferrableEvents,
+    fetchReferrableEventDetail,
     fetchUserReferrals,
     generateReferralLink,
     trackReferralClick,

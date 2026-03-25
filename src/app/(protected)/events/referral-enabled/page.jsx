@@ -22,10 +22,11 @@ export default function ReferralEventsPage() {
     : referrableEvents?.events || [];
   
   const filteredEvents = displayEvents.filter(e => {
+    const isReferrable = e.use_referral === true;
     const matchesSearch = e.name.toLowerCase().includes(search.toLowerCase()) || 
                          (e.location?.toLowerCase() || "").includes(search.toLowerCase());
     const matchesCategory = activeCategory === "All" || e.category === activeCategory;
-    return matchesSearch && matchesCategory;
+    return isReferrable && matchesSearch && matchesCategory;
   });
 
   return (
@@ -93,23 +94,30 @@ export default function ReferralEventsPage() {
       {/* Grid */}
       <div className="relative z-10">
         {isLoading && (!displayEvents || displayEvents.length === 0) ? (
-          <div className="flex items-center justify-center p-20">
-             <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          <div className="flex flex-col items-center justify-center p-20 gap-4">
+             <Loader2 className="w-8 h-8 animate-spin text-primary" />
+             <p className="text-sm font-medium text-white/40 tracking-widest uppercase">Loading Programs...</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {filteredEvents.map(event => (
-              <EventCard 
-                 key={event.event_id}
-                 eventId={event.event_id}
-                 eventSlug={event.event_slug}
-                 name={event.name}
-                 location={event.location}
-                 reward={`Earn ${event.referral_reward_percentage}%`}
-                 date={new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                 image={event.image}
-              />
-            ))}
+            {filteredEvents.map(event => {
+              const rewardDisplay = event.referral_reward_type === "percentage"
+                ? `${event.referral_reward_percentage}% Reward`
+                : `₦${event.referral_reward_amount?.toLocaleString()} Reward`;
+
+              return (
+                <EventCard 
+                   key={event.event_id}
+                   eventId={event.event_id}
+                   eventSlug={event.event_slug}
+                   name={event.name}
+                   location={event.location}
+                   reward={rewardDisplay}
+                   date={event.date ? new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "TBA"}
+                   image={event.image || "https://images.unsplash.com/photo-1540575861501-7ad05823c9f5?w=800"}
+                />
+              );
+            })}
           </div>
         )}
 
@@ -147,7 +155,7 @@ function CustomDropdown({ options, value, onChange }) {
       
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative z-10 w-full h-12 bg-[#161622] border border-white/5 hover:border-white/10 rounded-2xl px-5 flex items-center justify-between text-sm font-medium text-white/90 focus:outline-none focus:border-primary/50 transition-all shadow-sm"
+        className="relative z-10 w-full h-12 bg-[#12121f] border border-white/5 hover:border-white/10 rounded-2xl px-5 flex items-center justify-between text-sm font-medium text-white/90 focus:outline-none focus:border-primary/50 transition-all shadow-sm"
         type="button"
       >
         {value}
@@ -155,7 +163,7 @@ function CustomDropdown({ options, value, onChange }) {
       </button>
 
       {isOpen && (
-        <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-[#161622] border border-white/10 rounded-2xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] z-[9999] animate-fade-in origin-top p-1">
+        <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-[#12121f]/95 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] z-[9999] animate-fade-in origin-top p-1">
           {options.map((opt) => (
             <button
               key={opt}

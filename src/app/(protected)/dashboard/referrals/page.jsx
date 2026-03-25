@@ -30,7 +30,7 @@ export default function ReferralsPage() {
             <Loader2 className="w-10 h-10 animate-spin text-primary opacity-20" />
             <Loader2 className="w-10 h-10 animate-spin text-primary absolute inset-0 [animation-delay:-0.5s]" />
          </div>
-         <p className="mt-6 text-gray-500 font-bold uppercase tracking-[0.2em] text-[10px]">Synchronizing...</p>
+         <p className="mt-6 text-gray-500 font-bold uppercase tracking-[0.2em] text-[10px]">Loading...</p>
       </div>
     );
   }
