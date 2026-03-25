@@ -14,6 +14,12 @@ export const getErrorMessage = (error, defaultMessage = "An error occurred") => 
   if (error?.response?.data?.detail) {
     return error.response.data.detail;
   }
+  
+  // Handle validation error objects (e.g., { email: ["Invalid format"] })
+  if (error?.response?.data && typeof error.response.data === "object") {
+    return formatValidationError(error.response.data);
+  }
+
   if (error?.message) {
     return error.message;
   }

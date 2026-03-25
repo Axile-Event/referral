@@ -77,12 +77,23 @@ export const useAuthStore = create((set) => ({
    */
   verifyOtp: createAsyncAction(async (email, otp) => {
     set({ isLoading: true, error: null });
+    let transformedData = null;
     try {
-      const transformedData = transformOtpData(email, otp);
-      const res = await authApi.verifyOtp(transformedData.email, transformedData.otp);
-      // After OTP verification, user can login
+      transformedData = transformOtpData(email, otp);
+      console.log("--- OTP Verification Debug ---");
+      console.log("Sending Payload:", transformedData);
+      
+      const res = await authApi.verifyOtp(transformedData);
+      console.log("OTP Verification Success:", res);
+      
       return res;
     } catch (err) {
+      console.error("--- OTP Verification Failure ---");
+      console.error("Status:", err?.response?.status);
+      console.error("Data:", err?.response?.data);
+      console.error("Message:", err?.message);
+      console.error("Payload that was sent:", transformedData);
+      
       const message = getErrorMessage(err, "Verification failed");
       set({ error: message });
       throw err;
@@ -125,4 +136,61 @@ export const useAuthStore = create((set) => ({
    * Check if user is authenticated
    */
   isAuth: () => tokenStorage.hasTokens(),
+
+  /**
+   * Fetch latest user profile from API
+   */
+  fetchProfile: createAsyncAction(async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const profile = await authApi.getProfile();
+      set({ user: profile, isAuthenticated: true });
+      return profile;
+    } catch (err) {
+      const message = getErrorMessage(err, "Failed to fetch profile");
+      set({ error: message });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  }),
+
+  /**
+   * Update user profile
+   */
+  updateProfile: createAsyncAction(async (userData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const updated = await authApi.updateProfile(userData);
+      set({ user: updated });
+      return updated;
+    } catch (err) {
+      const message = getErrorMessage(err, "Failed to update profile");
+      set({ error: message });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  }),
+
+  /**
+   * Sign up with Google OAuth token
+   */
+  googleSignup: createAsyncAction(async (googleToken) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await authApi.googleSignup(googleToken);
+      if (res.access && res.refresh) {
+        tokenStorage.setTokens(res.access, res.refresh);
+        set({ user: res.user, isAuthenticated: true });
+      }
+      return res;
+    } catch (err) {
+      const message = getErrorMessage(err, "Google signup failed");
+      set({ error: message });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  }),
 }));

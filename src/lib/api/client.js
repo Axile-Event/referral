@@ -42,7 +42,7 @@ apiClient.interceptors.response.use(
         const refresh = localStorage.getItem("axile_refresh_token");
         if (!refresh) throw new Error("No refresh token");
 
-        // Attempt to refresh
+        // Attempt to refresh access token using refresh token
         const res = await axios.post(
           `${apiClient.defaults.baseURL}/token/refresh/`,
           { refresh }

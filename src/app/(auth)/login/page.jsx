@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button.jsx";
 import { Input } from "@/components/ui/input.jsx";
+import { GoogleSignupButton } from "@/components/auth/GoogleSignupButton.jsx";
 import { useAuthStore } from "@/store/authStore";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -45,7 +46,7 @@ export default function LoginPage() {
           animate={{ scale: 1, opacity: 0.6 }}
           transition={{ duration: 1.5, ease: "easeOut" }}
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=2070&auto=format&fit=crop')" }}
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop')" }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14] via-[#0a0a14]/60 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent opacity-50" />
@@ -59,7 +60,7 @@ export default function LoginPage() {
               />
           </Link>
           
-          <div className="space-y-6 max-w-lg mb-12">
+          <div className="space-y-6 max-w-lg mb-48">
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -163,6 +164,17 @@ export default function LoginPage() {
               )}
             </Button>
           </form>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-white/10" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-[#0a0a14] px-4 text-gray-500 font-medium">Or continue with</span>
+            </div>
+          </div>
+
+          <GoogleSignupButton variant="login" />
 
           <div className="space-y-6 text-center">
             <p className="text-gray-400 font-medium">

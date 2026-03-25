@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button.jsx";
 import { Input } from "@/components/ui/input.jsx";
 import { useAuthStore } from "@/store/authStore";
 import { motion } from "framer-motion";
+import { getErrorMessage } from "@/lib/utils/authError";
+import { OTPInput } from "@/components/ui/otp-input.jsx";
+import { Controller } from "react-hook-form";
 
 function VerifyOtpForm() {
   const router = useRouter();
@@ -16,7 +19,11 @@ function VerifyOtpForm() {
   const email = searchParams.get("email") || "";
   const { verifyOtp, isLoading } = useAuthStore();
   
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  console.log("--- VerifyOtpPage Debug ---");
+  console.log("Email from Search Params:", email);
+  console.log("Full Search Params:", searchParams.toString());
+  
+  const { control, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
       otp: "",
     }
@@ -33,7 +40,12 @@ function VerifyOtpForm() {
       toast.success("Account verified successfully! You can now login.");
       router.push("/login");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Verification failed. Please check your OTP.");
+      // Use central error handling for consistent messaging
+      const errorMsg = getErrorMessage(error, "Verification failed. Please check your OTP and email.");
+      toast.error(errorMsg);
+      
+      // Still log full error for debugging
+      console.error("OTP Verification Error:", error);
     }
   };
 
@@ -53,21 +65,38 @@ function VerifyOtpForm() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="space-y-2">
-          <Input 
-            placeholder="Enter 6-digit OTP" 
-            type="text"
-            maxLength={6}
-            icon={Mail}
-            {...register("otp", { 
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
+        <div className="space-y-4">
+          <label className="block text-sm font-medium text-gray-400 text-center">
+            Security Verification Code
+          </label>
+          
+          <Controller
+            name="otp"
+            control={control}
+            rules={{ 
               required: "OTP is required",
               minLength: { value: 6, message: "OTP must be 6 digits" }
-            })}
-            className={errors.otp ? "border-red-500/50" : "text-center tracking-[0.5em] text-xl font-bold"}
+            }}
+            render={({ field }) => (
+              <OTPInput
+                length={6}
+                value={field.value}
+                onChange={field.onChange}
+                disabled={isLoading}
+                error={!!errors.otp}
+              />
+            )}
           />
+
           {errors.otp && (
-            <p className="text-red-500 text-xs mt-1">{errors.otp.message}</p>
+            <motion.p 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-red-500 text-sm text-center font-bold"
+            >
+              {errors.otp.message}
+            </motion.p>
           )}
         </div>
 
@@ -116,7 +145,7 @@ export default function VerifyOtpPage() {
           animate={{ opacity: 0.4 }}
           transition={{ duration: 1 }}
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop')" }}
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop')" }}
         />
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-transparent" />
         

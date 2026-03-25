@@ -28,11 +28,11 @@ export const transformLoginData = (formData) => {
 };
 
 /**
- * Transform OTP verification data to API format
+ * Transform OTP verification data to API format (capitalized per backend convention)
  */
 export const transformOtpData = (email, otp) => {
   return {
-    email,
-    otp,
+    Email: email,
+    OTP: otp,
   };
 };
