@@ -1,71 +1,79 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { GoogleLogin } from "@react-oauth/google";
+import { useGoogleLogin } from "@react-oauth/google";
 import { toast } from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
+import { Button } from "@/components/ui/button.jsx";
+import { Loader2 } from "lucide-react";
+import { useState } from "react";
 
 /**
  * GoogleSignupButton Component
- * Handles Google OAuth authentication using @react-oauth/google
+ * Custom styled Google OAuth button that matches the design system
  * 
  * Flow:
- * 1. User clicks Google button
+ * 1. User clicks button
  * 2. Google OAuth popup opens
  * 3. User authenticates with Google
  * 4. Returns ID token to backend
  * 5. Backend validates token and returns JWT tokens
- * 6. User is logged in or needs to complete registration
+ * 6. User is logged in
  */
 export function GoogleSignupButton({ variant = "signup" }) {
   const router = useRouter();
-  const { googleSignup, isLoading } = useAuthStore();
+  const { googleSignup } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleGoogleSuccess = async (credentialResponse) => {
-    const token = credentialResponse.credential;
-    
-    try {
-      const response = await googleSignup(token);
-      
-      // If successful, tokens are stored and user is authenticated
-      if (response) {
-        toast.success("Great! Logged in with Google.");
+  const login = useGoogleLogin({
+    onSuccess: async (response) => {
+      setIsLoading(true);
+      try {
+        const result = await googleSignup(response.access_token);
         
-        // Check if user has complete profile
-        if (response.user && response.access) {
-          // User is fully authenticated
+        if (result?.access) {
+          toast.success("Great! Logged in with Google.");
           router.push("/dashboard");
-        } else if (response.email) {
-          // User exists but might need profile completion
-          router.push("/dashboard");
-        } else {
-          // Edge case: token accepted but no user data
-          router.push("/login");
         }
+      } catch (error) {
+        const errorMsg = error?.response?.data?.message || 
+                        error?.response?.data?.error ||
+                        "Google authentication failed. Please try again.";
+        toast.error(errorMsg);
+        console.error("Google signup error:", error?.response?.data);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      const errorMsg = error?.response?.data?.message || 
-                      error?.response?.data?.error ||
-                      "Google authentication failed. Please try again.";
-      toast.error(errorMsg);
-      console.error("Google signup error:", error?.response?.data);
-    }
-  };
-
-  const handleGoogleError = () => {
-    toast.error("Google login failed. Please try again.");
-  };
+    },
+    onError: () => {
+      toast.error("Google login failed. Please try again.");
+      setIsLoading(false);
+    },
+    flow: "implicit",
+  });
 
   return (
-    <div className="w-full flex justify-center">
-      <GoogleLogin
-        onSuccess={handleGoogleSuccess}
-        onError={handleGoogleError}
-        useOneTap
-        theme="dark"
-        text="continue_with"
-      />
-    </div>
+    <Button 
+      type="button" 
+      variant="outline" 
+      size="lg" 
+      className="w-full h-14 rounded-2xl font-bold bg-white/5 border-white/10 hover:bg-white/10 text-white group transition-all"
+      onClick={() => login()}
+      disabled={isLoading}
+    >
+      {isLoading ? (
+        <Loader2 className="w-5 h-5 animate-spin" />
+      ) : (
+        <>
+          <img 
+            src="/Logo-google-icon-PNG.png" 
+            alt="Google" 
+            className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform"
+          />
+          {variant === "login" ? "Continue with Google" : "Sign up with Google"}
+        </>
+      )}
+    </Button>
   );
 }
 
