@@ -16,13 +16,11 @@ export default function ReferralEventsPage() {
     fetchReferrableEvents();
   }, [fetchReferrableEvents]);
 
-  // Handle both API response structures (with .events or directly as array)
-  const displayEvents = Array.isArray(referrableEvents) 
-    ? referrableEvents 
-    : referrableEvents?.events || [];
+  // Handle the new API response structure { events: [], count: number }
+  const displayEvents = referrableEvents?.events || [];
   
   const filteredEvents = displayEvents.filter(e => {
-    const matchesSearch = e.name.toLowerCase().includes(search.toLowerCase()) || 
+    const matchesSearch = (e.name?.toLowerCase() || "").includes(search.toLowerCase()) || 
                          (e.location?.toLowerCase() || "").includes(search.toLowerCase());
     const matchesCategory = activeCategory === "All" || e.category === activeCategory;
     return matchesSearch && matchesCategory;
@@ -98,18 +96,24 @@ export default function ReferralEventsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {filteredEvents.map(event => (
-              <EventCard 
-                 key={event.event_id}
-                 eventId={event.event_id}
-                 eventSlug={event.event_slug}
-                 name={event.name}
-                 location={event.location}
-                 reward={`Earn ${event.referral_reward_percentage}%`}
-                 date={new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                 image={event.image}
-              />
-            ))}
+            {filteredEvents.map(event => {
+                const rewardText = event.referral_reward_type === "percentage" 
+                    ? `${event.referral_reward_percentage}% Reward`
+                    : `₦${Number(event.referral_reward_amount || 0).toLocaleString()} Reward`;
+
+                return (
+                    <EventCard 
+                        key={event.event_id}
+                        eventId={event.event_id}
+                        eventSlug={event.event_slug}
+                        name={event.name}
+                        location={event.location}
+                        reward={rewardText}
+                        date={new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        image={event.image}
+                    />
+                );
+            })}
           </div>
         )}
 

@@ -3,97 +3,36 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
+import { useReferral } from "@/lib/hooks/useReferral";
 import { 
   ArrowLeft, Copy, Check, ArrowUpRight, Share2, Zap, Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 
-const MOCK_EVENTS = {
-  "summer-fest-2025": {
-    event_id: "event:AB-12345",
-    event_slug: "summer-fest-2025",
-    name: "Summer Fest 2025",
-    description: "The most anticipated music and culture festival of the year. Experience world-class performances from top Nigerian and international artists, immersive art installations, beach bars, and a community of thousands of music lovers — all at the iconic Landmark Beach in Lagos.",
-    location: "Landmark Beach, Lagos",
-    date: "2025-06-01T18:00:00Z",
-    image: "https://images.unsplash.com/photo-1459749411177-042180ce673c?q=80&w=2070&auto=format&fit=crop",
-    referral_reward_percentage: 12.5,
-  },
-  "global-tech-summit": {
-    event_id: "event:BC-23456",
-    event_slug: "global-tech-summit",
-    name: "Global Tech Summit",
-    description: "Africa's leading technology conference, bringing together founders, engineers, and investors from across the continent. Two-day event packed with talks, workshops, and networking opportunities that shape the future of tech on the continent.",
-    location: "Transcorp Hilton, Abuja",
-    date: "2025-07-15T10:00:00Z",
-    image: "https://images.unsplash.com/photo-1540575861501-7ad0582371f3?q=80&w=2070&auto=format&fit=crop",
-    referral_reward_percentage: 10,
-  },
-  "lagos-fashion-week": {
-    event_id: "event:CD-34567",
-    event_slug: "lagos-fashion-week",
-    name: "Lagos Fashion Week",
-    description: "Nigeria's premier fashion showcase returns with a stunning lineup of designers and brands. Four days of runway shows, brand activations, pop-up markets, and exclusive parties celebrating African fashion at the highest level.",
-    location: "Landmark Event Centre, V.I",
-    date: "2025-10-10T14:00:00Z",
-    image: "https://images.unsplash.com/photo-1539109139204-63045ade49a1?q=80&w=2070&auto=format&fit=crop",
-    referral_reward_percentage: 15,
-  },
-  "coding-bootcamp": {
-    event_id: "event:DE-45678",
-    event_slug: "coding-bootcamp",
-    name: "Fullstack Bootcamp",
-    description: "An intensive 8-week programme designed to take you from beginner to job-ready fullstack developer. Cover React, Node.js, databases, cloud deployment, and real-world project experience with mentorship from senior engineers.",
-    location: "Online / Lagos",
-    date: "2025-08-20T09:00:00Z",
-    image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop",
-    referral_reward_percentage: 20,
-  },
-};
-
 export default function EventReferralDetailPage() {
   const params = useParams();
-  const slug = params.event_id; 
+  const identifier = params.event_id; 
   const router = useRouter();
   const { user } = useAuthStore();
-  const [event, setEvent] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { selectedEvent: event, isLoading, fetchReferrableEventDetail } = useReferral();
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (!slug) return;
-
-    const mock = MOCK_EVENTS[slug];
-    if (mock) {
-      setEvent(mock);
-      setLoading(false);
-      return;
+    if (identifier) {
+      fetchReferrableEventDetail(identifier);
     }
-
-    const load = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "https://api.axile.ng"}/referee/events/${slug}`
-        );
-        if (!res.ok) throw new Error("not found");
-        setEvent(await res.json());
-      } catch {
-        setEvent(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, [slug]);
+  }, [identifier, fetchReferrableEventDetail]);
 
   const userHandle =
     user?.slug ||
     user?.name?.toLowerCase().replace(/\s+/g, "-") ||
     "referee";
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://axile.ng";
+  
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || "https://axile.ng");
+  
   const referralLink = event
-    ? `${baseUrl}/${userHandle}/${event.event_slug || slug}/${event.event_id}`
+    ? `${baseUrl}/ref/${event.event_slug || identifier}/${user.id || 'referee'}`
     : "";
 
   const handleCopy = () => {
@@ -104,7 +43,7 @@ export default function EventReferralDetailPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (loading) {
+  if (isLoading && !event) {
     return (
       <div className="flex flex-col h-[60vh] items-center justify-center space-y-4">
         <Loader2 size={32} className="animate-spin text-primary" />
@@ -113,7 +52,7 @@ export default function EventReferralDetailPage() {
     );
   }
 
-  if (!event) {
+  if (!event && !isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] space-y-4 relative">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
@@ -126,9 +65,19 @@ export default function EventReferralDetailPage() {
     );
   }
 
+  if (!event) return null;
+
   const eventDate = new Date(event.date).toLocaleDateString("en-US", {
     weekday: "long", month: "long", day: "numeric", year: "numeric",
   });
+
+  const rewardValueText = event.referral_reward_type === "percentage"
+    ? `${event.referral_reward_percentage}%`
+    : `₦${Number(event.referral_reward_amount || 0).toLocaleString()}`;
+
+  const rewardDescription = event.referral_reward_type === "percentage"
+    ? "Earn this percentage directly in your wallet on every uniquely converted ticket sale."
+    : "Earn this flat amount directly in your wallet on every uniquely converted ticket sale.";
 
   return (
     <div className="max-w-7xl mx-auto pb-32 font-sans relative overflow-x-hidden pt-12">
@@ -170,7 +119,7 @@ export default function EventReferralDetailPage() {
            {/* Deep atmospheric image */}
            <div className="w-full h-64 sm:h-[400px] lg:h-[500px] rounded-[32px] overflow-hidden bg-[#05050A] border border-white/5 relative group shadow-2xl shadow-black/40">
                 <img 
-                  src={event.image} 
+                  src={event.image || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop"} 
                   alt={event.name} 
                   className="w-full h-full object-cover grayscale-[0.4] transition-all duration-1000 group-hover:grayscale-0 group-hover:scale-[1.02] mix-blend-luminosity hover:mix-blend-normal"
                 />
@@ -201,7 +150,7 @@ export default function EventReferralDetailPage() {
                       About The Program
                   </h3>
                   <div className="prose prose-invert prose-p:text-white/50 prose-p:leading-[1.9] prose-p:text-[15px] sm:prose-p:text-[16px] max-w-none">
-                     <p>{event.description}</p>
+                     <p>{event.description || "Join this exciting program and help spread the word to your community. As a verified referee, you earn rewards for every successful ticket sale processed through your unique link."}</p>
                      
                      <p className="mt-6 font-medium text-white/70">Why join us?</p>
                      <ul className="mt-2 space-y-2 text-white/50 text-[15px] sm:text-[16px] list-none p-0">
@@ -232,11 +181,11 @@ export default function EventReferralDetailPage() {
                     {/* Minimal White Text */}
                     <div className="pb-1">
                         <span className="text-[64px] font-light tracking-tighter leading-none text-white drop-shadow-sm">
-                           {event.referral_reward_percentage}%
+                           {rewardValueText}
                         </span>
                     </div>
                     <p className="text-[14px] text-white/40 pt-2 font-medium leading-relaxed">
-                       Earn this percentage directly in your wallet on every uniquely converted ticket sale.
+                       {rewardDescription}
                     </p>
                  </div>
 
@@ -268,3 +217,4 @@ export default function EventReferralDetailPage() {
     </div>
   );
 }
+
