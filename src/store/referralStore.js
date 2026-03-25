@@ -9,20 +9,54 @@ import { referralApi } from "@/lib/api/referral";
  * Actions: fetchUserReferrals, generateReferralLink, trackReferralClick
  */
 export const useReferralStore = create((set, get) => ({
-  referrableEvents: [],
-  referrals: [],
-  myReferralCode: null,
-  totalEarnings: 0,
+  referrableEvents: [
+    {
+      event_id: "event:AB-12345",
+      name: "Axile Tech Summit 2025",
+      reward: "15% Commission",
+      image: "https://images.unsplash.com/photo-1540575861501-7ad05823c9f5?w=800&auto=format&fit=crop&q=60",
+      category: "Tech"
+    },
+    {
+      event_id: "event:BC-23456",
+      name: "Lagos Night Carnival",
+      reward: "Fixed ₦1,000",
+      image: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&auto=format&fit=crop&q=60",
+      category: "Music"
+    }
+  ],
+  referrals: [
+    { 
+      id: "1", 
+      name: "Axile Tech Summit 2025", 
+      reward: "15% Commission", 
+      clicks: 1240, 
+      conversions: 84, 
+      earned: "₦126,000", 
+      status: "Active",
+      image: "https://images.unsplash.com/photo-1540575861501-7ad05823c9f5?w=800&auto=format&fit=crop&q=60"
+    },
+    { 
+      id: "2", 
+      name: "Lagos Night Carnival", 
+      reward: "Fixed ₦1,000", 
+      clicks: 852, 
+      conversions: 42, 
+      earned: "₦42,000", 
+      status: "Active",
+      image: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&auto=format&fit=crop&q=60"
+    }
+  ],
+  myReferralCode: "AXILE-SUMMIT-2025-EZK",
+  totalEarnings: 168000,
   isLoading: false,
 
   fetchUserReferrals: async () => {
+    // For now we use the mock data already in state
     set({ isLoading: true });
-    try {
-      // TODO: const data = await referralApi.getUserReferrals();
-      // set({ referrals: data });
-    } finally {
-      set({ isLoading: false });
-    }
+    // Simulate API delay
+    await new Promise(r => setTimeout(r, 500));
+    set({ isLoading: false });
   },
 
   fetchReferrableEvents: async () => {
