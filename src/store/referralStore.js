@@ -59,7 +59,7 @@ export const useReferralStore = create((set, get) => ({
       set({ referrableEvents: data || { events: [], count: 0 } });
     } catch (error) {
       console.error("Referral Store error [fetchReferrableEvents]:", error);
-      toast.error("Failed to load marketplace events.", { style: { background: "#161622", color: "#fff", border: "1px solid rgba(227, 54, 41, 0.2)" }});
+      toast.error("An error occured while trying to load events.", { style: { background: "#161622", color: "#fff", border: "1px solid rgba(227, 54, 41, 0.2)" }});
     } finally {
       set({ isLoading: false });
     }

@@ -38,7 +38,7 @@ export default function ReferralsPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-12 animate-fade-in pb-20 px-4 sm:px-0">
       
-      {/* Sleek Minimal Header */}
+      {/* Minimal Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pt-4">
          <div className="space-y-3">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-primary/20">
@@ -67,7 +67,7 @@ export default function ReferralsPage() {
          </div>
       </div>
 
-      {/* Sexy Grid Layout */}
+      {/* Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pt-2">
         {referrals.map((event) => (
           <div 
@@ -117,7 +117,7 @@ export default function ReferralsPage() {
                 </div>
               </div>
 
-              {/* Sexy Button */}
+              {/* Button */}
               <Button asChild variant="outline" className="mt-auto h-12 rounded-xl border-white/10 hover:border-primary/50 hover:bg-primary/10 text-white font-bold text-xs uppercase tracking-widest flex items-center justify-between px-5 transition-all group/btn active:scale-95">
                 <Link href={`/dashboard/referrals/${event.id}/analytics`}>
                   Campaign Details
