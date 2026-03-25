@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
+import { API_BASE_URL } from "@/lib/api/baseUrl";
 
 const MOCK_EVENTS = {
   "summer-fest-2025": {
@@ -74,7 +75,7 @@ export default function EventReferralDetailPage() {
     const load = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "https://youdoc.onrender.com"}/referee/events/${slug}`
+          `${API_BASE_URL}/referee/events/${slug}`
         );
         if (!res.ok) throw new Error("not found");
         setEvent(await res.json());
