@@ -7,49 +7,6 @@ import { Loader2, Search, Compass, ChevronDown, Zap } from "lucide-react";
 
 const CATEGORIES = ["All", "Tech", "Business", "Music", "Education", "Fashion"];
 
-const MOCK_EVENTS = [
-  {
-    event_id: "event:AB-12345",
-    event_slug: "summer-fest-2025",
-    name: "Summer Fest 2025",
-    category: "Music",
-    location: "Lagos, Nigeria",
-    date: "2025-06-01T18:00:00Z",
-    image: "https://images.unsplash.com/photo-1459749411177-042180ce673c?q=80&w=2070&auto=format&fit=crop",
-    referral_reward_percentage: 12.5,
-  },
-  {
-    event_id: "event:BC-23456",
-    event_slug: "global-tech-summit",
-    name: "Global Tech Summit",
-    category: "Tech",
-    location: "Abuja, Nigeria",
-    date: "2025-07-15T10:00:00Z",
-    image: "https://images.unsplash.com/photo-1540575861501-7ad0582371f3?q=80&w=2070&auto=format&fit=crop",
-    referral_reward_percentage: 10,
-  },
-  {
-    event_id: "event:CD-34567",
-    event_slug: "lagos-fashion-week",
-    category: "Fashion",
-    name: "Lagos Fashion Week",
-    location: "V.I, Lagos",
-    date: "2025-10-10T14:00:00Z",
-    image: "https://images.unsplash.com/photo-1539109139204-63045ade49a1?q=80&w=2070&auto=format&fit=crop",
-    referral_reward_percentage: 15,
-  },
-  {
-    event_id: "event:DE-45678",
-    event_slug: "coding-bootcamp",
-    category: "Education",
-    name: "Fullstack Bootcamp",
-    location: "Online / Lagos",
-    date: "2025-08-20T09:00:00Z",
-    image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop",
-    referral_reward_percentage: 20,
-  },
-];
-
 export default function ReferralEventsPage() {
   const { referrableEvents, isLoading, fetchReferrableEvents } = useReferral();
   const [search, setSearch] = useState("");
@@ -59,12 +16,14 @@ export default function ReferralEventsPage() {
     fetchReferrableEvents();
   }, [fetchReferrableEvents]);
 
-  const apiEvents = referrableEvents?.events || [];
-  const displayEvents = apiEvents.length > 0 ? apiEvents : MOCK_EVENTS;
+  // Handle both API response structures (with .events or directly as array)
+  const displayEvents = Array.isArray(referrableEvents) 
+    ? referrableEvents 
+    : referrableEvents?.events || [];
   
   const filteredEvents = displayEvents.filter(e => {
     const matchesSearch = e.name.toLowerCase().includes(search.toLowerCase()) || 
-                         e.location.toLowerCase().includes(search.toLowerCase());
+                         (e.location?.toLowerCase() || "").includes(search.toLowerCase());
     const matchesCategory = activeCategory === "All" || e.category === activeCategory;
     return matchesSearch && matchesCategory;
   });
