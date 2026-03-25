@@ -38,18 +38,23 @@ export default function DashboardPage() {
 
       {/* Two columns */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-8">
-         <div className="bg-[#12121f] rounded-2xl border border-white/5 overflow-hidden">
+          <div className="bg-[#12121f] rounded-2xl border border-white/5 overflow-hidden">
             <div className="px-6 py-5 border-b border-white/5 flex justify-between items-center">
                <h3 className="font-semibold text-white">Active Referrals</h3>
-               <Link href="/events/referral-enabled" className="text-sm text-primary hover:underline">
-                  Browse New
+               <Link href="/dashboard/referrals" className="text-sm text-primary hover:underline font-bold">
+                  View All
                </Link>
             </div>
             
             <div className="flex flex-col items-center justify-center p-20 text-center text-gray-400">
                <Ticket size={40} className="mb-4 opacity-30" />
-               <p className="text-white font-medium mb-1">No Active Referrals</p>
-               <p className="text-sm">You haven't shared any links yet. Start promoting events to earn AP.</p>
+               <p className="text-white font-medium mb-1">Click below to manage your links</p>
+               <p className="text-sm mb-6">You have 3 active campaigns currently generating earnings.</p>
+               <Button asChild variant="outline" className="border-white/10 text-white rounded-xl">
+                  <Link href="/dashboard/referrals">
+                    Open My Referrals
+                  </Link>
+               </Button>
             </div>
          </div>
 
