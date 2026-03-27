@@ -1,25 +1,23 @@
 import apiClient from "./client";
 
 /**
- * Referral API Methods
- * - GET  /referrals          → getUserReferrals
- * - POST /referrals/generate → generateLink
- * - POST /referrals/track    → trackClick
- * - GET  /referrals/stats    → getStats
+ * Referral API Methods (Referee)
+ * Aligned with API_DOCUMENTATION.MD
  */
 export const referralApi = {
-  getUserReferrals: () => apiClient.get("/referrals").then((r) => r.data),
+  // GET /referee/events/ — List events with use_referral=true
+  getReferrableEvents: () => apiClient.get("/referee/events/").then((r) => r.data),
 
-  getReferrableEvents: () => apiClient.get("/referee/events").then((r) => r.data),
+  // GET /referee/events/<id>/ — Details for referee
+  getEventDetail: (id) => apiClient.get(`/referee/events/${id}/`).then((r) => r.data),
 
-  generateLink: (eventId) =>
-    apiClient.post("/referrals/generate", { eventId }).then((r) => r.data),
+  // GET /referee/<event_id>/stats/ — Self stats for referee
+  getEventStats: (eventId) => apiClient.get(`/referee/${eventId}/stats/`).then((r) => r.data),
 
+  // These might still be used for generic interactions or need backend check
   trackClick: (code, eventId) =>
     apiClient.post("/referrals/track", { code, eventId }).then((r) => r.data),
 
-  getStats: () => apiClient.get("/referrals/stats").then((r) => r.data),
-
-  disableLink: (referralId) =>
-    apiClient.post(`/referrals/${referralId}/disable`).then((r) => r.data),
+  generateLink: (eventId) =>
+    apiClient.post("/referrals/generate", { eventId }).then((r) => r.data),
 };

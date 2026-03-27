@@ -1,6 +1,3 @@
-any update
-
-
 # Referral (Referee) & Event Referral Rewards — Frontend Guide
 
 This document covers **referee authentication**, **referee-only event APIs**, and **organizer event fields** for referral rewards. All paths are relative to your API base URL.
