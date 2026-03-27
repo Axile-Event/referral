@@ -33,7 +33,24 @@ export default function LoginPage() {
       toast.success("Login successful! Welcome back.");
       router.push("/dashboard");
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Invalid credentials. Please try again.");
+      const errorData = error.response?.data;
+      const errorMsg = errorData?.detail || errorData?.error || errorData?.message || "";
+      
+      // If user is not verified, redirect to OTP page
+      // Typical backend messages: "User is not active", "Account not verified", etc.
+      if (
+        errorMsg.toLowerCase().includes("verified") || 
+        errorMsg.toLowerCase().includes("active") ||
+        error.response?.status === 403
+      ) {
+        toast.error("Account not verified. Redirecting to verification page...");
+        setTimeout(() => {
+          router.push(`/verify-otp?email=${encodeURIComponent(data.email)}`);
+        }, 1500);
+        return;
+      }
+
+      toast.error(errorMsg || "Invalid credentials. Please try again.");
     }
   };
 

@@ -30,11 +30,11 @@ export const useAuthStore = create((set, get) => ({
       // Fetch full profile info
       const profile = await authApi.getProfile();
       set({ user: profile, isAuthenticated: true });
-      return { success: true };
+      return profile;
     } catch (err) {
-      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
+      const msg = err.response?.data?.error || err.response?.data?.message || err.response?.data?.detail || err.message;
       set({ error: msg });
-      return { success: false, error: msg };
+      throw err; // Throw so component catch block triggers
     } finally {
       set({ isLoading: false });
     }
@@ -53,10 +53,11 @@ export const useAuthStore = create((set, get) => ({
       }
       const profile = await authApi.getProfile();
       set({ user: profile, isAuthenticated: true });
-      return { success: true };
+      return profile;
     } catch (err) {
-      set({ error: err.message });
-      return { success: false, error: err.message };
+      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
+      set({ error: msg });
+      throw err;
     } finally {
       set({ isLoading: false });
     }
@@ -71,11 +72,11 @@ export const useAuthStore = create((set, get) => ({
       // Use transformSignupData to ensure correct casing (Username, Firstname, etc.)
       const payload = transformSignupData(data);
       const res = await authApi.signup(payload);
-      return { success: true, data: res };
+      return res;
     } catch (err) {
       const msg = err.response?.data?.error || err.response?.data?.message || err.message;
       set({ error: msg });
-      return { success: false, error: msg };
+      throw err;
     } finally {
       set({ isLoading: false });
     }
@@ -94,11 +95,11 @@ export const useAuthStore = create((set, get) => ({
         const profile = await authApi.getProfile();
         set({ user: profile, isAuthenticated: true });
       }
-      return { success: true };
+      return res;
     } catch (err) {
       const msg = err.response?.data?.error || err.response?.data?.message || err.message;
       set({ error: msg });
-      return { success: false, error: msg };
+      throw err;
     } finally {
       set({ isLoading: false });
     }
