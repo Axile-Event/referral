@@ -8,17 +8,24 @@ import {
 import { Button } from "@/components/ui/button.jsx";
 import { useAuthStore } from "@/store/authStore";
 import { useReferralStore } from "@/store/referralStore";
+import { useWalletStore } from "@/store/walletStore";
 import { ReferralBanner } from "@/components/referral/referral-banner";
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
-  const { referrals, totalEarnings, isLoading } = useReferralStore();
-  const userName = user?.name?.split(" ")[0] || "Ezekiel";
+  const { referrals, stats, fetchUserReferrals, fetchStats, isLoading: isReferralLoading } = useReferralStore();
+  const { balance, pending, totalEarned, fetchWalletData, isLoading: isWalletLoading } = useWalletStore();
+  
+  const userName = user?.name?.split(" ")[0] || "Partner";
 
-  // Derive stats from store
-  const totalReferrals = referrals?.length ?? 0;
-  const totalTicketsSold = referrals?.reduce((sum, r) => sum + (r.conversions || 0), 0) ?? 0;
-  const formattedEarnings = `₦${(totalEarnings || 0).toLocaleString()}`;
+  React.useEffect(() => {
+    fetchUserReferrals();
+    fetchStats();
+    fetchWalletData();
+  }, [fetchUserReferrals, fetchStats, fetchWalletData]);
+
+  // Format currency
+  const formatCurrency = (val) => `₦${(val || 0).toLocaleString()}`;
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 animate-fade-in pb-20">
@@ -44,46 +51,46 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Referrals"
-          value={totalReferrals}
+          value={stats.totalReferrals || 0}
           icon={Users}
           color="text-violet-400"
           bg="bg-violet-500/10"
         />
         <StatCard
           title="Total Clicks"
-          value={referrals?.reduce((sum, r) => sum + (r.clicks || 0), 0) ?? 0}
+          value={stats.totalClicks || 0}
           icon={MousePointerClick}
           color="text-sky-400"
           bg="bg-sky-500/10"
         />
         <StatCard
           title="Tickets Sold"
-          value={totalTicketsSold}
+          value={stats.totalTicketsSold || 0}
           icon={Ticket}
           color="text-emerald-400"
           bg="bg-emerald-500/10"
         />
         <StatCard
-          title="Total Earnings"
-          value={formattedEarnings}
+          title="Referral Earnings"
+          value={formatCurrency(stats.totalEarnings)}
           icon={DollarSign}
           color="text-primary"
           bg="bg-primary/10"
         />
       </div>
 
-      {/* Earnings Overview */}
+      {/* Wallet Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <StatCard title="Total Earnings" value={formattedEarnings} icon={Wallet} color="text-primary" bg="bg-primary/10" />
-        <StatCard title="Pending Rewards" value="₦0" icon={Activity} color="text-blue-500" bg="bg-blue-500/10" />
-        <StatCard title="Withdrawable" value="₦0" icon={Ticket} color="text-green-500" bg="bg-green-500/10" />
+        <StatCard title="Available Balance" value={formatCurrency(balance)} icon={Wallet} color="text-primary" bg="bg-primary/10" />
+        <StatCard title="Pending Rewards" value={formatCurrency(pending)} icon={Activity} color="text-blue-500" bg="bg-blue-500/10" />
+        <StatCard title="Total Earned" value={formatCurrency(totalEarned)} icon={Ticket} color="text-green-500" bg="bg-green-500/10" />
       </div>
 
       {/* Two columns */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-8">
           <div className="bg-[#12121f] rounded-2xl border border-white/5 overflow-hidden">
             <div className="px-6 py-5 border-b border-white/5 flex justify-between items-center">
-               <h3 className="font-semibold text-white">Active Referrals</h3>
+               <h3 className="font-semibold text-white">Active Campaigns</h3>
                <Link href="/dashboard/referrals" className="text-sm text-primary hover:underline font-bold">
                   View All
                </Link>
@@ -92,19 +99,19 @@ export default function DashboardPage() {
             {referrals?.length > 0 ? (
               <div className="divide-y divide-white/5">
                 {referrals.map((ref) => (
-                  <div key={ref.id} className="px-6 py-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
+                  <div key={ref.id || ref.event_id} className="px-6 py-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                         <Ticket size={18} />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-white truncate">{ref.name}</p>
-                        <p className="text-xs text-gray-500">{ref.reward}</p>
+                        <p className="text-sm font-medium text-white truncate">{ref.event_name || ref.name}</p>
+                        <p className="text-xs text-gray-500">{ref.reward_amount ? `₦${ref.reward_amount.toLocaleString()}` : ref.reward}</p>
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-sm font-bold text-white">{ref.earned}</p>
-                      <p className="text-xs text-gray-500">{ref.conversions} sold</p>
+                      <p className="text-sm font-bold text-white">{formatCurrency(ref.earned_amount || ref.earned)}</p>
+                      <p className="text-xs text-gray-500">{ref.total_conversions || ref.conversions || 0} sold</p>
                     </div>
                   </div>
                 ))}
@@ -132,17 +139,17 @@ export default function DashboardPage() {
                      </div>
                      <div>
                          <p className="text-sm text-gray-400">Network Tier</p>
-                         <p className="font-bold text-white text-lg">Rookie</p>
+                         <p className="font-bold text-white text-lg">Partner</p>
                      </div>
                  </div>
 
                  <div className="space-y-2">
                      <div className="flex justify-between text-xs font-medium">
-                         <span className="text-gray-400">Progress to Next Tier</span>
-                         <span className="text-primary">0 / 50 AP</span>
+                         <span className="text-gray-400">Performance Index</span>
+                         <span className="text-primary">High</span>
                      </div>
                      <div className="h-2 w-full bg-[#1c1c28] rounded-full overflow-hidden">
-                         <div className="w-0 h-full bg-primary rounded-full transition-all" />
+                         <div className="w-full h-full bg-primary rounded-full transition-all" />
                      </div>
                  </div>
              </div>

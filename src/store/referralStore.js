@@ -9,77 +9,74 @@ import { referralApi } from "@/lib/api/referral";
  * Actions: fetchUserReferrals, generateReferralLink, trackReferralClick
  */
 export const useReferralStore = create((set, get) => ({
-  referrableEvents: [
-    {
-      event_id: "event:AB-12345",
-      name: "Axile Tech Summit 2025",
-      reward: "15% Commission",
-      image: "https://images.unsplash.com/photo-1540575861501-7ad05823c9f5?w=800&auto=format&fit=crop&q=60",
-      category: "Tech"
-    },
-    {
-      event_id: "event:BC-23456",
-      name: "Lagos Night Carnival",
-      reward: "Fixed ₦1,000",
-      image: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&auto=format&fit=crop&q=60",
-      category: "Music"
-    }
-  ],
-  referrals: [
-    { 
-      id: "1", 
-      name: "Axile Tech Summit 2025", 
-      reward: "15% Commission", 
-      clicks: 1240, 
-      conversions: 84, 
-      earned: "₦126,000", 
-      status: "Active",
-      image: "https://images.unsplash.com/photo-1540575861501-7ad05823c9f5?w=800&auto=format&fit=crop&q=60"
-    },
-    { 
-      id: "2", 
-      name: "Lagos Night Carnival", 
-      reward: "Fixed ₦1,000", 
-      clicks: 852, 
-      conversions: 42, 
-      earned: "₦42,000", 
-      status: "Active",
-      image: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&auto=format&fit=crop&q=60"
-    }
-  ],
-  myReferralCode: "AXILE-SUMMIT-2025-EZK",
-  totalEarnings: 168000,
+  referrableEvents: [],
+  referrals: [],
+  stats: {
+    totalReferrals: 0,
+    totalClicks: 0,
+    totalTicketsSold: 0,
+    totalEarnings: 0
+  },
+  myReferralCode: "",
+  totalEarnings: 0,
   isLoading: false,
 
   fetchUserReferrals: async () => {
-    // For now we use the mock data already in state
-    set({ isLoading: true });
-    // Simulate API delay
-    await new Promise(r => setTimeout(r, 500));
-    set({ isLoading: false });
+    try {
+      set({ isLoading: true });
+      const data = await referralApi.getUserReferrals();
+      set({ referrals: data });
+    } catch (error) {
+      console.error("Failed to fetch user referrals:", error);
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  fetchStats: async () => {
+    try {
+      set({ isLoading: true });
+      const data = await referralApi.getStats();
+      set({ 
+        stats: data, 
+        totalEarnings: data.totalEarnings 
+      });
+    } catch (error) {
+      console.error("Failed to fetch referral stats:", error);
+    } finally {
+      set({ isLoading: false });
+    }
   },
 
   fetchReferrableEvents: async () => {
     try {
       set({ isLoading: true });
       const data = await referralApi.getReferrableEvents();
-      set({ referrableEvents: data });
+      // data might be { events: [...] } or just [...]
+      const events = Array.isArray(data) ? data : (data.events || []);
+      set({ referrableEvents: events });
     } catch (error) {
-      console.log(error);
-      set({ isLoading: false });
-      // toast.error("failed to fetch events that are up for referrals")
+      console.error("Failed to fetch referrable events:", error);
     } finally {
       set({ isLoading: false });
     }
   },
 
   generateReferralLink: async (eventId) => {
-    // TODO: const link = await referralApi.generateLink(eventId);
-    // return link;
-    return "";
+    try {
+      const res = await referralApi.generateLink(eventId);
+      return res.link;
+    } catch (error) {
+      toast.error("Failed to generate referral link");
+      return "";
+    }
   },
 
   trackReferralClick: async (code, eventId) => {
-    // TODO: await referralApi.trackClick(code, eventId);
+    try {
+      await referralApi.trackClick(code, eventId);
+    } catch (error) {
+      console.error("Failed to track referral click:", error);
+    }
   },
 }));
