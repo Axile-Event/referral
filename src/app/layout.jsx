@@ -1,6 +1,7 @@
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "react-hot-toast";
+import { ReferralProvider } from "@/components/referral/referral-provider";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -24,7 +25,9 @@ export default function RootLayout({ children }) {
     <html lang="en" suppressHydrationWarning className={plusJakartaSans.variable}>
       <body className="bg-background text-foreground antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          {children}
+          <ReferralProvider>
+            {children}
+          </ReferralProvider>
           <Toaster
             position="top-right"
             toastOptions={{
