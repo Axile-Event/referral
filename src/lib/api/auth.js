@@ -7,16 +7,16 @@ import { tokenStorage } from "@/lib/utils/tokenStorage";
  */
 
 export const authApi = {
-  // POST /signup/ — Username, Firstname, Lastname, Phone, Email, Password
-  signup: (data) => apiClient.post("/signup/", data).then((r) => r.data),
+  // POST /referee/signup/ — Username, Firstname, Lastname, Phone, Email, Password
+  signup: (data) => apiClient.post("/referee/signup/", data).then((r) => r.data),
 
-  // POST /verify-otp/ — Email, otp
+  // POST /referee/verify-otp/ — Email, otp
   verifyOtp: (email, otp) => 
-    apiClient.post("/verify-otp/", { Email: email, otp }).then((r) => r.data),
+    apiClient.post("/referee/verify-otp/", { Email: email, otp }).then((r) => r.data),
 
-  // POST /login/ — { "email", "password" }
+  // POST /referee/login/ — { "email", "password" }
   login: (email, password) =>
-    apiClient.post("/login/", { email, password }).then((r) => r.data),
+    apiClient.post("/referee/login/", { email, password }).then((r) => r.data),
 
   // POST /referee/google-signup/ — { "token" }
   googleSignup: (token) =>

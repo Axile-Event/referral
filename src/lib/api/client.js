@@ -20,7 +20,7 @@ const apiClient = axios.create({
 // Request interceptor: attach bearer token
 apiClient.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
-    const token = localStorage.getItem("axile_access_token");
+    const token = localStorage.getItem("axile_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -39,7 +39,7 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refresh = localStorage.getItem("axile_refresh_token");
+        const refresh = localStorage.getItem("axile_refresh");
         if (!refresh) throw new Error("No refresh token");
 
         // Attempt to refresh access token using refresh token
@@ -49,15 +49,15 @@ apiClient.interceptors.response.use(
         );
 
         if (res.data.access) {
-          localStorage.setItem("axile_access_token", res.data.access);
+          localStorage.setItem("axile_token", res.data.access);
           originalRequest.headers.Authorization = `Bearer ${res.data.access}`;
           return apiClient(originalRequest);
         }
       } catch (refreshError) {
         // Refresh failed, clear tokens and redirect to login
         if (typeof window !== "undefined") {
-          localStorage.removeItem("axile_access_token");
-          localStorage.removeItem("axile_refresh_token");
+          localStorage.removeItem("axile_token");
+          localStorage.removeItem("axile_refresh");
           window.location.href = "/login";
         }
         return Promise.reject(refreshError);
