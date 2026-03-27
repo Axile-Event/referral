@@ -2,18 +2,57 @@
 
 import React from "react";
 import Link from "next/link";
-import { 
-  Ticket, TrendingUp, Wallet, Activity, Compass, User
+import {
+  Ticket, TrendingUp, Wallet, Activity, Compass, User, Users, MousePointerClick, DollarSign,
 } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import { useAuthStore } from "@/store/authStore";
+import { useReferralStore } from "@/store/referralStore";
+import { useWalletStore } from "@/store/walletStore";
+import { ReferralBanner } from "@/components/referral/referral-banner";
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
-  const userName = user?.name?.split(' ')[0] || "Ezekiel";
+  const { 
+    referrableEvents, 
+    eventStats, 
+    stats, 
+    fetchReferrableEvents, 
+    fetchEventStats, 
+    calculateGlobalStats, 
+    isLoading: isReferralLoading 
+  } = useReferralStore();
+  const { balance, pending, totalEarned, fetchWalletData, isLoading: isWalletLoading } = useWalletStore();
+  
+  const userName = user?.name?.split(" ")[0] || "Partner";
+
+  React.useEffect(() => {
+    const loadData = async () => {
+      // 1. Fetch wallet info
+      fetchWalletData();
+
+      // 2. Fetch list of possible events
+      const events = await fetchReferrableEvents();
+      
+      // 3. For each event, fetch the user's performance stats
+      if (events && events.length > 0) {
+        await Promise.all(events.map(ev => fetchEventStats(ev.event_id)));
+        // 4. Aggregate for the top summary cards
+        calculateGlobalStats();
+      }
+    };
+
+    loadData();
+  }, [fetchReferrableEvents, fetchEventStats, calculateGlobalStats, fetchWalletData]);
+
+  // Format currency
+  const formatCurrency = (val) => `₦${(val || 0).toLocaleString()}`;
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 animate-fade-in pb-20">
+
+      {/* Referral Banner */}
+      <ReferralBanner />
 
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-4 border-b border-white/5">
@@ -29,33 +68,97 @@ export default function DashboardPage() {
         </Button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <StatCard title="Total Earnings" value="0.00 AP" icon={Wallet} color="text-primary" bg="bg-primary/10" />
-        <StatCard title="Pending Rewards" value="0.00 AP" icon={Activity} color="text-blue-500" bg="bg-blue-500/10" />
-        <StatCard title="Withdrawable" value="0.00 AP" icon={Ticket} color="text-green-500" bg="bg-green-500/10" />
+      {/* Referral Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title="Total Referrals"
+          value={stats.totalReferrals || 0}
+          icon={Users}
+          color="text-violet-400"
+          bg="bg-violet-500/10"
+        />
+        <StatCard
+          title="Total Clicks"
+          value={stats.totalClicks || 0}
+          icon={MousePointerClick}
+          color="text-sky-400"
+          bg="bg-sky-500/10"
+        />
+        <StatCard
+          title="Tickets Sold"
+          value={stats.totalTicketsSold || 0}
+          icon={Ticket}
+          color="text-emerald-400"
+          bg="bg-emerald-500/10"
+        />
+        <StatCard
+          title="Referral Earnings"
+          value={formatCurrency(stats.totalEarnings)}
+          icon={DollarSign}
+          color="text-primary"
+          bg="bg-primary/10"
+        />
+      </div>
+
+      {/* Wallet Overview */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <StatCard title="Available Balance" value={formatCurrency(balance)} icon={Wallet} color="text-primary" bg="bg-primary/10" />
+        <StatCard title="Pending Rewards" value={formatCurrency(pending)} icon={Activity} color="text-blue-500" bg="bg-blue-500/10" />
+        <StatCard title="Total Earned" value={formatCurrency(totalEarned)} icon={Ticket} color="text-green-500" bg="bg-green-500/10" />
       </div>
 
       {/* Two columns */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-8">
           <div className="bg-[#12121f] rounded-2xl border border-white/5 overflow-hidden">
             <div className="px-6 py-5 border-b border-white/5 flex justify-between items-center">
-               <h3 className="font-semibold text-white">Active Referrals</h3>
+               <h3 className="font-semibold text-white">Active Campaigns</h3>
                <Link href="/dashboard/referrals" className="text-sm text-primary hover:underline font-bold">
                   View All
                </Link>
             </div>
-            
-            <div className="flex flex-col items-center justify-center p-20 text-center text-gray-400">
-               <Ticket size={40} className="mb-4 opacity-30" />
-               <p className="text-white font-medium mb-1">Click below to manage your links</p>
-               <p className="text-sm mb-6">You have 3 active campaigns currently generating earnings.</p>
-               <Button asChild variant="outline" className="border-white/10 text-white rounded-xl">
+
+            {referrableEvents?.length > 0 ? (
+              <div className="divide-y divide-white/5">
+                {referrableEvents.map((ev) => {
+                  const s = eventStats[ev.event_id] || {};
+                  // Only show if there's any activity or stats known
+                  if (!s.tickets_sold && s.tickets_sold !== 0) return null;
+
+                  return (
+                    <div key={ev.event_id} className="px-6 py-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                          <Ticket size={18} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-white truncate">{ev.name}</p>
+                          <p className="text-xs text-gray-500">
+                             {ev.referral_reward_type === 'percentage' 
+                               ? `${ev.referral_reward_percentage}% Reward` 
+                               : `₦${ev.referral_reward_amount?.toLocaleString()} Flat`}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-sm font-bold text-white">{formatCurrency(s.referral_revenue)}</p>
+                        <p className="text-xs text-gray-500">{s.tickets_sold || 0} sold</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center p-20 text-center text-gray-400">
+                <Ticket size={40} className="mb-4 opacity-30" />
+                <p className="text-white font-medium mb-1">No active referrals yet</p>
+                <p className="text-sm mb-6">Start sharing event links to earn commissions.</p>
+                <Button asChild variant="outline" className="border-white/10 text-white rounded-xl">
                   <Link href="/dashboard/referrals">
-                    Open My Referrals
+                    Browse Events
                   </Link>
-               </Button>
-            </div>
+                </Button>
+              </div>
+            )}
          </div>
 
          {/* Right Sidebar Widget */}
@@ -67,17 +170,17 @@ export default function DashboardPage() {
                      </div>
                      <div>
                          <p className="text-sm text-gray-400">Network Tier</p>
-                         <p className="font-bold text-white text-lg">Rookie</p>
+                         <p className="font-bold text-white text-lg">Partner</p>
                      </div>
                  </div>
 
                  <div className="space-y-2">
                      <div className="flex justify-between text-xs font-medium">
-                         <span className="text-gray-400">Progress to Next Tier</span>
-                         <span className="text-primary">0 / 50 AP</span>
+                         <span className="text-gray-400">Performance Index</span>
+                         <span className="text-primary">High</span>
                      </div>
                      <div className="h-2 w-full bg-[#1c1c28] rounded-full overflow-hidden">
-                         <div className="w-0 h-full bg-primary rounded-full transition-all" />
+                         <div className="w-full h-full bg-primary rounded-full transition-all" />
                      </div>
                  </div>
              </div>
@@ -85,7 +188,7 @@ export default function DashboardPage() {
              <div className="bg-[#1c1c28] rounded-2xl p-5 border border-white/5 flex gap-4">
                  <TrendingUp size={20} className="text-primary shrink-0" />
                  <p className="text-sm text-gray-400 leading-relaxed">
-                    <span className="text-white font-medium">Pro Tip: </span> 
+                    <span className="text-white font-medium">Pro Tip: </span>
                     Share your links on professional networks alongside a personal note to increase conversion rates.
                  </p>
              </div>

@@ -10,49 +10,6 @@ import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import { API_BASE_URL } from "@/lib/api/baseUrl";
 
-const MOCK_EVENTS = {
-  "summer-fest-2025": {
-    event_id: "event:AB-12345",
-    event_slug: "summer-fest-2025",
-    name: "Summer Fest 2025",
-    description: "The most anticipated music and culture festival of the year. Experience world-class performances from top Nigerian and international artists, immersive art installations, beach bars, and a community of thousands of music lovers — all at the iconic Landmark Beach in Lagos.",
-    location: "Landmark Beach, Lagos",
-    date: "2025-06-01T18:00:00Z",
-    image: "https://images.unsplash.com/photo-1459749411177-042180ce673c?q=80&w=2070&auto=format&fit=crop",
-    referral_reward_percentage: 12.5,
-  },
-  "global-tech-summit": {
-    event_id: "event:BC-23456",
-    event_slug: "global-tech-summit",
-    name: "Global Tech Summit",
-    description: "Africa's leading technology conference, bringing together founders, engineers, and investors from across the continent. Two-day event packed with talks, workshops, and networking opportunities that shape the future of tech on the continent.",
-    location: "Transcorp Hilton, Abuja",
-    date: "2025-07-15T10:00:00Z",
-    image: "https://images.unsplash.com/photo-1540575861501-7ad0582371f3?q=80&w=2070&auto=format&fit=crop",
-    referral_reward_percentage: 10,
-  },
-  "lagos-fashion-week": {
-    event_id: "event:CD-34567",
-    event_slug: "lagos-fashion-week",
-    name: "Lagos Fashion Week",
-    description: "Nigeria's premier fashion showcase returns with a stunning lineup of designers and brands. Four days of runway shows, brand activations, pop-up markets, and exclusive parties celebrating African fashion at the highest level.",
-    location: "Landmark Event Centre, V.I",
-    date: "2025-10-10T14:00:00Z",
-    image: "https://images.unsplash.com/photo-1539109139204-63045ade49a1?q=80&w=2070&auto=format&fit=crop",
-    referral_reward_percentage: 15,
-  },
-  "coding-bootcamp": {
-    event_id: "event:DE-45678",
-    event_slug: "coding-bootcamp",
-    name: "Fullstack Bootcamp",
-    description: "An intensive 8-week programme designed to take you from beginner to job-ready fullstack developer. Cover React, Node.js, databases, cloud deployment, and real-world project experience with mentorship from senior engineers.",
-    location: "Online / Lagos",
-    date: "2025-08-20T09:00:00Z",
-    image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop",
-    referral_reward_percentage: 20,
-  },
-};
-
 export default function EventReferralDetailPage() {
   const params = useParams();
   const slug = params.event_id; 
@@ -65,21 +22,17 @@ export default function EventReferralDetailPage() {
   useEffect(() => {
     if (!slug) return;
 
-    const mock = MOCK_EVENTS[slug];
-    if (mock) {
-      setEvent(mock);
-      setLoading(false);
-      return;
-    }
-
     const load = async () => {
       try {
+        setLoading(true);
         const res = await fetch(
           `${API_BASE_URL}/referee/events/${slug}`
         );
         if (!res.ok) throw new Error("not found");
-        setEvent(await res.json());
-      } catch {
+        const data = await res.json();
+        setEvent(data.event || data);
+      } catch (error) {
+        console.error("Failed to load event:", error);
         setEvent(null);
       } finally {
         setLoading(false);
@@ -87,6 +40,7 @@ export default function EventReferralDetailPage() {
     };
     load();
   }, [slug]);
+
 
   const userHandle =
     user?.slug ||

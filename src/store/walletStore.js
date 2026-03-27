@@ -1,39 +1,51 @@
 import { create } from "zustand";
+import { walletApi } from "@/lib/api/wallet";
 
 /**
  * Wallet Store (Zustand)
  *
  * State: balance, pending, totalEarned, transactions[], isLoading
  * Actions: fetchWalletData, requestWithdrawal, fetchTransactionHistory
- *
- * TODO: Connect to walletApi
  */
 export const useWalletStore = create((set) => ({
   balance: 0,
   pending: 0,
-  totalEarned: 0,
+  totalEarned: 0, 
   transactions: [],
   isLoading: false,
 
   fetchWalletData: async () => {
     set({ isLoading: true });
     try {
-      // TODO: const data = await walletApi.getBalance();
-      // set({ balance: data.balance, pending: data.pending, totalEarned: data.totalEarned });
+      const data = await walletApi.getBalance();
+      set({ 
+        balance: data.balance || 0, 
+        pending: data.pending || 0, 
+        totalEarned: data.totalEarned || 0 
+      });
+    } catch (error) {
+      console.error("Failed to fetch wallet balance:", error);
     } finally {
       set({ isLoading: false });
     }
   },
 
-  requestWithdrawal: async (amount) => {
-    // TODO: await walletApi.requestWithdrawal(amount);
+  requestWithdrawal: async (amount, bankDetails) => {
+    try {
+      await walletApi.requestWithdrawal(amount, bankDetails);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   },
 
   fetchTransactionHistory: async () => {
     set({ isLoading: true });
     try {
-      // TODO: const txs = await walletApi.getTransactions();
-      // set({ transactions: txs });
+      const txs = await walletApi.getTransactions();
+      set({ transactions: txs });
+    } catch (error) {
+      console.error("Failed to fetch transaction history:", error);
     } finally {
       set({ isLoading: false });
     }

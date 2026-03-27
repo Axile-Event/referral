@@ -9,77 +9,87 @@ import { referralApi } from "@/lib/api/referral";
  * Actions: fetchUserReferrals, generateReferralLink, trackReferralClick
  */
 export const useReferralStore = create((set, get) => ({
-  referrableEvents: [
-    {
-      event_id: "event:AB-12345",
-      name: "Axile Tech Summit 2025",
-      reward: "15% Commission",
-      image: "https://images.unsplash.com/photo-1540575861501-7ad05823c9f5?w=800&auto=format&fit=crop&q=60",
-      category: "Tech"
-    },
-    {
-      event_id: "event:BC-23456",
-      name: "Lagos Night Carnival",
-      reward: "Fixed ₦1,000",
-      image: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&auto=format&fit=crop&q=60",
-      category: "Music"
-    }
-  ],
-  referrals: [
-    { 
-      id: "1", 
-      name: "Axile Tech Summit 2025", 
-      reward: "15% Commission", 
-      clicks: 1240, 
-      conversions: 84, 
-      earned: "₦126,000", 
-      status: "Active",
-      image: "https://images.unsplash.com/photo-1540575861501-7ad05823c9f5?w=800&auto=format&fit=crop&q=60"
-    },
-    { 
-      id: "2", 
-      name: "Lagos Night Carnival", 
-      reward: "Fixed ₦1,000", 
-      clicks: 852, 
-      conversions: 42, 
-      earned: "₦42,000", 
-      status: "Active",
-      image: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&auto=format&fit=crop&q=60"
-    }
-  ],
-  myReferralCode: "AXILE-SUMMIT-2025-EZK",
-  totalEarnings: 168000,
-  isLoading: false,
-
-  fetchUserReferrals: async () => {
-    // For now we use the mock data already in state
-    set({ isLoading: true });
-    // Simulate API delay
-    await new Promise(r => setTimeout(r, 500));
-    set({ isLoading: false });
+  referrableEvents: [],
+  referrals: [], // For legacy compatibility or general list
+  eventStats: {}, // Store stats by event_id: { [eventId]: stats }
+  stats: {
+    totalReferrals: 0,
+    totalClicks: 0,
+    totalTicketsSold: 0,
+    totalEarnings: 0
   },
+  isLoading: false,
 
   fetchReferrableEvents: async () => {
     try {
       set({ isLoading: true });
       const data = await referralApi.getReferrableEvents();
-      set({ referrableEvents: data });
+      // Doc: returns { "events": [...], "count": ... }
+      const events = data.events || [];
+      set({ referrableEvents: events });
+      return events;
     } catch (error) {
-      console.log(error);
-      set({ isLoading: false });
-      // toast.error("failed to fetch events that are up for referrals")
+      console.error("Failed to fetch referrable events:", error);
     } finally {
       set({ isLoading: false });
     }
   },
 
+  fetchEventStats: async (eventId) => {
+    try {
+      set({ isLoading: true });
+      const stats = await referralApi.getEventStats(eventId);
+      // Doc: returns referral_name, referral_revenue, tickets_sold, tickets
+      set((state) => ({
+        eventStats: {
+          ...state.eventStats,
+          [eventId]: stats
+        }
+      }));
+      return stats;
+    } catch (error) {
+      console.error(`Failed to fetch stats for event ${eventId}:`, error);
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  /**
+   * Aggregate stats from all known event campaigns
+   */
+  calculateGlobalStats: () => {
+    const { eventStats } = get();
+    const statsArray = Object.values(eventStats);
+    
+    const aggregated = statsArray.reduce((acc, curr) => ({
+      totalReferrals: acc.totalReferrals + (curr.tickets_sold > 0 ? 1 : 0),
+      totalClicks: 0, // Backend docs don't show clicks yet
+      totalTicketsSold: acc.totalTicketsSold + (curr.tickets_sold || 0),
+      totalEarnings: acc.totalEarnings + (curr.referral_revenue || 0)
+    }), { totalReferrals: 0, totalClicks: 0, totalTicketsSold: 0, totalEarnings: 0 });
+
+    set({ stats: aggregated });
+  },
+
   generateReferralLink: async (eventId) => {
-    // TODO: const link = await referralApi.generateLink(eventId);
-    // return link;
-    return "";
+    try {
+      // Logic for building referral link based on doc section 8/9
+      // Usually provided by backend or built manually?
+      // Doc says: "Referral id is saved on each ticket..."
+      // For now, assume generateLink endpoint still exists as a helper
+      const res = await referralApi.generateLink(eventId);
+      return res.link;
+    } catch (error) {
+      console.error("Failed to generate referral link:", error);
+      return "";
+    }
   },
 
   trackReferralClick: async (code, eventId) => {
-    // TODO: await referralApi.trackClick(code, eventId);
+    try {
+      await referralApi.trackClick(code, eventId);
+    } catch (error) {
+       // Silent fail for tracking
+    }
   },
 }));
