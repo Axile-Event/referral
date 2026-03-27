@@ -69,64 +69,76 @@ export default function ReferralsPage() {
 
       {/* Sexy Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pt-2">
-        {referrals.map((event) => (
-          <div 
-            key={event.id}
-            className="group relative bg-[#12121f] rounded-[28px] border border-white/5 hover:border-primary/20 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 flex flex-col h-full overflow-hidden"
-          >
-            {/* Glossy Top Bar Effect */}
-            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-            
-            {/* Visual Thumbnail */}
-            <div className="h-44 relative overflow-hidden bg-black/40 border-b border-white/5">
-               <img 
-                 src={event.image} 
-                 alt={event.name}
-                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 ease-out"
-               />
-               <div className="absolute inset-0 bg-gradient-to-t from-[#12121f] via-[#12121f]/20 to-transparent opacity-80" />
-               
-               {/* Minimal Status Badge */}
-               <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 flex items-center gap-2">
-                 <div className={`w-1.5 h-1.5 rounded-full ${event.status === 'Active' ? 'bg-primary animate-pulse shadow-[0_0_8px_rgba(227,54,41,0.8)]' : 'bg-gray-500'}`} />
-                 <span className="text-[9px] font-black text-white/80 uppercase tracking-widest">{event.status}</span>
-               </div>
-            </div>
+        {referrals.map((event) => {
+          const eventId = event.id || event.event_id;
+          const name = event.event_name || event.name;
+          const image = event.image || event.image_url;
+          const status = event.status || "Active";
+          const reward = event.reward_amount ? `₦${event.reward_amount.toLocaleString()}` : event.reward;
+          const conversions = event.total_conversions || event.conversions || 0;
+          const earned = event.earned_amount !== undefined ? `₦${event.earned_amount.toLocaleString()}` : (event.earned || "₦0");
 
-            {/* Premium Content Body */}
-            <div className="p-6 flex flex-col flex-1 gap-6">
-              <div className="space-y-2">
-                <h3 className="text-xl font-bold text-white group-hover:text-primary transition-colors leading-tight line-clamp-1">{event.name}</h3>
-                <div className="flex items-center gap-2">
-                   <div className="flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 rounded-md border border-primary/10">
-                      <TrendingUp size={10} className="text-primary" />
-                      <span className="text-[10px] font-black text-primary uppercase tracking-tighter">{event.reward}</span>
-                   </div>
+          return (
+            <div 
+              key={eventId}
+              className="group relative bg-[#12121f] rounded-[28px] border border-white/5 hover:border-primary/20 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 flex flex-col h-full overflow-hidden"
+            >
+              {/* Glossy Top Bar Effect */}
+              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              
+              {/* Visual Thumbnail */}
+              <div className="h-44 relative overflow-hidden bg-black/40 border-b border-white/5">
+                {image && (
+                  <img 
+                    src={image} 
+                    alt={name}
+                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 ease-out"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#12121f] via-[#12121f]/20 to-transparent opacity-80" />
+                
+                {/* Minimal Status Badge */}
+                <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 flex items-center gap-2">
+                  <div className={`w-1.5 h-1.5 rounded-full ${status === 'Active' ? 'bg-primary animate-pulse shadow-[0_0_8px_rgba(227,54,41,0.8)]' : 'bg-gray-500'}`} />
+                  <span className="text-[9px] font-black text-white/80 uppercase tracking-widest">{status}</span>
                 </div>
               </div>
 
-              {/* Stats: Clean & Minimal */}
-              <div className="grid grid-cols-2 gap-3 pb-2">
-                <div className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl group-hover:bg-white/[0.04] transition-colors">
-                  <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-1.5">Conversions</p>
-                  <p className="text-xl font-black text-white/90">{event.conversions}</p>
+              {/* Premium Content Body */}
+              <div className="p-6 flex flex-col flex-1 gap-6">
+                <div className="space-y-2">
+                  <h3 className="text-xl font-bold text-white group-hover:text-primary transition-colors leading-tight line-clamp-1">{name}</h3>
+                  <div className="flex items-center gap-2">
+                     <div className="flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 rounded-md border border-primary/10">
+                        <TrendingUp size={10} className="text-primary" />
+                        <span className="text-[10px] font-black text-primary uppercase tracking-tighter">{reward}</span>
+                     </div>
+                  </div>
                 </div>
-                <div className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl group-hover:bg-white/[0.04] transition-colors">
-                  <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-1.5">Earnings</p>
-                  <p className="text-xl font-black text-green-500">{event.earned}</p>
-                </div>
-              </div>
 
-              {/* Sexy Button */}
-              <Button asChild variant="outline" className="mt-auto h-12 rounded-xl border-white/10 hover:border-primary/50 hover:bg-primary/10 text-white font-bold text-xs uppercase tracking-widest flex items-center justify-between px-5 transition-all group/btn active:scale-95">
-                <Link href={`/dashboard/referrals/${event.id}/analytics`}>
-                  Campaign Details
-                  <ArrowUpRight size={16} className="text-primary transition-transform group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1" />
-                </Link>
-              </Button>
+                {/* Stats: Clean & Minimal */}
+                <div className="grid grid-cols-2 gap-3 pb-2">
+                  <div className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl group-hover:bg-white/[0.04] transition-colors">
+                    <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-1.5">Conversions</p>
+                    <p className="text-xl font-black text-white/90">{conversions}</p>
+                  </div>
+                  <div className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl group-hover:bg-white/[0.04] transition-colors">
+                    <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-1.5">Earnings</p>
+                    <p className="text-xl font-black text-green-500">{earned}</p>
+                  </div>
+                </div>
+
+                {/* Sexy Button */}
+                <Button asChild variant="outline" className="mt-auto h-12 rounded-xl border-white/10 hover:border-primary/50 hover:bg-primary/10 text-white font-bold text-xs uppercase tracking-widest flex items-center justify-between px-5 transition-all group/btn active:scale-95">
+                  <Link href={`/dashboard/referrals/${eventId}/analytics`}>
+                    Campaign Details
+                    <ArrowUpRight size={16} className="text-primary transition-transform group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1" />
+                  </Link>
+                </Button>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {/* Create New Placeholder Card */}
         <Link 
