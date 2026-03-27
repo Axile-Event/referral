@@ -13,16 +13,37 @@ import { ReferralBanner } from "@/components/referral/referral-banner";
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
-  const { referrals, stats, fetchUserReferrals, fetchStats, isLoading: isReferralLoading } = useReferralStore();
+  const { 
+    referrableEvents, 
+    eventStats, 
+    stats, 
+    fetchReferrableEvents, 
+    fetchEventStats, 
+    calculateGlobalStats, 
+    isLoading: isReferralLoading 
+  } = useReferralStore();
   const { balance, pending, totalEarned, fetchWalletData, isLoading: isWalletLoading } = useWalletStore();
   
   const userName = user?.name?.split(" ")[0] || "Partner";
 
   React.useEffect(() => {
-    fetchUserReferrals();
-    fetchStats();
-    fetchWalletData();
-  }, [fetchUserReferrals, fetchStats, fetchWalletData]);
+    const loadData = async () => {
+      // 1. Fetch wallet info
+      fetchWalletData();
+
+      // 2. Fetch list of possible events
+      const events = await fetchReferrableEvents();
+      
+      // 3. For each event, fetch the user's performance stats
+      if (events && events.length > 0) {
+        await Promise.all(events.map(ev => fetchEventStats(ev.event_id)));
+        // 4. Aggregate for the top summary cards
+        calculateGlobalStats();
+      }
+    };
+
+    loadData();
+  }, [fetchReferrableEvents, fetchEventStats, calculateGlobalStats, fetchWalletData]);
 
   // Format currency
   const formatCurrency = (val) => `₦${(val || 0).toLocaleString()}`;
@@ -96,25 +117,35 @@ export default function DashboardPage() {
                </Link>
             </div>
 
-            {referrals?.length > 0 ? (
+            {referrableEvents?.length > 0 ? (
               <div className="divide-y divide-white/5">
-                {referrals.map((ref) => (
-                  <div key={ref.id || ref.event_id} className="px-6 py-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                        <Ticket size={18} />
+                {referrableEvents.map((ev) => {
+                  const s = eventStats[ev.event_id] || {};
+                  // Only show if there's any activity or stats known
+                  if (!s.tickets_sold && s.tickets_sold !== 0) return null;
+
+                  return (
+                    <div key={ev.event_id} className="px-6 py-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                          <Ticket size={18} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-white truncate">{ev.name}</p>
+                          <p className="text-xs text-gray-500">
+                             {ev.referral_reward_type === 'percentage' 
+                               ? `${ev.referral_reward_percentage}% Reward` 
+                               : `₦${ev.referral_reward_amount?.toLocaleString()} Flat`}
+                          </p>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-white truncate">{ref.event_name || ref.name}</p>
-                        <p className="text-xs text-gray-500">{ref.reward_amount ? `₦${ref.reward_amount.toLocaleString()}` : ref.reward}</p>
+                      <div className="text-right shrink-0">
+                        <p className="text-sm font-bold text-white">{formatCurrency(s.referral_revenue)}</p>
+                        <p className="text-xs text-gray-500">{s.tickets_sold || 0} sold</p>
                       </div>
                     </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-bold text-white">{formatCurrency(ref.earned_amount || ref.earned)}</p>
-                      <p className="text-xs text-gray-500">{ref.total_conversions || ref.conversions || 0} sold</p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center p-20 text-center text-gray-400">

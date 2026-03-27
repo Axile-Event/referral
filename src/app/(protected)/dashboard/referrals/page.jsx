@@ -17,13 +17,34 @@ import { Input } from "@/components/ui/input.jsx";
 import { useReferral } from "@/lib/hooks/useReferral";
 
 export default function ReferralsPage() {
-  const { referrals, isLoading, fetchUserReferrals } = useReferral();
+  const { 
+    referrableEvents, 
+    eventStats, 
+    fetchReferrableEvents, 
+    fetchEventStats, 
+    isLoading 
+  } = useReferral();
 
   useEffect(() => {
-    fetchUserReferrals();
-  }, [fetchUserReferrals]);
+    const load = async () => {
+      const events = await fetchReferrableEvents();
+      if (events?.length > 0) {
+        // Fetch stats for all events to see which ones are active/ours
+        await Promise.all(events.map(ev => fetchEventStats(ev.event_id)));
+      }
+    };
+    load();
+  }, [fetchReferrableEvents, fetchEventStats]);
 
-  if (isLoading && referrals.length === 0) {
+  // We only show events that actually have some recorded performance (tickets sold) 
+  // or that the user has interacted with (though the doc doesn't show "joined" state yet).
+  // For now, let's show all events the user has stats for.
+  const activeReferrals = referrableEvents.filter(ev => {
+    const s = eventStats[ev.event_id];
+    return s && (s.tickets_sold > 0 || s.tickets?.length > 0);
+  });
+
+  if (isLoading && activeReferrals.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
          <div className="relative">
@@ -69,14 +90,19 @@ export default function ReferralsPage() {
 
       {/* Sexy Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pt-2">
-        {referrals.map((event) => {
-          const eventId = event.id || event.event_id;
-          const name = event.event_name || event.name;
-          const image = event.image || event.image_url;
-          const status = event.status || "Active";
-          const reward = event.reward_amount ? `₦${event.reward_amount.toLocaleString()}` : event.reward;
-          const conversions = event.total_conversions || event.conversions || 0;
-          const earned = event.earned_amount !== undefined ? `₦${event.earned_amount.toLocaleString()}` : (event.earned || "₦0");
+        {activeReferrals.map((ev) => {
+          const stats = eventStats[ev.event_id] || {};
+          const eventId = ev.event_id;
+          const name = ev.name;
+          const image = ev.image;
+          const status = "Active";
+          
+          const reward = ev.referral_reward_type === 'percentage' 
+            ? `${ev.referral_reward_percentage}%` 
+            : `₦${ev.referral_reward_amount?.toLocaleString()}`;
+
+          const conversions = stats.tickets_sold || 0;
+          const earned = `₦${(stats.referral_revenue || 0).toLocaleString()}`;
 
           return (
             <div 
