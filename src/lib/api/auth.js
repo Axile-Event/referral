@@ -22,6 +22,10 @@ export const authApi = {
   googleSignup: (token) =>
     apiClient.post("/referee/google-signup/", { token }).then((r) => r.data),
 
+  // POST /referee/resend-otp/ — { "email" }
+  resendOtp: (email) => 
+    apiClient.post("/referee/resend-otp/", { email }).then((r) => r.data),
+
   // POST /logout/ — { "refresh" }
   logout: (refresh) => apiClient.post("/logout/", { refresh }).then((r) => r.data),
 

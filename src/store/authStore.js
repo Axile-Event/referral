@@ -106,6 +106,23 @@ export const useAuthStore = create((set, get) => ({
   },
 
   /**
+   * Resend OTP code to the provided email
+   */
+  resendOtp: async (email) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await authApi.resendOtp(email);
+      return res;
+    } catch (err) {
+      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
+      set({ error: msg });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  /**
    * Fetch current user profile
    */
   fetchProfile: async () => {
