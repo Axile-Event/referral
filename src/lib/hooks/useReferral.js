@@ -16,6 +16,7 @@ export function useReferral() {
     fetchEventStats,
     calculateGlobalStats,
     fetchReferrableEvents,
+    fetchUserReferrals,
     generateReferralLink,
     trackReferralClick,
   } = useReferralStore();
@@ -31,6 +32,7 @@ export function useReferral() {
     fetchEventStats,
     calculateGlobalStats,
     fetchReferrableEvents,
+    fetchUserReferrals,
     generateReferralLink,
     trackReferralClick,
   };

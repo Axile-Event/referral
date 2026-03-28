@@ -18,31 +18,37 @@ import { useReferral } from "@/lib/hooks/useReferral";
 
 export default function ReferralsPage() {
   const { 
-    referrableEvents, 
+    referrableEvents,
+    referrals,
     eventStats, 
     fetchReferrableEvents, 
+    fetchUserReferrals,
     fetchEventStats, 
     isLoading 
   } = useReferral();
 
   useEffect(() => {
     const load = async () => {
-      const events = await fetchReferrableEvents();
-      if (events?.length > 0) {
-        // Fetch stats for all events to see which ones are active/ours
-        await Promise.all(events.map(ev => fetchEventStats(ev.event_id)));
+      const [events, userLinks] = await Promise.all([
+        fetchReferrableEvents(),
+        fetchUserReferrals()
+      ]);
+      
+      // Fetch stats for events the user is actually promoting
+      if (userLinks?.length > 0) {
+        await Promise.all(userLinks.map(link => fetchEventStats(link.event_id)));
       }
     };
     load();
-  }, [fetchReferrableEvents, fetchEventStats]);
+  }, [fetchReferrableEvents, fetchUserReferrals, fetchEventStats]);
 
-  // We only show events that actually have some recorded performance (tickets sold) 
-  // or that the user has interacted with (though the doc doesn't show "joined" state yet).
-  // For now, let's show all events the user has stats for.
-  const activeReferrals = referrableEvents.filter(ev => {
-    const s = eventStats[ev.event_id];
-    return s && (s.tickets_sold > 0 || s.tickets?.length > 0);
-  });
+  // Combine user's tracking links with event metadata
+  const activeReferrals = referrals.map(link => {
+    // Determine source list
+    const eventsList = Array.isArray(referrableEvents) ? referrableEvents : (referrableEvents?.events || []);
+    const event = eventsList.find(e => e.event_id === link.event_id);
+    return { ...event, ...link };
+  }).filter(ev => ev.event_id); // Filter out entries with no event data
 
   if (isLoading && activeReferrals.length === 0) {
     return (

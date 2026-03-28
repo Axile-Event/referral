@@ -10,7 +10,9 @@ import { referralApi } from "@/lib/api/referral";
  */
 export const useReferralStore = create((set, get) => ({
   referrableEvents: [],
-  referrals: [], // For legacy compatibility or general list
+  referrals: [], // Active campaigns/links
+  myReferralCode: "",
+  totalEarnings: 0,
   eventStats: {}, // Store stats by event_id: { [eventId]: stats }
   stats: {
     totalReferrals: 0,
@@ -24,12 +26,27 @@ export const useReferralStore = create((set, get) => ({
     try {
       set({ isLoading: true });
       const data = await referralApi.getReferrableEvents();
-      // Doc: returns { "events": [...], "count": ... }
-      const events = data.events || [];
+      // Handle response as { events: [...] } or direct array [...]
+      const events = Array.isArray(data) ? data : (data.events || []);
       set({ referrableEvents: events });
       return events;
     } catch (error) {
       console.error("Failed to fetch referrable events:", error);
+      return [];
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  fetchUserReferrals: async () => {
+    try {
+      set({ isLoading: true });
+      const data = await referralApi.getUserReferrals();
+      set({ referrals: data || [] });
+      return data || [];
+    } catch (error) {
+      console.error("Failed to fetch user referrals:", error);
+      return [];
     } finally {
       set({ isLoading: false });
     }
@@ -39,7 +56,6 @@ export const useReferralStore = create((set, get) => ({
     try {
       set({ isLoading: true });
       const stats = await referralApi.getEventStats(eventId);
-      // Doc: returns referral_name, referral_revenue, tickets_sold, tickets
       set((state) => ({
         eventStats: {
           ...state.eventStats,
@@ -63,7 +79,7 @@ export const useReferralStore = create((set, get) => ({
     
     const aggregated = statsArray.reduce((acc, curr) => ({
       totalReferrals: acc.totalReferrals + (curr.tickets_sold > 0 ? 1 : 0),
-      totalClicks: 0, // Backend docs don't show clicks yet
+      totalClicks: 0,
       totalTicketsSold: acc.totalTicketsSold + (curr.tickets_sold || 0),
       totalEarnings: acc.totalEarnings + (curr.referral_revenue || 0)
     }), { totalReferrals: 0, totalClicks: 0, totalTicketsSold: 0, totalEarnings: 0 });
@@ -73,15 +89,16 @@ export const useReferralStore = create((set, get) => ({
 
   generateReferralLink: async (eventId) => {
     try {
-      // Logic for building referral link based on doc section 8/9
-      // Usually provided by backend or built manually?
-      // Doc says: "Referral id is saved on each ticket..."
-      // For now, assume generateLink endpoint still exists as a helper
+      set({ isLoading: true });
       const res = await referralApi.generateLink(eventId);
+      toast.success("Referral link generated!");
       return res.link;
     } catch (error) {
       console.error("Failed to generate referral link:", error);
+      toast.error("Failed to generate link.");
       return "";
+    } finally {
+      set({ isLoading: false });
     }
   },
 
