@@ -41,7 +41,9 @@ export default function ReferralsPage() {
   // We only show events that actually have some recorded performance (tickets sold) 
   // or that the user has interacted with (though the doc doesn't show "joined" state yet).
   // For now, let's show all events the user has stats for.
-  const activeReferrals = referrableEvents.filter(ev => {
+  const events = Array.isArray(referrableEvents) ? referrableEvents : (referrableEvents?.events || []);
+  
+  const activeReferrals = events.filter(ev => {
     const s = eventStats[ev.event_id];
     return s && (s.tickets_sold > 0 || s.tickets?.length > 0);
   });
