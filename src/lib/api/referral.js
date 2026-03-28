@@ -3,31 +3,30 @@ import apiClient from "./client";
 /**
  * Referral API Service
  * Handles all backend HTTP communication for the referral system.
- * Documentation strictly matches active rendering API requirements.
+ * Aligned with API_DOCUMENTATION.MD and backend pathing.
  */
 export const referralApi = {
-
   // ==========================================
   // REFEREE MARKETPLACE (Events)
   // ==========================================
 
   /**
    * Fetches all events that allow referrals (`use_referral: true`)
-   * Request requires active JWT token (handled by apiClient).
-   * @returns {Promise<{ events: Array, count: number }>}
    */
   getReferrableEvents: () => 
     apiClient.get("/referee/events/").then((res) => res.data),
   
   /**
    * Fetches detailed data for a specific referrable event.
-   * Required for the detail page (includes ticket limits & categories).
-   * @param {string} identifier - Event ID or Slug
-   * @returns {Promise<Object>} The specific event data blob
    */
-  getReferrableEventDetail: (identifier) => 
+  getEventDetail: (identifier) => 
     apiClient.get(`/referee/events/${identifier}/`).then((res) => res.data),
 
+  /**
+   * GET /referee/<event_id>/stats/ — Self stats for referee
+   */
+  getEventStats: (eventId) => 
+    apiClient.get(`/referee/${eventId}/stats/`).then((res) => res.data),
 
   // ==========================================
   // PERSONAL REFERRALS & ACTIONS
@@ -41,7 +40,6 @@ export const referralApi = {
 
   /**
    * Request the system to generate a unique tracking link for a selected event.
-   * @param {string} eventId - Target Event
    */
   generateLink: (eventId) =>
     apiClient.post("/referrals/generate/", { eventId }).then((res) => res.data),

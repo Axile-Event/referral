@@ -51,7 +51,7 @@ export function Sidebar({ isOpen, onClose }) {
             <img 
               src="/axile-logo-main-cropped.png" 
               alt="Axile" 
-              className="h-8 w-auto object-contain"
+              className="h-12 w-auto object-contain brightness-110"
             />
           </Link>
           <Button 

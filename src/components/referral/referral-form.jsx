@@ -1,30 +1,53 @@
-"use client";
+import { useReferralStore } from "@/store/referralStore";
+import { useState } from "react";
+import toast from "react-hot-toast";
 
 /**
  * Referral Form Component
  *
  * Form to generate a referral link for an event.
- * Uses react-hook-form for validation.
- *
- * Props: eventId, onSuccess(link)
- * TODO: Call referralApi.generateLink(eventId)
+ * Now connects to the real referralStore for dynamic link generation.
  */
 export function ReferralForm({ eventId, onSuccess }) {
+  const [generating, setGenerating] = useState(false);
+  const generateReferralLink = useReferralStore((s) => s.generateReferralLink);
+
   const handleGenerate = async () => {
-    // TODO: useReferralStore.generateReferralLink(eventId)
-    onSuccess?.(`${process.env.NEXT_PUBLIC_APP_URL}/ref/DEMO123/event/${eventId}`);
+    setGenerating(true);
+    try {
+      const link = await generateReferralLink(eventId);
+      if (link) {
+        onSuccess?.(link);
+        toast.success("Referral link generated!");
+      }
+    } catch (err) {
+      toast.error("Failed to generate link");
+    } finally {
+      setGenerating(false);
+    }
   };
 
   return (
-    <div className="flex flex-col gap-3">
-      <p className="text-sm text-muted-foreground">
-        Generate a unique referral link for this event.
-      </p>
+    <div className="flex flex-col gap-4">
+      <div className="space-y-1">
+        <p className="text-sm font-semibold text-white">Generate Referral Link</p>
+        <p className="text-xs text-gray-400">
+          Created a unique link to track your referrals for this event.
+        </p>
+      </div>
       <button
         onClick={handleGenerate}
-        className="h-10 px-5 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
+        disabled={generating}
+        className="h-11 px-5 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
-        Generate Link
+        {generating ? (
+          <>
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            Generating...
+          </>
+        ) : (
+          "Generate Link"
+        )}
       </button>
     </div>
   );

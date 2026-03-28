@@ -1,56 +1,60 @@
-import Link from "next/link";
-import { Calendar, MapPin, Gift, ArrowRight, UserCheck, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+"use client";
+
+import { useEffect, useRef, use } from "react";
+import { useReferralEntryStore } from "@/store/referralEntryStore";
+import { ReferralLoader } from "@/components/referral/referral-loader";
+import {
+  buildRedirectUrl,
+  isValidReferralCode,
+  isValidEventId,
+} from "@/lib/utils/referral";
 
 /**
- * Referral Landing Page
- * Shown when a user clicks a referral link.
- * Matches Axile branding (Image 2 style).
+ * Referral Entry Route — THE CORE REDIRECT
+ *
+ * Route: /ref/[code]/event/[id]
+ * Redirects to: https://axile.ng/event/[id]?ref=[code]
+ *
+ * Flow:
+ * 1. Extract code + eventId from params
+ * 2. Validate both params
+ * 3. Persist via Zustand + localStorage (setReferral)
+ * 4. Redirect to main app with referral code in URL
+ *
+ * Edge cases:
+ * - Invalid params → fallback redirect to axile.ng
+ * - Multiple clicks → latest always wins (handled by store)
+ * - Direct navigation → safe, shows loader then redirects
  */
-export default function ReferralLandingPage({ params }) {
-  // Data would be fetched based on code/id
-  const event = null; // Placeholder state
+export default function ReferralRedirectPage({ params }) {
+  const { code, id } = use(params);
+  const setReferral = useReferralEntryStore((s) => s.setReferral);
+  const hasRedirected = useRef(false);
 
-  return (
-    <div className="min-h-screen bg-[#0a0a14] text-white flex flex-col items-center justify-center p-6 lg:p-12 relative overflow-hidden">
-      {/* Background Decor */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none opacity-30">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/20 blur-[150px] rounded-full" />
-      </div>
+  useEffect(() => {
+    // Guard against double-execution in React strict mode
+    if (hasRedirected.current) return;
+    hasRedirected.current = true;
 
-      <div className="max-w-2xl w-full space-y-12 relative z-10 text-center animate-fade-in">
-        {/* Brand */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-10 h-10 rounded bg-primary flex items-center justify-center">
-            <span className="text-white font-bold text-2xl">A</span>
-          </div>
-          <span className="text-white font-bold text-2xl tracking-tight">Axile</span>
-        </div>
+    const trimmedCode = code?.trim();
+    const trimmedId = id?.trim();
 
-        {/* Page Under Development */}
-        <div className="bg-[#12121f] border border-white/5 rounded-[2.5rem] p-12 lg:p-20 space-y-6 shadow-2xl relative overflow-hidden flex flex-col items-center justify-center">
-          <div className="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center text-primary animate-pulse mb-4">
-            <Sparkles size={40} />
-          </div>
-          <h1 className="text-3xl lg:text-5xl font-black tracking-tighter text-white">
-            Referral Page
-          </h1>
-          <p className="text-lg text-gray-400 font-medium max-w-md mx-auto leading-relaxed">
-            This referral experience is currently under development. Please check back later.
-          </p>
-          <div className="pt-8 w-full max-w-xs">
-            <Link href="/login">
-              <Button size="lg" className="w-full h-14 rounded-2xl font-black text-base">
-                Go to Dashboard
-              </Button>
-            </Link>
-          </div>
-        </div>
+    // Validate params
+    const validCode = isValidReferralCode(trimmedCode);
+    const validId = isValidEventId(trimmedId);
 
-        <p className="text-xs text-gray-600 font-bold uppercase tracking-[0.3em]">
-          Nigeria's #1 Event Ticketing Platform
-        </p>
-      </div>
-    </div>
-  );
+    if (validCode && validId) {
+      // Persist referral data (latest always wins)
+      setReferral(trimmedCode, trimmedId);
+
+      // Redirect to main app with referral attached
+      const redirectUrl = buildRedirectUrl(trimmedId, trimmedCode);
+      window.location.replace(redirectUrl);
+    } else {
+      // Invalid params — redirect to main app homepage as safe fallback
+      window.location.replace("https://axile.ng");
+    }
+  }, [code, id, setReferral]);
+
+  return <ReferralLoader text="Redirecting you to the event..." />;
 }

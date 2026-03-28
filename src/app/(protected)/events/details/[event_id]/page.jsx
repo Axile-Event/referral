@@ -19,13 +19,15 @@ export default function EventReferralDetailPage() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (identifier) {
-      fetchReferrableEventDetail(identifier);
-    }
+    if (!identifier) return;
+    fetchReferrableEventDetail(identifier);
   }, [identifier, fetchReferrableEventDetail]);
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  // Fallback referral link structure
+  const userHandle =
+    user?.slug ||
+    user?.name?.toLowerCase().replace(/\s+/g, "-") ||
+    "referee";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://axile.ng";
   const referralLink = event
     ? `${baseUrl}/ref/${event.event_slug || identifier}/${user?.id || 'referee'}`
     : "";

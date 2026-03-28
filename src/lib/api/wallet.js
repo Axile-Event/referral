@@ -8,12 +8,12 @@ import apiClient from "./client";
  * - GET  /wallet/stats        → getStats
  */
 export const walletApi = {
-  getBalance: () => apiClient.get("/wallet/balance").then((r) => r.data),
+  getBalance: () => apiClient.get("/wallet/balance/").then((r) => r.data),
 
-  getTransactions: () => apiClient.get("/wallet/transactions").then((r) => r.data),
+  getTransactions: () => apiClient.get("/wallet/transactions/").then((r) => r.data),
 
   requestWithdrawal: (amount, bankDetails) =>
-    apiClient.post("/wallet/withdraw", { amount, bankDetails }).then((r) => r.data),
+    apiClient.post("/wallet/withdraw/", { amount, bankDetails }).then((r) => r.data),
 
-  getStats: () => apiClient.get("/wallet/stats").then((r) => r.data),
+  getStats: () => apiClient.get("/wallet/stats/").then((r) => r.data),
 };
