@@ -8,7 +8,7 @@
  */
 export const transformSignupData = (formData) => {
   return {
-    Username: formData.username,
+    username: formData.username,
     Firstname: formData.firstname,
     Lastname: formData.lastname,
     Email: formData.email,

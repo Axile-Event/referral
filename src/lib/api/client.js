@@ -35,12 +35,20 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config;
 
     // If 401 and not already retrying
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const isAuthPath = originalRequest.url?.includes("/login") || 
+                       originalRequest.url?.includes("/signup") || 
+                       originalRequest.url?.includes("/verify-otp") ||
+                       originalRequest.url?.includes("/google-signup");
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthPath) {
       originalRequest._retry = true;
 
       try {
-        const refresh = localStorage.getItem("axile_refresh");
-        if (!refresh) throw new Error("No refresh token");
+        const refresh = typeof window !== "undefined" ? localStorage.getItem("axile_refresh") : null;
+        if (!refresh) {
+          // No refresh token available, just reject
+          return Promise.reject(error);
+        }
 
         // Attempt to refresh access token using refresh token
         const res = await axios.post(
