@@ -36,7 +36,7 @@ export function Navbar({ onMenuClick }) {
             <img 
               src="/axile-logo-main-cropped.png" 
               alt="Axile" 
-              className="h-8 w-auto object-contain"
+              className="h-11 w-auto object-contain brightness-110"
             />
           </Link>
           
