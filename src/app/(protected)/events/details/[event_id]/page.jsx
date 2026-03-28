@@ -26,10 +26,18 @@ export default function EventReferralDetailPage() {
   const userHandle =
     user?.slug ||
     user?.name?.toLowerCase().replace(/\s+/g, "-") ||
+    user?.id ||
     "referee";
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://axile.ng";
+  
+  // Prioritize configured dev/site URLs, fallback to current origin
+  const rawBaseUrl = process.env.NEXT_PUBLIC_AXILE_DEV_URL || 
+                    process.env.NEXT_PUBLIC_SITE_URL || 
+                    (typeof window !== 'undefined' ? window.location.origin : "https://axile.ng");
+                    
+  const baseUrl = rawBaseUrl.replace(/\/$/, "");
+  
   const referralLink = event
-    ? `${baseUrl}/ref/${event.event_slug || identifier}/${user?.id || 'referee'}`
+    ? `${baseUrl}/ref/${userHandle}/event/${event.id || identifier}`
     : "";
 
   const handleCopy = () => {
