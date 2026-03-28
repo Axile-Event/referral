@@ -1,60 +1,45 @@
 "use client";
 
-import { useEffect, useRef, use } from "react";
-import { useReferralEntryStore } from "@/store/referralEntryStore";
+import { use, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { ReferralLoader } from "@/components/referral/referral-loader";
-import {
-  buildRedirectUrl,
-  isValidReferralCode,
-  isValidEventId,
-} from "@/lib/utils/referral";
 
 /**
- * Referral Entry Route — THE CORE REDIRECT
- *
- * Route: /ref/[code]/event/[id]
- * Redirects to: https://axile.ng/event/[id]?ref=[code]
- *
- * Flow:
- * 1. Extract code + eventId from params
- * 2. Validate both params
- * 3. Persist via Zustand + localStorage (setReferral)
- * 4. Redirect to main app with referral code in URL
- *
- * Edge cases:
- * - Invalid params → fallback redirect to axile.ng
- * - Multiple clicks → latest always wins (handled by store)
- * - Direct navigation → safe, shows loader then redirects
+ * Referral Entry Page
+ * Handles redirection from /ref/[code]/event/[id] to /event/[id]?ref=[code]
  */
-export default function ReferralRedirectPage({ params }) {
-  const { code, id } = use(params);
-  const setReferral = useReferralEntryStore((s) => s.setReferral);
-  const hasRedirected = useRef(false);
+export default function ReferralRedirectPage({ params: paramsPromise }) {
+  const router = useRouter();
+  const params = use(paramsPromise);
+  const isRedirecting = useRef(false);
 
   useEffect(() => {
-    // Guard against double-execution in React strict mode
-    if (hasRedirected.current) return;
-    hasRedirected.current = true;
+    // Prevent double-invocation in development/strict mode
+    if (isRedirecting.current) return;
+    isRedirecting.current = true;
 
-    const trimmedCode = code?.trim();
-    const trimmedId = id?.trim();
+    // 1. Extract params
+    const { code, id } = params;
 
-    // Validate params
-    const validCode = isValidReferralCode(trimmedCode);
-    const validId = isValidEventId(trimmedId);
-
-    if (validCode && validId) {
-      // Persist referral data (latest always wins)
-      setReferral(trimmedCode, trimmedId);
-
-      // Redirect to main app with referral attached
-      const redirectUrl = buildRedirectUrl(trimmedId, trimmedCode);
-      window.location.replace(redirectUrl);
-    } else {
-      // Invalid params — redirect to main app homepage as safe fallback
-      window.location.replace("https://axile.ng");
+    // 4. Add safety: If code or id missing, redirect to homepage
+    if (!code || !id) {
+      router.replace("/");
+      return;
     }
-  }, [code, id, setReferral]);
 
-  return <ReferralLoader text="Redirecting you to the event..." />;
+    // 2. Clean eventId
+    // IDs like 'event:EV-99284' must be cleaned to 'EV-99284'
+    const cleanEventId = id.replace("event:", "");
+
+    // 3. Redirect correctly 
+    // Uses current environment's origin to avoid hardcoded URLs
+    const currentOrigin = typeof window !== "undefined" ? window.location.origin : "";
+    const targetPath = `/event/${cleanEventId}?ref=${code}`;
+    
+    // Final redirect to the Axile domain / event page
+    router.replace(`${currentOrigin}${targetPath}`);
+  }, [params, router]);
+
+  // 5. Minimal UI: Show loader while redirecting
+  return <ReferralLoader text="Redirecting to event..." />;
 }
