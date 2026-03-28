@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button.jsx";
 import { Input } from "@/components/ui/input.jsx";
 import { GoogleSignupButton } from "@/components/auth/GoogleSignupButton.jsx";
 import { useAuthStore } from "@/store/authStore";
-import { motion } from "framer-motion";
+import { parseApiError } from "@/lib/utils/errorParser";
+import { motion, AnimatePresence } from "framer-motion";
 
 /**
  * SignUp Page
@@ -38,8 +39,7 @@ export default function SignUpPage() {
       // Redirect to OTP verification page with email as query param
       router.push(`/verify-otp?email=${encodeURIComponent(data.email)}`);
     } catch (error) {
-      // Error is already set in the store and toast can be used here too
-      toast.error(error.response?.data?.message || "Signup failed. Please try again.");
+      toast.error(parseApiError(error) || "Invalid credentials. Please try again.");
     }
   };
 

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button.jsx";
 import { Input } from "@/components/ui/input.jsx";
 import { GoogleSignupButton } from "@/components/auth/GoogleSignupButton.jsx";
 import { useAuthStore } from "@/store/authStore";
+import { parseApiError } from "@/lib/utils/errorParser";
 import { motion, AnimatePresence } from "framer-motion";
 
 /**
@@ -33,14 +34,13 @@ export default function LoginPage() {
       toast.success("Login successful! Welcome back.");
       router.push("/dashboard");
     } catch (error) {
-      const errorData = error.response?.data;
-      const errorMsg = errorData?.detail || errorData?.error || errorData?.message || "";
+      const finalMsg = parseApiError(error);
       
       // If user is not verified, redirect to OTP page
       // Typical backend messages: "User is not active", "Account not verified", etc.
       if (
-        errorMsg.toLowerCase().includes("verified") || 
-        errorMsg.toLowerCase().includes("active") ||
+        finalMsg.toLowerCase().includes("verified") || 
+        finalMsg.toLowerCase().includes("active") ||
         error.response?.status === 403
       ) {
         toast.error("Account not verified. Redirecting to verification page...");
@@ -50,7 +50,7 @@ export default function LoginPage() {
         return;
       }
 
-      toast.error(errorMsg || "Invalid credentials. Please try again.");
+      toast.error(finalMsg || "Invalid credentials. Please try again.");
     }
   };
 
