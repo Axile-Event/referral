@@ -16,11 +16,18 @@ export default function EventReferralDetailPage() {
   const identifier = params.event_id; 
   const router = useRouter();
   const { user } = useAuthStore();
+  
+  // Debug user details for referral handle identification
+  React.useEffect(() => {
+    if (user) console.log("Current Authenticated User:", user);
+  }, [user]);
+
   const { selectedEvent: event, isLoading, fetchReferrableEventDetail } = useReferral();
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!identifier) return;
+    console.log("Fetching details for event:", identifier);
     fetchReferrableEventDetail(identifier);
   }, [identifier, fetchReferrableEventDetail]);
 

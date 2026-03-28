@@ -13,6 +13,12 @@ import { ReferralBanner } from "@/components/referral/referral-banner";
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
+  
+  // Debug user details for referral handle identification
+  React.useEffect(() => {
+    if (user) console.log("Current Authenticated User (Event Details):", user);
+  }, [user]);
+
   const { 
     referrableEvents, 
     eventStats, 
