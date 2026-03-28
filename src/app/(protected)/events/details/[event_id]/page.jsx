@@ -14,10 +14,8 @@ import toast from "react-hot-toast";
 export default function EventReferralDetailPage() {
   const params = useParams();
   const identifier = params.event_id; 
-  const identifier = params.event_id; 
   const router = useRouter();
   const { user } = useAuthStore();
-  const { selectedEvent: event, isLoading, fetchReferrableEventDetail } = useReferral();
   const { selectedEvent: event, isLoading, fetchReferrableEventDetail } = useReferral();
   const [copied, setCopied] = useState(false);
 
