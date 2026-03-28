@@ -17,11 +17,40 @@ function VerifyOtpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
-  const { verifyOtp, isLoading } = useAuthStore();
+  const { verifyOtp, resendOtp, isLoading } = useAuthStore();
+  const [resendTimer, setResendTimer] = useState(0);
+  
+  // Cooldown logic
+  const startCooldown = () => {
+    setResendTimer(60);
+    const interval = setInterval(() => {
+      setResendTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const handleResend = async () => {
+    if (!email) {
+      toast.error("Email is missing. Cannot resend.");
+      return;
+    }
+    try {
+      await resendOtp(email);
+      toast.success("New verification code sent!");
+      startCooldown();
+    } catch (error) {
+      const msg = error.response?.data?.error || error.response?.data?.message || "Failed to resend code.";
+      toast.error(msg);
+    }
+  };
   
   console.log("--- VerifyOtpPage Debug ---");
   console.log("Email from Search Params:", email);
-  console.log("Full Search Params:", searchParams.toString());
   
   const { control, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
@@ -43,8 +72,6 @@ function VerifyOtpForm() {
       // Use central error handling for consistent messaging
       const errorMsg = getErrorMessage(error, "Verification failed. Please check your OTP and email.");
       toast.error(errorMsg);
-      
-      // Still log full error for debugging
       console.error("OTP Verification Error:", error);
     }
   };
@@ -120,8 +147,13 @@ function VerifyOtpForm() {
       <div className="space-y-4 text-center">
         <p className="text-gray-400 font-medium text-sm">
           Didn't receive the code?{" "}
-          <button className="text-primary hover:underline font-bold transition-all">
-            Resend OTP
+          <button 
+            type="button"
+            onClick={handleResend}
+            disabled={isLoading || resendTimer > 0}
+            className={`font-bold transition-all ${resendTimer > 0 ? 'text-gray-600 cursor-not-allowed' : 'text-primary hover:underline'}`}
+          >
+            {resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend OTP"}
           </button>
         </p>
         <button 
