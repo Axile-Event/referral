@@ -123,9 +123,9 @@ export default function DashboardPage() {
                </Link>
             </div>
 
-            {referrableEvents?.length > 0 ? (
+            {referrableEvents?.events?.length > 0 ? (
               <div className="divide-y divide-white/5">
-                {referrableEvents.map((ev) => {
+                {referrableEvents.events.map((ev) => {
                   const s = eventStats[ev.event_id] || {};
                   // Only show if there's any activity or stats known
                   if (!s.tickets_sold && s.tickets_sold !== 0) return null;
