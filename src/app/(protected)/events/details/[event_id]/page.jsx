@@ -24,11 +24,24 @@ export default function EventReferralDetailPage() {
     fetchReferrableEventDetail(identifier);
   }, [identifier, fetchReferrableEventDetail]);
 
-  // Priority for user identification (Referral ID): referee_id | username | id
-  const userHandle =
-    user?.referee_id ||
-    user?.username ||
+  // Priority for user identification (Referral ID):
+  // We check multiple keys and nested structures (data, user) to safely extract the handle.
+  const userHandle = 
+    user?.referee_id || 
+    user?.username || 
+    user?.Username || 
+    user?.handle ||
+    user?.user?.username ||
+    user?.user?.Username ||
+    user?.data?.username ||
+    user?.data?.Username ||
+    user?.data?.referee_id ||
     user?.id ||
+    user?.pk ||
+    user?.user?.id ||
+    user?.data?.id ||
+    user?.name?.toLowerCase().trim().replace(/\s+/g, "-") ||
+    user?.firstname?.toLowerCase() ||
     "referee";
   
   // Build link using the global utility to ensure consistency
