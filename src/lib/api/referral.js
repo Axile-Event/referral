@@ -16,8 +16,8 @@ export const referralApi = {
 
   // These might still be used for generic interactions or need backend check
   trackClick: (code, eventId) =>
-    apiClient.post("/referrals/track", { code, eventId }).then((r) => r.data),
+    apiClient.post("/referrals/track/", { code, eventId }).then((r) => r.data),
 
   generateLink: (eventId) =>
-    apiClient.post("/referrals/generate", { eventId }).then((r) => r.data),
+    apiClient.post("/referrals/generate/", { eventId }).then((r) => r.data),
 };
