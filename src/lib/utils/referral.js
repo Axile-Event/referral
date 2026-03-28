@@ -5,22 +5,45 @@
 
 export const REFERRAL_STORAGE_KEY = "axile_referral_entry";
 export const REFERRAL_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
-export const AXILE_MAIN_APP_URL = "https://axile.ng";
+
+/**
+ * Generate a shareable referral link for a referee and event.
+ * Format: /ref/{referee_id}/event/{event_identifier}
+ * 
+ * Rules:
+ * 1. event_identifier = event_slug OR event_id (with 'event:' prefix removed)
+ * 2. referee_id = The unique ID for the user from backend (username or referee_id)
+ */
+export function generateReferralLink(refereeId, eventSlug, eventId) {
+  const baseUrl = process.env.NEXT_PUBLIC_AXILE_DEV_URL?.replace(/\/$/, "") || "https://axilereferraldev.vercel.app";
+  const identifier = eventSlug || (eventId ? eventId.replace("event:", "") : "");
+  
+  if (!refereeId || !identifier) return "";
+  
+  return `${baseUrl}/ref/${encodeURIComponent(refereeId)}/event/${encodeURIComponent(identifier)}`;
+}
+
+/**
+ * Get the target URL for the main Axile application. 
+ * Falls back to axile.ng in production if not configured.
+ */
+export function getMainAppUrl() {
+  return process.env.NEXT_PUBLIC_MAIN_APP_URL?.replace(/\/$/, "") || "https://axile.ng";
+}
 
 /**
  * Build the redirect URL for the main app with referral attached.
- * @param {string} eventId
- * @param {string} code
- * @returns {string}
+ * 
+ * Target: https://axiledev.vercel.app/event/{clean_id}?ref={referee_id}
  */
 export function buildRedirectUrl(eventId, code) {
-  return `${AXILE_MAIN_APP_URL}/event/${encodeURIComponent(eventId)}?ref=${encodeURIComponent(code)}`;
+  const mainAppUrl = getMainAppUrl();
+  const cleanId = eventId ? eventId.replace("event:", "") : "";
+  return `${mainAppUrl}/event/${encodeURIComponent(cleanId)}?ref=${encodeURIComponent(code)}`;
 }
 
 /**
  * Check if a referral timestamp has expired (> 7 days).
- * @param {number|null} timestamp
- * @returns {boolean}
  */
 export function isReferralExpired(timestamp) {
   if (!timestamp) return true;
@@ -29,9 +52,6 @@ export function isReferralExpired(timestamp) {
 
 /**
  * Validate referral code format.
- * Accepts alphanumeric + hyphens, 3-64 chars (flexible for various code formats).
- * @param {string} code
- * @returns {boolean}
  */
 export function isValidReferralCode(code) {
   if (!code || typeof code !== "string") return false;
@@ -40,9 +60,6 @@ export function isValidReferralCode(code) {
 
 /**
  * Validate event ID format.
- * Accepts common ID patterns: alphanumeric, colons, hyphens.
- * @param {string} id
- * @returns {boolean}
  */
 export function isValidEventId(id) {
   if (!id || typeof id !== "string") return false;

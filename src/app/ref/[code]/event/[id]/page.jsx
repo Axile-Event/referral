@@ -3,10 +3,12 @@
 import { use, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ReferralLoader } from "@/components/referral/referral-loader";
+import { buildRedirectUrl } from "@/lib/utils/referral";
 
 /**
  * Referral Entry Page
- * Handles redirection from /ref/[code]/event/[id] to /event/[id]?ref=[code]
+ * Handles redirection from /ref/[code]/event/[id] to the main Axile app
+ * Target: https://axiledev.vercel.app/event/[id]?ref=[code]
  */
 export default function ReferralRedirectPage({ params: paramsPromise }) {
   const router = useRouter();
@@ -27,17 +29,12 @@ export default function ReferralRedirectPage({ params: paramsPromise }) {
       return;
     }
 
-    // 2. Clean eventId
-    // IDs like 'event:EV-99284' must be cleaned to 'EV-99284'
-    const cleanEventId = id.replace("event:", "");
-
-    // 3. Redirect correctly 
-    // Uses current environment's origin to avoid hardcoded URLs
-    const currentOrigin = typeof window !== "undefined" ? window.location.origin : "";
-    const targetPath = `/event/${cleanEventId}?ref=${code}`;
+    // 3. Redirect correctly to the targeted Axile domain
+    // All ID cleaning and base URL logic is handled by the utility
+    const targetUrl = buildRedirectUrl(id, code);
     
-    // Final redirect to the Axile domain / event page
-    router.replace(`${currentOrigin}${targetPath}`);
+    // Final redirect to the main Axile event page
+    router.replace(targetUrl);
   }, [params, router]);
 
   // 5. Minimal UI: Show loader while redirecting

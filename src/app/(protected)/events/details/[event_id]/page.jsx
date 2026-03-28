@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { useReferral } from "@/lib/hooks/useReferral";
+import { generateReferralLink } from "@/lib/utils/referral";
 import { 
   ArrowLeft, Copy, Check, ArrowUpRight, Share2, Zap, Loader2
 } from "lucide-react";
@@ -23,25 +24,17 @@ export default function EventReferralDetailPage() {
     fetchReferrableEventDetail(identifier);
   }, [identifier, fetchReferrableEventDetail]);
 
+  // Priority for user identification (Referral ID): referee_id | username | id
   const userHandle =
+    user?.referee_id ||
     user?.username ||
-    user?.slug ||
-    user?.name?.toLowerCase().replace(/\s+/g, "-") ||
     user?.id ||
     "referee";
   
-  // Prioritize configured dev/site URLs, fallback to current origin
-  const rawBaseUrl = process.env.NEXT_PUBLIC_AXILE_DEV_URL || 
-                    process.env.NEXT_PUBLIC_SITE_URL || 
-                    (typeof window !== 'undefined' ? window.location.origin : "https://axile.ng");
-                    
-  const baseUrl = rawBaseUrl.replace(/\/$/, "");
-  
-  // Use event_id from the object if available, otherwise fallback to identifier from params
-  const eventId = event?.event_id || event?.id || identifier;
-  
+  // Build link using the global utility to ensure consistency
+  // Uses event_slug primarily, or event_id (without 'event:' prefix)
   const referralLink = event
-    ? `${baseUrl}/ref/${userHandle}/event/${eventId}`
+    ? generateReferralLink(userHandle, event.event_slug, event.event_id)
     : "";
 
   const handleCopy = () => {
