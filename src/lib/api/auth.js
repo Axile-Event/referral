@@ -10,9 +10,9 @@ export const authApi = {
   // POST /referee/signup/ — Username, Firstname, Lastname, Phone, Email, Password
   signup: (data) => apiClient.post("/referee/signup/", data).then((r) => r.data),
 
-  // POST /referee/verify-otp/ — Email, otp
+  // POST /referee/verify-otp/ — email, otp
   verifyOtp: (email, otp) => 
-    apiClient.post("/referee/verify-otp/", { Email: email, otp }).then((r) => r.data),
+    apiClient.post("/referee/verify-otp/", { email, otp }).then((r) => r.data),
 
   // POST /referee/login/ — { "email", "password" }
   login: (email, password) =>
