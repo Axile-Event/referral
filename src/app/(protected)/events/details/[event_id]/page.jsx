@@ -24,6 +24,7 @@ export default function EventReferralDetailPage() {
   }, [identifier, fetchReferrableEventDetail]);
 
   const userHandle =
+    user?.username ||
     user?.slug ||
     user?.name?.toLowerCase().replace(/\s+/g, "-") ||
     user?.id ||
@@ -36,8 +37,11 @@ export default function EventReferralDetailPage() {
                     
   const baseUrl = rawBaseUrl.replace(/\/$/, "");
   
+  // Use event_id from the object if available, otherwise fallback to identifier from params
+  const eventId = event?.event_id || event?.id || identifier;
+  
   const referralLink = event
-    ? `${baseUrl}/ref/${userHandle}/event/${event.id || identifier}`
+    ? `${baseUrl}/ref/${userHandle}/event/${eventId}`
     : "";
 
   const handleCopy = () => {
