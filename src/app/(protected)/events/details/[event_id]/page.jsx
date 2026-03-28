@@ -17,38 +17,26 @@ export default function EventReferralDetailPage() {
   const router = useRouter();
   const { user } = useAuthStore();
   
-  // Debug user details for referral handle identification
-  React.useEffect(() => {
-    if (user) console.log("Current Authenticated User:", user);
-  }, [user]);
-
   const { selectedEvent: event, isLoading, fetchReferrableEventDetail } = useReferral();
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!identifier) return;
-    console.log("Fetching details for event:", identifier);
     fetchReferrableEventDetail(identifier);
   }, [identifier, fetchReferrableEventDetail]);
 
   // Priority for user identification (Referral ID):
-  // We check multiple keys and nested structures (data, user) to safely extract the handle.
+  // Aligned with auth_user.json keys: username, first_name, last_name, id.
   const userHandle = 
+    user?.referree_id || 
     user?.referee_id || 
     user?.username || 
     user?.Username || 
     user?.handle ||
-    user?.user?.username ||
-    user?.user?.Username ||
-    user?.data?.username ||
-    user?.data?.Username ||
-    user?.data?.referee_id ||
+    (user?.first_name && user?.last_name ? `${user.first_name}-${user.last_name}`.toLowerCase() : null) ||
+    user?.first_name?.toLowerCase() ||
     user?.id ||
     user?.pk ||
-    user?.user?.id ||
-    user?.data?.id ||
-    user?.name?.toLowerCase().trim().replace(/\s+/g, "-") ||
-    user?.firstname?.toLowerCase() ||
     "referee";
   
   // Build link using the global utility to ensure consistency
