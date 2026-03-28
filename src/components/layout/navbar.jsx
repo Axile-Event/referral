@@ -49,14 +49,11 @@ export function Navbar({ onMenuClick }) {
         {/* Right side actions */}
         <div className="flex items-center gap-4">
           {user ? (
-             <div className="flex items-center gap-3">
-               <button className="text-gray-400 hover:text-white p-2">
-                 <Bell size={20} />
-               </button>
-               <div className="w-9 h-9 rounded-full bg-primary/20 text-primary flex items-center justify-center border border-primary/20">
-                 <User size={18} />
-               </div>
-             </div>
+              <div className="flex items-center gap-3">
+                <Link href="/dashboard/settings" className="w-9 h-9 rounded-full bg-primary/20 text-primary flex items-center justify-center border border-primary/20 hover:bg-primary/30 transition-colors">
+                  <User size={18} />
+                </Link>
+              </div>
           ) : (
              <div className="flex items-center gap-4">
                 <Link href="/login" className="text-sm font-medium text-gray-300 hover:text-white">

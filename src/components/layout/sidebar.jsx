@@ -25,7 +25,7 @@ export function Sidebar({ isOpen, onClose }) {
   ];
 
   const bottomItems = [
-    { name: "Settings", href: "#", icon: Settings },
+    { name: "Settings", href: "/dashboard/settings", icon: Settings },
     { name: "Logout", href: "/login", icon: LogOut, className: "text-red-500 hover:bg-red-500/10 hover:text-red-500" },
   ];
 
@@ -89,20 +89,25 @@ export function Sidebar({ isOpen, onClose }) {
 
         {/* Bottom Nav */}
         <div className="px-3 py-6 space-y-1 border-t border-white/10">
-          {bottomItems.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              onClick={onClose}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors font-medium text-sm",
-                item.className || "text-gray-400 hover:bg-white/5 hover:text-white"
-              )}
-            >
-              <item.icon size={18} />
-              <span>{item.name}</span>
-            </Link>
-          ))}
+          {bottomItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={onClose}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors font-medium text-sm group",
+                  isActive 
+                    ? "bg-primary text-white" 
+                    : item.className || "text-gray-400 hover:bg-white/5 hover:text-white"
+                )}
+              >
+                <item.icon size={18} className={cn(!item.className && isActive ? "text-white" : !item.className ? "text-gray-400 group-hover:text-white" : "")} />
+                <span>{item.name}</span>
+              </Link>
+            );
+          })}
         </div>
       </aside>
     </>
