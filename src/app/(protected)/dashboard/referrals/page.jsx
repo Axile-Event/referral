@@ -18,32 +18,32 @@ import { useReferral } from "@/lib/hooks/useReferral";
 
 export default function ReferralsPage() {
   const { 
-    referrableEvents, 
+    referrableEvents,
+    referrals,
     eventStats, 
     fetchReferrableEvents, 
+    fetchUserReferrals,
     fetchEventStats, 
     isLoading 
   } = useReferral();
 
   useEffect(() => {
     const load = async () => {
-      const resp = await fetchReferrableEvents();
-      // Handle response if it's the object { events: [], count: n } or the array
-      const events = Array.isArray(resp) ? resp : (resp?.events || []);
-      
+      const events = await fetchReferrableEvents();
       if (events?.length > 0) {
+        // Fetch stats for all events to see which ones are active/ours
         await Promise.all(events.map(ev => fetchEventStats(ev.event_id)));
       }
     };
     load();
-  }, [fetchReferrableEvents, fetchEventStats]);
+  }, [fetchReferrableEvents, fetchUserReferrals, fetchEventStats]);
 
-  // Normalize events list
-  const eventsList = Array.isArray(referrableEvents) ? referrableEvents : (referrableEvents?.events || []);
-
-  const activeReferrals = eventsList.filter(ev => {
+  // We only show events that actually have some recorded performance (tickets sold) 
+  // or that the user has interacted with (though the doc doesn't show "joined" state yet).
+  // For now, let's show all events the user has stats for.
+  const activeReferrals = referrableEvents.filter(ev => {
     const s = eventStats[ev.event_id];
-    return s && (s.tickets_sold > 0 || (s.tickets && s.tickets.length > 0));
+    return s && (s.tickets_sold > 0 || s.tickets?.length > 0);
   });
 
   if (isLoading && activeReferrals.length === 0) {

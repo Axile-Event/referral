@@ -119,7 +119,7 @@ export const useReferralStore = create((set, get) => ({
     
     const aggregated = statsArray.reduce((acc, curr) => ({
       totalReferrals: acc.totalReferrals + (curr.tickets_sold > 0 ? 1 : 0),
-      totalClicks: 0, // Backend docs don't show clicks yet
+      totalClicks: 0,
       totalTicketsSold: acc.totalTicketsSold + (curr.tickets_sold || 0),
       totalEarnings: acc.totalEarnings + (curr.referral_revenue || 0)
     }), { totalReferrals: 0, totalClicks: 0, totalTicketsSold: 0, totalEarnings: 0 });
@@ -150,6 +150,7 @@ export const useReferralStore = create((set, get) => ({
    */
   generateReferralLink: async (eventId) => {
     try {
+      set({ isLoading: true });
       set({ isLoading: true });
       const res = await referralApi.generateLink(eventId);
       toast.success("Tracking link generated successfully!");
