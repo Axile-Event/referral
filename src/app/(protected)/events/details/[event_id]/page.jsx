@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
-import { API_BASE_URL } from "@/lib/api/baseUrl";
+import { referralApi } from "@/lib/api/referral";
 
 export default function EventReferralDetailPage() {
   const params = useParams();
@@ -25,11 +25,7 @@ export default function EventReferralDetailPage() {
     const load = async () => {
       try {
         setLoading(true);
-        const res = await fetch(
-          `${API_BASE_URL}/referee/events/${slug}`
-        );
-        if (!res.ok) throw new Error("not found");
-        const data = await res.json();
+        const data = await referralApi.getEventDetail(slug);
         setEvent(data.event || data);
       } catch (error) {
         console.error("Failed to load event:", error);
