@@ -16,10 +16,8 @@ export default function ReferralEventsPage() {
     fetchReferrableEvents();
   }, [fetchReferrableEvents]);
 
-  // Handle both API response structures (with .events or directly as array)
-  const displayEvents = Array.isArray(referrableEvents) 
-    ? referrableEvents 
-    : referrableEvents?.events || [];
+  // Handle the new API response structure { events: [], count: number }
+  const displayEvents = referrableEvents?.events || [];
   
   const filteredEvents = displayEvents.filter(e => {
     const isReferrable = e.use_referral === true;

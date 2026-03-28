@@ -14,8 +14,10 @@ import toast from "react-hot-toast";
 export default function EventReferralDetailPage() {
   const params = useParams();
   const identifier = params.event_id; 
+  const identifier = params.event_id; 
   const router = useRouter();
   const { user } = useAuthStore();
+  const { selectedEvent: event, isLoading, fetchReferrableEventDetail } = useReferral();
   const { selectedEvent: event, isLoading, fetchReferrableEventDetail } = useReferral();
   const [copied, setCopied] = useState(false);
 
@@ -54,7 +56,7 @@ export default function EventReferralDetailPage() {
     );
   }
 
-  if (!event) {
+  if (!event && !isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] space-y-4 relative pt-20">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
@@ -229,3 +231,4 @@ export default function EventReferralDetailPage() {
     </div>
   );
 }
+

@@ -141,7 +141,7 @@ export const useReferralStore = create((set, get) => ({
         style: { background: "#161622", color: "#fff", border: "1px solid rgba(227, 54, 41, 0.2)" }
       });
     } finally {
-      set({ isLoading: false });
+        set({ isLoading: false });
     }
   },
 
