@@ -1,24 +1,42 @@
 import apiClient from "./client";
+import { tokenStorage } from "@/lib/utils/tokenStorage";
 
 /**
- * Auth API Methods
- * - POST /auth/signup       → signup
- * - POST /auth/login        → login
- * - POST /auth/logout       → logout
- * - POST /auth/refresh      → refreshToken
- * - GET  /auth/me           → getCurrentUser
+ * Auth API Methods (Referee)
+ * Aligned with API_DOCUMENTATION.MD
  */
+
 export const authApi = {
-  signup: (email, password, name) =>
-    apiClient.post("/auth/signup", { email, password, name }).then((r) => r.data),
+  // POST /referee/signup/ — Username, Firstname, Lastname, Phone, Email, Password
+  signup: (data) => apiClient.post("/referee/signup/", data).then((r) => r.data),
 
+  // POST /referee/verify-otp/ — email, otp
+  verifyOtp: (email, otp) => 
+    apiClient.post("/referee/verify-otp/", { email, otp }).then((r) => r.data),
+
+  // POST /referee/login/ — { "email", "password" }
   login: (email, password) =>
-    apiClient.post("/auth/login", { email, password }).then((r) => r.data),
+    apiClient.post("/referee/login/", { email, password }).then((r) => r.data),
 
-  logout: () => apiClient.post("/auth/logout").then((r) => r.data),
+  // POST /referee/google-signup/ — { "token" }
+  googleSignup: (token) =>
+    apiClient.post("/referee/google-signup/", { token }).then((r) => r.data),
 
-  refreshToken: (refreshToken) =>
-    apiClient.post("/auth/refresh", { refreshToken }).then((r) => r.data),
+  // POST /referee/resend-otp/ — { "email" }
+  resendOtp: (email) => 
+    apiClient.post("/referee/resend-otp/", { email }).then((r) => r.data),
 
-  getCurrentUser: () => apiClient.get("/auth/me").then((r) => r.data),
+  // POST /logout/ — { "refresh" }
+  logout: (refresh) => apiClient.post("/logout/", { refresh }).then((r) => r.data),
+
+  // GET/PATCH /referee/profile/
+  getProfile: () => apiClient.get("/referee/profile/").then((r) => r.data),
+  updateProfile: (data) => apiClient.patch("/referee/profile/", data).then((r) => r.data),
+
+  // PIN Operations
+  createPin: (pin) => apiClient.post("/referee/pin/", { pin }).then((r) => r.data),
+  verifyPin: (pin) => apiClient.post("/referee/verify-pin/", { pin }).then((r) => r.data),
+  forgotPin: (email) => apiClient.post("/referee/forgot-pin/", { email }).then((r) => r.data),
+  changePin: (oldPin, newPin) => 
+    apiClient.post("/referee/change-pin/", { old_pin: oldPin, new_pin: newPin }).then((r) => r.data),
 };
