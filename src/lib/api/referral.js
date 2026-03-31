@@ -44,22 +44,4 @@ export const referralApi = {
   // POST /referrals/generate/ — Create a new tracking link
   generateLink: (eventId) =>
     apiClient.post("/referrals/generate/", { eventId }).then((res) => res.data),
-
-  /**
-   * Logs an anonymous click on the user's referral code to track link traffic.
-   */
-  trackClick: (code, eventId) =>
-    apiClient.post("/referrals/track/", { code, eventId }).then((res) => res.data),
-
-  /**
-   * Retrieves high-level analytics (earnings, conversions) for the user's wallet.
-   */
-  getStats: () => 
-    apiClient.get("/referrals/stats/").then((res) => res.data),
-
-  /**
-   * Allows the referee to deactivate their referral tracking link intentionally.
-   */
-  disableLink: (referralId) =>
-    apiClient.post(`/referrals/${referralId}/disable/`).then((res) => res.data),
 };
