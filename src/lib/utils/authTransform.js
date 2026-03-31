@@ -23,9 +23,11 @@ export const transformSignupData = (formData) => {
 export const transformLoginData = (email, password) => {
   return {
     Email: email,
-    email: email,    // Greediness check
+    email: email,       // Greediness check
+    Username: email,    // Some backends use Username even for email login
+    username: email,    // Some backends use username even for email login
     Password: password,
-    password: password // Greediness check
+    password: password  // Greediness check
   };
 };
 
