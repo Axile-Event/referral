@@ -10,9 +10,19 @@ export const authApi = {
   // POST /referee/signup/ — Username, Firstname, Lastname, Phone, Email, Password
   signup: (data) => apiClient.post("/referee/signup/", data).then((r) => r.data),
 
-  // POST /referee/verify-otp/ — Email, OTP
+  // POST /referee/verify-otp/ — Email, otp
   verifyOtp: (payload) => 
-    apiClient.post("/referee/verify-otp/", payload).then((r) => r.data),
+    apiClient.post("/referee/verify-otp/", payload)
+      .catch(async (err) => {
+        // Fallback to root endpoint if namespaced fails or returns 404
+        if (err.response?.status === 404 || err.response?.status === 400) {
+           const baseUrl = apiClient.defaults.baseURL;
+           const axios = require("axios");
+           return axios.post(`${baseUrl}/verify-otp/`, payload);
+        }
+        throw err;
+      })
+      .then((r) => r.data),
 
   // POST /referee/login/ — { "email", "password" }
   login: (email, password) =>

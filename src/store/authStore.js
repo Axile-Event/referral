@@ -95,6 +95,8 @@ export const useAuthStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const payload = transformOtpData(email, otp);
+      console.log("Verifying OTP with payload:", payload);
+      
       const res = await authApi.verifyOtp(payload);
       if (res.access) {
         tokenStorage.setTokens(res.access, res.refresh);
@@ -103,6 +105,8 @@ export const useAuthStore = create((set, get) => ({
       }
       return res;
     } catch (err) {
+      // LOG THE BACKEND ERROR BODY SO WE CAN SEE MISSING FIELDS
+      console.error("OTP Verification Backend Response:", err.response?.data);
       const msg = err.response?.data?.error || err.response?.data?.message || err.message;
       set({ error: msg });
       throw err;

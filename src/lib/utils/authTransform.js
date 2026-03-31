@@ -33,6 +33,8 @@ export const transformLoginData = (formData) => {
 export const transformOtpData = (email, otp) => {
   return {
     Email: email,
-    OTP: otp,
+    email: email, // Greediness check
+    otp: otp,
+    OTP: otp,     // Greediness check
   };
 };
