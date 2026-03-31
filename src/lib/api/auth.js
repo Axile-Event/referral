@@ -10,17 +10,17 @@ export const authApi = {
   // POST /referee/signup/ — Username, Firstname, Lastname, Phone, Email, Password
   signup: (data) => apiClient.post("/referee/signup/", data).then((r) => r.data),
 
-  // POST /referee/verify-otp/ — email, otp
-  verifyOtp: (email, otp) => 
-    apiClient.post("/referee/verify-otp/", { email, otp }).then((r) => r.data),
+  // POST /referee/verify-otp/ — Email, OTP
+  verifyOtp: (payload) => 
+    apiClient.post("/referee/verify-otp/", payload).then((r) => r.data),
 
   // POST /referee/login/ — { "email", "password" }
   login: (email, password) =>
     apiClient.post("/referee/login/", { email, password }).then((r) => r.data),
 
-  // POST /referee/google-signup/ — { "token" }
-  googleSignup: (token) =>
-    apiClient.post("/referee/google-signup/", { token }).then((r) => r.data),
+  // POST /referee/google-signup/ — { "token", "access_token", "Token" }
+  googleSignup: (payload) =>
+    apiClient.post("/referee/google-signup/", payload).then((r) => r.data),
 
   // POST /referee/resend-otp/ — { "email" }
   resendOtp: (email) => 

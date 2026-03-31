@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { authApi } from "@/lib/api/auth";
-import { transformSignupData } from "@/lib/utils/authTransform";
+import { transformSignupData, transformOtpData } from "@/lib/utils/authTransform";
 import { tokenStorage } from "@/lib/utils/tokenStorage";
 
 /**
@@ -43,10 +43,17 @@ export const useAuthStore = create((set, get) => ({
   /**
    * Google OAuth login
    */
-  googleSignup: async (idToken) => {
+  googleSignup: async (token) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await authApi.googleSignup(idToken);
+      // Backend may expect "token" or "access_token" or capitalized "Token"
+      // We send both common variants for robustness
+      const res = await authApi.googleSignup({ 
+        token: token,
+        access_token: token,
+        Token: token 
+      });
+      
       if (res.access) {
         tokenStorage.setTokens(res.access, res.refresh);
       }
@@ -87,7 +94,8 @@ export const useAuthStore = create((set, get) => ({
   verifyOtp: async (email, otp) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await authApi.verifyOtp(email, otp);
+      const payload = transformOtpData(email, otp);
+      const res = await authApi.verifyOtp(payload);
       if (res.access) {
         tokenStorage.setTokens(res.access, res.refresh);
         const profile = await authApi.getProfile();
