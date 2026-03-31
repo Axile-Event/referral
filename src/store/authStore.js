@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { authApi } from "@/lib/api/auth";
 import { transformSignupData } from "@/lib/utils/authTransform";
+import { tokenStorage } from "@/lib/utils/tokenStorage";
 
 /**
  * Auth Store (Zustand)
@@ -10,7 +11,7 @@ import { transformSignupData } from "@/lib/utils/authTransform";
  */
 export const useAuthStore = create((set, get) => ({
   user: null,
-  isAuthenticated: (typeof window !== "undefined" && !!localStorage.getItem("axile_token")),
+  isAuthenticated: (typeof window !== "undefined" && !!tokenStorage.getAccessToken()),
   isLoading: false,
   error: null,
 
@@ -22,9 +23,8 @@ export const useAuthStore = create((set, get) => ({
     try {
       const res = await authApi.login(email, password);
       // Backend returns { access, refresh }
-      if (typeof window !== "undefined") {
-        localStorage.setItem("axile_token", res.access);
-        localStorage.setItem("axile_refresh", res.refresh);
+      if (res.access) {
+        tokenStorage.setTokens(res.access, res.refresh);
       }
       
       // Fetch full profile info
@@ -47,9 +47,8 @@ export const useAuthStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await authApi.googleSignup(idToken);
-      if (typeof window !== "undefined") {
-        localStorage.setItem("axile_token", res.access);
-        localStorage.setItem("axile_refresh", res.refresh);
+      if (res.access) {
+        tokenStorage.setTokens(res.access, res.refresh);
       }
       const profile = await authApi.getProfile();
       set({ user: profile, isAuthenticated: true });
@@ -89,9 +88,8 @@ export const useAuthStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await authApi.verifyOtp(email, otp);
-      if (res.access && typeof window !== "undefined") {
-        localStorage.setItem("axile_token", res.access);
-        localStorage.setItem("axile_refresh", res.refresh);
+      if (res.access) {
+        tokenStorage.setTokens(res.access, res.refresh);
         const profile = await authApi.getProfile();
         set({ user: profile, isAuthenticated: true });
       }
@@ -125,8 +123,8 @@ export const useAuthStore = create((set, get) => ({
   /**
    * Fetch current user profile
    */
-  fetchProfile: async () => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("axile_token") : null;
+   fetchProfile: async () => {
+    const token = tokenStorage.getAccessToken();
     if (!token) return;
     
     try {
@@ -144,15 +142,12 @@ export const useAuthStore = create((set, get) => ({
    * Logout and clear local state
    */
   logout: async () => {
-    const refresh = typeof window !== "undefined" ? localStorage.getItem("axile_refresh") : null;
+    const refresh = tokenStorage.getRefreshToken();
     if (refresh) {
       try { await authApi.logout(refresh); } catch {}
     }
     
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("axile_token");
-      localStorage.removeItem("axile_refresh");
-    }
+    tokenStorage.clearTokens();
     set({ user: null, isAuthenticated: false });
   },
 
