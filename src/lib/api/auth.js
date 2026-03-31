@@ -24,9 +24,19 @@ export const authApi = {
       })
       .then((r) => r.data),
 
-  // POST /referee/login/ — { "email", "password" }
-  login: (email, password) =>
-    apiClient.post("/referee/login/", { email, password }).then((r) => r.data),
+  // POST /referee/login/ — Email, Password
+  login: (payload) =>
+    apiClient.post("/referee/login/", payload)
+      .catch(async (err) => {
+        // Fallback to root endpoint if namespaced fails
+        if (err.response?.status === 404 || err.response?.status === 401) {
+           const baseUrl = apiClient.defaults.baseURL;
+           const axios = require("axios");
+           return axios.post(`${baseUrl}/login/`, payload);
+        }
+        throw err;
+      })
+      .then((r) => r.data),
 
   // POST /referee/google-signup/ — { "token", "access_token", "Token" }
   googleSignup: (payload) =>

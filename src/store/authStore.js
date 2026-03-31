@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { authApi } from "@/lib/api/auth";
-import { transformSignupData, transformOtpData } from "@/lib/utils/authTransform";
+import { transformSignupData, transformOtpData, transformLoginData } from "@/lib/utils/authTransform";
 import { tokenStorage } from "@/lib/utils/tokenStorage";
 
 /**
@@ -21,7 +21,8 @@ export const useAuthStore = create((set, get) => ({
   login: async (email, password) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await authApi.login(email, password);
+      const payload = transformLoginData(email, password);
+      const res = await authApi.login(payload);
       // Backend returns { access, refresh }
       if (res.access) {
         tokenStorage.setTokens(res.access, res.refresh);

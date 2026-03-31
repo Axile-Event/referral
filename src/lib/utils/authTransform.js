@@ -20,10 +20,12 @@ export const transformSignupData = (formData) => {
 /**
  * Transform login form data to API format
  */
-export const transformLoginData = (formData) => {
+export const transformLoginData = (email, password) => {
   return {
-    email: formData.email,
-    password: formData.password,
+    Email: email,
+    email: email,    // Greediness check
+    Password: password,
+    password: password // Greediness check
   };
 };
 
