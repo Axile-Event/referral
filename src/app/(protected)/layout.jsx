@@ -9,7 +9,7 @@ import { Loader2 } from "lucide-react";
 
 export default function ProtectedLayout({ children }) {
   const router = useRouter();
-  const { user, isAuthenticated, fetchProfile } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
 
@@ -19,12 +19,8 @@ export default function ProtectedLayout({ children }) {
       router.replace("/login");
     } else {
       setIsChecking(false);
-      // Fetch profile if we're auth'd but missing user data
-      if (!user) {
-        fetchProfile();
-      }
     }
-  }, [isAuthenticated, user, router, fetchProfile]);
+  }, [isAuthenticated, router]);
 
   if (isChecking) {
     return (

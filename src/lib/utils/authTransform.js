@@ -42,3 +42,54 @@ export const transformOtpData = (email, otp) => {
     OTP: otp,     // Greediness check
   };
 };
+
+/**
+ * Normalize user profile data from backend
+ * Ensures consistent first name capture by combining Firstname and Lastname into a 'name' field
+ */
+export const normalizeUserProfile = (apiResponse) => {
+  if (!apiResponse) {
+    console.warn("normalizeUserProfile: apiResponse is null or undefined");
+    return null;
+  }
+
+  // Handle wrapped response: { message: "...", profile: { ... } }
+  const profile = apiResponse.profile || apiResponse;
+
+  const {
+    Firstname = "",
+    Lastname = "",
+    firstname = "",
+    lastname = "",
+    full_name = "",
+    name = "",
+    username = "",
+    Username = "",
+    email = "",
+    Email = "",
+    ...rest
+  } = profile;
+
+  // Determine the first name (try Firstname first, then firstname)
+  const firstName = Firstname || firstname || "";
+  const lastName = Lastname || lastname || "";
+  
+  // Create combined name field for dashboard display
+  const combinedName = name || full_name || (firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName || username || Username || "Partner");
+
+  const normalized = {
+    ...rest,
+    Firstname: firstName,
+    Lastname: lastName,
+    firstname: firstName,
+    lastname: lastName,
+    name: combinedName, // Add this for easy access in dashboard
+    username: username || Username || email || Email,
+    email: email || Email,
+  };
+
+  console.log("normalizeUserProfile - Input:", profile);
+  console.log("normalizeUserProfile - Output:", normalized);
+
+  return normalized;
+};
