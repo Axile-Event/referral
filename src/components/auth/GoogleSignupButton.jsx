@@ -25,32 +25,40 @@ export function GoogleSignupButton({ variant = "signup" }) {
   const { googleSignup } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
 
-  // const login = useGoogleLogin({
-  //   onSuccess: async (response) => {
-  //     setIsLoading(true);
-  //     try {
-  //       const result = await googleSignup(response.access_token);
+  const login = useGoogleLogin({
+    onSuccess: async (response) => {
+      setIsLoading(true);
+      try {
+        console.log("Google Login Success:", response);
+        // Backend expects the access_token to be sent to /referee/google-signup/
+        const result = await googleSignup(response.access_token);
         
-  //       if (result?.access) {
-  //         toast.success("Great! Logged in with Google.");
-  //         router.push("/dashboard");
-  //       }
-  //     } catch (error) {
-  //       const errorMsg = error?.response?.data?.message || 
-  //                       error?.response?.data?.error ||
-  //                       "Google authentication failed. Please try again.";
-  //       toast.error(errorMsg);
-  //       console.error("Google signup error:", error?.response?.data);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   },
-  //   onError: () => {
-  //     toast.error("Google login failed. Please try again.");
-  //     setIsLoading(false);
-  //   },
-  //   flow: "implicit",
-  // });
+        if (result?.name || result?.email) {
+          toast.success("Succesfully authenticated with Google!", {
+            style: {
+              background: "#161622",
+              color: "#fff",
+              border: "1px solid rgba(227, 54, 41, 0.2)"
+            }
+          });
+          router.push("/dashboard");
+        }
+      } catch (error) {
+        const errorMsg = error?.response?.data?.message || 
+                        error?.response?.data?.error ||
+                        "Google authentication failed. Please try again.";
+        toast.error(errorMsg);
+        console.error("Google auth error detail:", error?.response?.data);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    onError: () => {
+      toast.error("Google login failed. Please try again.");
+      setIsLoading(false);
+    },
+    flow: "implicit",
+  });
 
   return (
     <Button 

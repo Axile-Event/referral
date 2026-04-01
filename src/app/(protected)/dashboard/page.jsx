@@ -65,7 +65,7 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-4 border-b border-white/5">
         <div>
-           <h1 className="text-3xl font-bold text-white mb-2">Welcome back, {userName}</h1>
+           <h1 className="text-3xl font-medium tracking-tight text-white/95 mb-2">Welcome back, {userName}</h1>
            <p className="text-gray-400">Track your referrals, commissions, and upcoming payouts.</p>
         </div>
 

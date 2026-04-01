@@ -65,14 +65,14 @@ export default function WalletPage() {
       {/* Top Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
-          <h1 className="text-3xl font-extrabold text-white tracking-tight leading-none">Points Wallet</h1>
+          <h1 className="text-3xl font-medium tracking-tight text-white/95">Points Wallet</h1>
           <p className="text-gray-400 font-medium text-sm tracking-tight leading-relaxed">
             Manage your earned points. 10 AP = ₦100. Min withdrawal: 50 AP.
           </p>
         </div>
         <button 
           onClick={() => setIsAddBankOpen(true)}
-          className="flex items-center gap-2 bg-[#e11d48] text-white px-6 h-12 rounded-2xl text-sm font-bold shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all w-fit"
+          className="flex items-center gap-2 bg-[#e11d48] text-white px-6 h-12 rounded-2xl text-sm font-bold hover:scale-[1.02] active:scale-95 transition-all w-fit"
         >
           <Plus size={18} />
           Add Bank
