@@ -38,7 +38,7 @@ export default function DashboardPage() {
     apToNaira
   } = useWalletStore();
   
-  const userName = user?.name?.split(" ")[0] || "Partner";
+  const userName = user?.Firstname || user?.firstname || user?.first_name || user?.name?.split(" ")[0] || "Partner";
 
   useEffect(() => {
     fetchWalletData();
