@@ -126,12 +126,11 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-2">
               <Input 
-                 placeholder="Email Address" 
-                 type="email"
+                 placeholder="Username or Email" 
+                 type="text"
                  icon={Mail}
                  {...register("email", { 
-                    required: "Email is required",
-                    pattern: { value: /^\S+@\S+$/i, message: "Invalid email" }
+                    required: "Identifier is required",
                  })}
                  className={errors.email ? "border-red-500/50 focus-visible:ring-red-500/50" : ""}
               />

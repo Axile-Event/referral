@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { authApi } from "@/lib/api/auth";
-import { transformSignupData, transformOtpData } from "@/lib/utils/authTransform";
+import { transformSignupData, transformOtpData, transformLoginData } from "@/lib/utils/authTransform";
 import { tokenStorage } from "@/lib/utils/tokenStorage";
 
 /**
@@ -21,7 +21,10 @@ export const useAuthStore = create((set, get) => ({
   login: async (email, password) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await authApi.login(email, password);
+      const payload = transformLoginData(email, password);
+      console.log("Attempting Login with payload:", payload);
+      
+      const res = await authApi.login(payload);
       // Backend returns { access, refresh }
       if (res.access) {
         tokenStorage.setTokens(res.access, res.refresh);
@@ -32,6 +35,7 @@ export const useAuthStore = create((set, get) => ({
       set({ user: profile, isAuthenticated: true });
       return profile;
     } catch (err) {
+      console.error("Login Backend Error Response:", err.response?.data);
       const msg = err.response?.data?.error || err.response?.data?.message || err.response?.data?.detail || err.message;
       set({ error: msg });
       throw err; // Throw so component catch block triggers
@@ -95,6 +99,8 @@ export const useAuthStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const payload = transformOtpData(email, otp);
+      console.log("Verifying OTP with payload:", payload);
+      
       const res = await authApi.verifyOtp(payload);
       if (res.access) {
         tokenStorage.setTokens(res.access, res.refresh);
@@ -103,6 +109,8 @@ export const useAuthStore = create((set, get) => ({
       }
       return res;
     } catch (err) {
+      // LOG THE BACKEND ERROR BODY SO WE CAN SEE MISSING FIELDS
+      console.error("OTP Verification Backend Response:", err.response?.data);
       const msg = err.response?.data?.error || err.response?.data?.message || err.message;
       set({ error: msg });
       throw err;

@@ -20,10 +20,14 @@ export const transformSignupData = (formData) => {
 /**
  * Transform login form data to API format
  */
-export const transformLoginData = (formData) => {
+export const transformLoginData = (email, password) => {
   return {
-    email: formData.email,
-    password: formData.password,
+    Email: email,
+    email: email,       // Greediness check
+    Username: email,    // Some backends use Username even for email login
+    username: email,    // Some backends use username even for email login
+    Password: password,
+    password: password  // Greediness check
   };
 };
 
@@ -33,6 +37,8 @@ export const transformLoginData = (formData) => {
 export const transformOtpData = (email, otp) => {
   return {
     Email: email,
-    OTP: otp,
+    email: email, // Greediness check
+    otp: otp,
+    OTP: otp,     // Greediness check
   };
 };
