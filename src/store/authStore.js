@@ -167,6 +167,25 @@ export const useAuthStore = create((set, get) => ({
   },
 
   /**
+   * Update current user profile
+   */
+  updateProfile: async (data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await authApi.updateProfile(data);
+      const normalizedProfile = normalizeUserProfile(res.profile || res);
+      set({ user: normalizedProfile });
+      return normalizedProfile;
+    } catch (err) {
+      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
+      set({ error: msg });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  /**
    * Logout and clear local state
    */
   logout: async () => {
