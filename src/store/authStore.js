@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { authApi } from "@/lib/api/auth";
-import { transformSignupData, transformOtpData, transformLoginData } from "@/lib/utils/authTransform";
+import { transformSignupData, transformOtpData, transformLoginData, normalizeUserProfile } from "@/lib/utils/authTransform";
 import { tokenStorage } from "@/lib/utils/tokenStorage";
 
 /**
@@ -30,10 +30,11 @@ export const useAuthStore = create((set, get) => ({
         tokenStorage.setTokens(res.access, res.refresh);
       }
       
-      // Fetch full profile info
+      // Fetch full profile info and normalize it
       const profile = await authApi.getProfile();
-      set({ user: profile, isAuthenticated: true });
-      return profile;
+      const normalizedProfile = normalizeUserProfile(profile);
+      set({ user: normalizedProfile, isAuthenticated: true });
+      return normalizedProfile;
     } catch (err) {
       console.error("Login Backend Error Response:", err.response?.data);
       const msg = err.response?.data?.error || err.response?.data?.message || err.response?.data?.detail || err.message;
@@ -62,8 +63,9 @@ export const useAuthStore = create((set, get) => ({
         tokenStorage.setTokens(res.access, res.refresh);
       }
       const profile = await authApi.getProfile();
-      set({ user: profile, isAuthenticated: true });
-      return profile;
+      const normalizedProfile = normalizeUserProfile(profile);
+      set({ user: normalizedProfile, isAuthenticated: true });
+      return normalizedProfile;
     } catch (err) {
       const msg = err.response?.data?.error || err.response?.data?.message || err.message;
       set({ error: msg });
@@ -105,7 +107,8 @@ export const useAuthStore = create((set, get) => ({
       if (res.access) {
         tokenStorage.setTokens(res.access, res.refresh);
         const profile = await authApi.getProfile();
-        set({ user: profile, isAuthenticated: true });
+        const normalizedProfile = normalizeUserProfile(profile);
+        set({ user: normalizedProfile, isAuthenticated: true });
       }
       return res;
     } catch (err) {
@@ -141,11 +144,20 @@ export const useAuthStore = create((set, get) => ({
    */
    fetchProfile: async () => {
     const token = tokenStorage.getAccessToken();
-    if (!token) return;
+    if (!token) {
+      console.log("fetchProfile: No access token found");
+      return;
+    }
     
     try {
+      console.log("fetchProfile: Fetching profile with token");
       const profile = await authApi.getProfile();
-      set({ user: profile, isAuthenticated: true });
+      console.log("fetchProfile: Raw profile from API:", profile);
+      
+      const normalizedProfile = normalizeUserProfile(profile);
+      console.log("fetchProfile: Normalized profile:", normalizedProfile);
+      
+      set({ user: normalizedProfile, isAuthenticated: true });
     } catch (err) {
       console.error("Failed to fetch profile:", err);
       if (err.response?.status === 401) {
@@ -167,6 +179,6 @@ export const useAuthStore = create((set, get) => ({
     set({ user: null, isAuthenticated: false });
   },
 
-  setUser: (user) => set({ user, isAuthenticated: !!user }),
+  setUser: (user) => set({ user: user ? normalizeUserProfile(user) : null, isAuthenticated: !!user }),
   clearError: () => set({ error: null }),
 }));

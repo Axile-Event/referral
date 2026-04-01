@@ -12,7 +12,7 @@ import { useWalletStore } from "@/store/walletStore";
 import { ReferralBanner } from "@/components/referral/referral-banner";
 
 export default function DashboardPage() {
-  const { user } = useAuthStore();
+  const { user, fetchProfile, isAuthenticated } = useAuthStore();
   
   // Debug user details for referral handle identification
   React.useEffect(() => {
@@ -38,12 +38,19 @@ export default function DashboardPage() {
     apToNaira
   } = useWalletStore();
   
-  const userName = user?.name?.split(" ")[0] || "Partner";
+  // Extract first name from user profile (ensure we capture it properly)
+  const userName = user?.name 
+    ? user.name.split(" ")[0] 
+    : (user?.Firstname || user?.firstname || "Partner");
 
   useEffect(() => {
+    // Ensure profile is loaded on dashboard mount
+    if (isAuthenticated && !user) {
+      fetchProfile();
+    }
     fetchWalletData();
     fetchTransactionHistory();
-  }, [fetchWalletData, fetchTransactionHistory]);
+  }, [isAuthenticated, user, fetchProfile, fetchWalletData, fetchTransactionHistory]);
 
   const formatAP = (val) => `${(val || 0).toLocaleString()} AP`;
   const formatNaira = (val) => `≈ ₦${(apToNaira(val) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
