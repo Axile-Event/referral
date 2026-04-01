@@ -87,9 +87,8 @@ export default function SettingsPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-12 animate-fade-in pb-20 pt-4 px-4 sm:px-0">
       
-      {/* Header */}
       <div className="space-y-3">
-         <h1 className="text-3xl font-bold text-white tracking-tight">Account <span className="text-primary italic">Settings</span></h1>
+         <h1 className="text-3xl font-medium tracking-tight text-white/95">Account Settings</h1>
          <p className="text-white/40 text-sm font-medium">Configure your personal preferences and account security.</p>
       </div>
 
@@ -259,7 +258,7 @@ function ProfileSettings({ user, formData, onChange, onSave, isSaving }) {
           <Button 
             onClick={onSave}
             disabled={isSaving}
-            className="bg-primary hover:bg-primary/90 text-white rounded-2xl h-14 px-10 font-bold shadow-2xl shadow-primary/20 transition-all active:scale-95 flex items-center gap-3"
+            className="bg-primary hover:bg-primary/90 text-white rounded-2xl h-14 px-10 font-bold transition-all active:scale-95 flex items-center gap-3"
           >
             {isSaving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
             {isSaving ? "Synchronizing..." : "Apply All Settings"}
