@@ -58,6 +58,7 @@ export function GoogleSignupButton({ variant = "signup" }) {
       setIsLoading(false);
     },
     flow: "implicit",
+    prompt: "select_account",
   });
 
   return (
