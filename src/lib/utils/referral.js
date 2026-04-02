@@ -24,8 +24,9 @@ export function generateReferralLink(data) {
   
   if (!referee_id || !identifier) return "";
   
-  // Production referral domain is hardcoded as per instructions
-  return `https://referral.axile.ng/ref/${referee_id}/event/${identifier}`;
+  // Use development URL for the dev branch as requested
+  const baseUrl = process.env.NEXT_PUBLIC_AXILE_DEV_URL?.replace(/\/$/, "") || "https://axilereferraldev.vercel.app";
+  return `${baseUrl}/ref/${referee_id}/event/${identifier}`;
 }
 
 /**
@@ -47,7 +48,7 @@ export function buildRedirectUrl(eventId, code) {
   const cleanId = eventId ? eventId.replace("event:", "") : "";
   // Decoding then encoding ensures we don't end up with double-encoded values like %253A
   const safeCode = code ? decodeURIComponent(decodeURIComponent(code)) : "";
-  return `${mainAppUrl}/event/${encodeURIComponent(cleanId)}?ref=${encodeURIComponent(safeCode)}`;
+  return `${mainAppUrl}/events/${encodeURIComponent(cleanId)}?ref=${encodeURIComponent(safeCode)}`;
 }
 
 /**
