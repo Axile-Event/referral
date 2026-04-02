@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { formatCurrency } from "@/lib/utils"; // Assume some formatter, or we just format inline
 import { CheckCircle2, Clock, XCircle } from "lucide-react";
 
 export function TicketsTable({ tickets = [] }) {
