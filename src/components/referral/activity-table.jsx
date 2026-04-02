@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Ticket, Search, ExternalLink } from "lucide-react";
 import { useRefereeActivity } from "@/lib/hooks/useReferralQueries";
 import { StatusBadge } from "./status-badge";
@@ -11,6 +12,7 @@ import { Button } from "@/components/ui/button";
  * Masked buyer IDs and distinct status badges.
  */
 export function ActivityTable() {
+  const router = useRouter();
   const { data: activity, isLoading } = useRefereeActivity();
 
   // Loading state
@@ -27,6 +29,14 @@ export function ActivityTable() {
 
   // Handle empty state
   const hasActivity = activity && activity.length > 0;
+
+  const handleRowClick = (entry) => {
+     // Go to the full event stats if event_id or event_slug is available
+     const eventId = entry.event_id || entry.event_slug;
+     if (eventId) {
+        router.push(`/dashboard/events/${eventId}/stats`);
+     }
+  };
 
   return (
     <div className="bg-[#12121f] rounded-2xl border border-white/5 overflow-hidden shadow-2xl">
@@ -63,7 +73,11 @@ export function ActivityTable() {
             </thead>
             <tbody className="divide-y divide-white/5">
               {activity.map((entry, i) => (
-                <tr key={i} className="hover:bg-white/[0.02] transition-colors group">
+                <tr 
+                   key={i} 
+                   onClick={() => handleRowClick(entry)}
+                   className="hover:bg-white/[0.02] transition-colors group cursor-pointer"
+                >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
