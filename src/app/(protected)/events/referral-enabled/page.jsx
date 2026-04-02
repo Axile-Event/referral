@@ -173,5 +173,3 @@ function CustomDropdown({ options, value, onChange }) {
     </div>
   );
 }
-
-}
