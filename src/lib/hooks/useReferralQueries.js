@@ -14,6 +14,20 @@ export function useRefereeStats() {
 }
 
 /**
+ * useEventStats
+ * Fetches the stats for a specific event with 15s polling.
+ */
+export function useEventStats(eventId) {
+  return useQuery({
+    queryKey: ["referee", "stats", eventId],
+    queryFn: () => referralApi.getEventStats(eventId),
+    refetchInterval: 15000,
+    refetchIntervalInBackground: false,
+    enabled: !!eventId,
+  });
+}
+
+/**
  * useRefereeActivity
  * Fetches the activity history for the dashboard table.
  */

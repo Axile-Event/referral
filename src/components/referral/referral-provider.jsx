@@ -16,8 +16,6 @@ export function ReferralProvider({ children }) {
     defaultOptions: {
       queries: {
         staleTime: 30000, // 30 seconds
-        refetchInterval: 15000, // 15 seconds polling
-        refetchIntervalInBackground: false, // Stop polling when tab is not focused
         retry: 1,
       },
     },
