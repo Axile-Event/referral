@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { authApi } from "@/lib/api/auth";
-import { transformSignupData, transformOtpData, transformLoginData, normalizeUserProfile } from "@/lib/utils/authTransform";
+import { transformSignupData, transformOtpData, transformLoginData, normalizeUserProfile, transformResetPasswordData } from "@/lib/utils/authTransform";
 import { tokenStorage } from "@/lib/utils/tokenStorage";
 
 /**
@@ -129,6 +129,59 @@ export const useAuthStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await authApi.resendOtp(email);
+      return res;
+    } catch (err) {
+      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
+      set({ error: msg });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  /**
+   * Request password reset OTP
+   */
+  forgotPassword: async (email) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await authApi.forgotPassword(email);
+      return res;
+    } catch (err) {
+      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
+      set({ error: msg });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  /**
+   * Verify password reset OTP
+   */
+  verifyResetOtp: async (email, otp) => {
+    set({ isLoading: true, error: null });
+    try {
+      const payload = transformOtpData(email, otp);
+      const res = await authApi.verifyResetOtp(payload);
+      return res;
+    } catch (err) {
+      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
+      set({ error: msg });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  /**
+   * Reset password using OTP and new password
+   */
+  resetPassword: async (email, otp, newPassword, uid = "", token = "") => {
+    set({ isLoading: true, error: null });
+    try {
+      const payload = transformResetPasswordData(email, otp, newPassword, uid, token);
+      const res = await authApi.resetPassword(payload);
       return res;
     } catch (err) {
       const msg = err.response?.data?.error || err.response?.data?.message || err.message;

@@ -34,7 +34,7 @@ export function GoogleSignupButton({ variant = "signup" }) {
         const result = await googleSignup(response.access_token);
         
         if (result?.name || result?.email) {
-          toast.success("Succesfully authenticated with Google!", {
+          toast.success("Account created successfully!", {
             style: {
               background: "#161622",
               color: "#fff",

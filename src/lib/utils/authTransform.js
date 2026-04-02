@@ -32,6 +32,35 @@ export const transformLoginData = (email, password) => {
 };
 
 /**
+ * Transform password reset data (forgot password flow)
+ */
+export const transformResetPasswordData = (email, otp, newPassword, uid, token) => {
+  // If we have UID/Token (standard Django style), use that format
+  if (uid && token) {
+    return {
+      uid: uid,
+      token: token,
+      new_password: newPassword,
+      new_password1: newPassword,
+      new_password2: newPassword,
+    };
+  }
+
+  // If no UID/Token (simple OTP flow), use the project's default capitalized convention
+  return {
+    email: email,
+    Email: email,
+    otp: otp,
+    OTP: otp,
+    Password: newPassword,
+    password: newPassword,
+    new_password: newPassword,
+    confirm_password: newPassword, // Fixed "Field is required" error
+    ConfirmPassword: newPassword,
+  };
+};
+
+/**
  * Transform OTP verification data to API format (capitalized per backend convention)
  */
 export const transformOtpData = (email, otp) => {
