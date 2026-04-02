@@ -3,11 +3,10 @@ import { Button } from "@/components/ui/button.jsx";
 
 /**
  * Wallet Card Component
- * Redesigned to match the "Available Points" view.
+ * Redesigned to match the "Available Earnings" view.
  * 
  * Props:
- * - balance: Points available
- * - nairaVal: Equivalent in Naira (already converted)
+ * - balance: Naira available
  * - onWithdraw: Action trigger
  * - onViewReports: Action trigger
  */

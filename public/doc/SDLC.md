@@ -62,11 +62,11 @@ TooltipInfo.tsx
 referrals/page.tsx
 Show:
 
-Total AP
+Total Earnings
 
-Pending AP
+Pending Earnings
 
-Withdrawable AP
+Withdrawable Balance
 
 Referral list
 

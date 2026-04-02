@@ -20,7 +20,7 @@ import { AddBankModal } from "@/components/wallet/add-bank-modal.jsx";
 
 /**
  * Robust Wallet Page
- * Aligned with Points Wallet design from image.
+ * Aligned with Earnings Wallet design.
  */
 export default function WalletPage() {
   const { 
