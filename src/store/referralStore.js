@@ -111,7 +111,7 @@ export const useReferralStore = create((set, get) => ({
   },
 
   /**
-   * Aggregate stats from all known event campaigns for the dashboard summary.
+   * Aggregate stats from all known event campaigns for local calculation fallback.
    */
   calculateGlobalStats: () => {
     const { eventStats } = get();
@@ -119,12 +119,36 @@ export const useReferralStore = create((set, get) => ({
     
     const aggregated = statsArray.reduce((acc, curr) => ({
       totalReferrals: acc.totalReferrals + (curr.tickets_sold > 0 ? 1 : 0),
-      totalClicks: 0,
+      totalClicks: acc.totalClicks + (curr.clicks || 0),
       totalTicketsSold: acc.totalTicketsSold + (curr.tickets_sold || 0),
       totalEarnings: acc.totalEarnings + (curr.referral_revenue || 0)
     }), { totalReferrals: 0, totalClicks: 0, totalTicketsSold: 0, totalEarnings: 0 });
 
     set({ stats: aggregated });
+  },
+
+  /**
+   * Fetches global metrics from the backend for the main dashboard.
+   */
+  fetchGlobalStats: async () => {
+    try {
+      set({ isLoading: true });
+      const data = await referralApi.getStats();
+      // data: { total_referrals: n, total_clicks: n, total_tickets_sold: n, total_earnings: n }
+      set({ 
+        stats: {
+          totalReferrals: data.total_referrals || 0,
+          totalClicks: data.total_clicks || 0,
+          totalTicketsSold: data.total_tickets_sold || 0,
+          totalEarnings: data.total_earnings || 0
+        }
+      });
+      return data;
+    } catch (error) {
+      console.error("Referral Store error [fetchGlobalStats]:", error);
+    } finally {
+      set({ isLoading: false });
+    }
   },
 
   /**

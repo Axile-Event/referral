@@ -21,11 +21,12 @@ export default function DashboardPage() {
 
   const { 
     referrableEvents, 
+    referrals,
     eventStats, 
     stats, 
     fetchReferrableEvents, 
-    fetchEventStats, 
-    calculateGlobalStats, 
+    fetchUserReferrals,
+    fetchGlobalStats, 
     isLoading: isReferralLoading 
   } = useReferralStore();
   const { 
@@ -48,6 +49,10 @@ export default function DashboardPage() {
     if (isAuthenticated && !user) {
       fetchProfile();
     }
+    // Load dashboard stats & events
+    fetchGlobalStats();
+    fetchUserReferrals();
+    fetchReferrableEvents();
     fetchWalletData();
     fetchTransactionHistory();
   }, [isAuthenticated, user, fetchProfile, fetchWalletData, fetchTransactionHistory]);
@@ -55,6 +60,9 @@ export default function DashboardPage() {
   const formatAP = (val) => `${(val || 0).toLocaleString()} AP`;
   const formatNaira = (val) => `≈ ₦${(apToNaira(val) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
   const formatCurrency = (val) => `₦${(val || 0).toLocaleString()}`;
+
+  // Use the actual generated referrals for "Active Campaigns"
+  const activeCampaigns = referrals || [];
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 animate-fade-in pb-20">
@@ -146,30 +154,29 @@ export default function DashboardPage() {
                </Link>
             </div>
 
-            {referrableEvents?.length > 0 ? (
+            {activeCampaigns.length > 0 ? (
               <div className="divide-y divide-white/5">
-                {referrableEvents.map((ev) => {
-                  const s = eventStats[ev.event_id] || {};
-                  // Only show if there's any activity or stats known
-                  if (!s.tickets_sold && s.tickets_sold !== 0) return null;
-
+                {activeCampaigns.map((ref) => {
+                  const ev = ref.event || {};
+                  const s = ref.stats || {};
+                  
                   return (
-                    <div key={ev.event_id} className="px-6 py-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
+                    <div key={ref.id} className="px-6 py-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                           <Ticket size={18} />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-white truncate">{ev.name}</p>
+                          <p className="text-sm font-medium text-white truncate">{ev.name || 'Untitled Event'}</p>
                           <p className="text-xs text-gray-500">
                              {ev.referral_reward_type === 'percentage' 
                                ? `${ev.referral_reward_percentage}% Reward` 
-                               : `₦${ev.referral_reward_amount?.toLocaleString()} Flat`}
+                               : `₦${(ev.referral_reward_amount || 0).toLocaleString()} Flat`}
                           </p>
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="text-sm font-bold text-white">{formatCurrency(s.referral_revenue)}</p>
+                        <p className="text-sm font-bold text-white">{formatCurrency(s.revenue || 0)}</p>
                         <p className="text-xs text-gray-500">{s.tickets_sold || 0} sold</p>
                       </div>
                     </div>
