@@ -38,6 +38,8 @@ export default function ReferralsPage() {
     load();
   }, [fetchReferrableEvents, fetchUserReferrals, fetchEventStats]);
 
+  const displayEvents = referrableEvents?.events || [];
+  
   // We only show events that actually have some recorded performance (tickets sold) 
   // or that the user has interacted with (though the doc doesn't show "joined" state yet).
   // For now, let's show all events the user has stats for.
@@ -154,8 +156,8 @@ export default function ReferralsPage() {
                 </div>
 
                 <Button asChild variant="outline" className="mt-auto h-12 rounded-xl border-white/10 hover:border-primary/50 hover:bg-primary/10 text-white font-bold text-xs uppercase tracking-widest flex items-center justify-between px-5 transition-all group/btn active:scale-95">
-                  <Link href={`/events/details/${eventId}`}>
-                    Campaign Details
+                  <Link href={`/dashboard/referrals/${eventId}`}>
+                    Campaign Stats
                     <ArrowUpRight size={16} className="text-primary transition-transform group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1" />
                   </Link>
                 </Button>
