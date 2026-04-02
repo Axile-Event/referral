@@ -10,11 +10,8 @@ export function EventCard({ eventId, eventSlug, name, date, reward, image, locat
   return (
     <Link 
       href={detailPath}
-      className="group flex flex-col bg-white/[0.02] rounded-[24px] border border-white/5 hover:border-primary/30 hover:bg-white/[0.04] transition-all duration-500 overflow-hidden shadow-2xl shadow-black/20 hover:shadow-primary/5 relative"
+      className="group flex flex-col bg-white/[0.02] rounded-[24px] border border-white/5 hover:border-primary/30 hover:bg-white/[0.04] transition-all duration-500 overflow-hidden shadow-2xl shadow-black/20 relative"
     >
-      {/* Subtle top primary gradient line that reveals on hover */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
-
       {/* Image Container */}
       <div className="h-56 relative w-full overflow-hidden bg-white/5 border-b border-white/5">
         <img 
@@ -24,7 +21,7 @@ export function EventCard({ eventId, eventSlug, name, date, reward, image, locat
         />
         
         {/* Subtle modern badge with primary red accent */}
-        <div className="absolute top-4 left-4 bg-[#0a0a14]/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-primary/20 shadow-[0_0_15px_rgba(227,54,41,0.2)]">
+        <div className="absolute top-4 left-4 bg-[#0a0a14]/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-primary/20">
           <span className="text-[11px] font-bold text-primary tracking-widest uppercase">{reward}</span>
         </div>
       </div>
@@ -53,7 +50,7 @@ export function EventCard({ eventId, eventSlug, name, date, reward, image, locat
             <span className="text-[13px] font-medium text-gray-500 group-hover:text-white transition-colors duration-300">
                View Program
             </span>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 border border-white/10 group-hover:border-primary/0 group-hover:text-white group-hover:bg-primary group-hover:shadow-[0_0_12px_rgba(227,54,41,0.6)] transition-all duration-300 transform group-hover:-rotate-45">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 border border-white/10 group-hover:border-primary/0 group-hover:text-white group-hover:bg-primary transition-all duration-300 transform group-hover:-rotate-45">
                 <ArrowRight size={14} className="stroke-[2.5]" />
             </div>
         </div>

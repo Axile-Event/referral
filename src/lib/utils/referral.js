@@ -34,12 +34,12 @@ export function getMainAppUrl() {
 /**
  * Build the redirect URL for the main app with referral attached.
  * 
- * Target: https://axiledev.vercel.app/event/{clean_id}?ref={referee_id}
+ * Target: https://axiledev.vercel.app/events/{clean_id}?ref={referee_id}
  */
 export function buildRedirectUrl(eventId, code) {
   const mainAppUrl = getMainAppUrl();
   const cleanId = eventId ? eventId.replace("event:", "") : "";
-  return `${mainAppUrl}/event/${encodeURIComponent(cleanId)}?ref=${encodeURIComponent(code)}`;
+  return `${mainAppUrl}/events/${encodeURIComponent(cleanId)}?ref=${encodeURIComponent(code)}`;
 }
 
 /**

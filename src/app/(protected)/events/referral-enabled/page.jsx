@@ -30,9 +30,8 @@ export default function ReferralEventsPage() {
   return (
     <div className="space-y-16 pb-32 w-full animate-fade-in font-sans relative">
       
-      {/* Sexy subtle reddish glow background */}
-      <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none opacity-50 mix-blend-screen" />
-      <div className="absolute top-[20%] left-[-5%] w-[400px] h-[400px] bg-red-600/5 rounded-full blur-[100px] pointer-events-none opacity-50 mix-blend-screen" />
+      {/* Sexy subtle background */}
+      <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none opacity-30" />
 
       {/* 2024 Header Section */}
       <div className="flex flex-col gap-6 pt-4 relative z-10">
@@ -55,10 +54,7 @@ export default function ReferralEventsPage() {
         <div className="flex flex-col sm:flex-row gap-4 items-stretch lg:items-center mt-6 w-full relative z-[100]">
            
            {/* Modern Minimal Search */}
-           <div className="relative w-full lg:w-[400px] group">
-              {/* Subtle hover red border glow effect */}
-              <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/0 via-primary/30 to-primary/0 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-500 blur-sm pointer-events-none" />
-              
+           <div className="relative w-full lg:w-[400px]">
               <div className="relative">
                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-primary transition-colors duration-300" size={16} />
                  <input 
@@ -86,7 +82,7 @@ export default function ReferralEventsPage() {
             <span className="w-1.5 h-1.5 bg-primary rounded-full shadow-[0_0_10px_rgba(227,54,41,0.8)] animate-pulse" />
             <span className="text-[13px] font-semibold text-white/60 tracking-widest uppercase">{filteredEvents.length} Active Opportunities</span>
          </div>
-         <div className="flex-1 h-px bg-gradient-to-r from-primary/20 via-white/5 to-transparent" />
+         <div className="flex-1 h-px bg-white/5" />
       </div>
 
       {/* Grid */}
@@ -149,7 +145,7 @@ function CustomDropdown({ options, value, onChange }) {
 
   return (
     <div className="relative w-full lg:w-[200px] group" ref={dropdownRef}>
-      <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/0 via-primary/30 to-primary/0 rounded-2xl opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition duration-500 blur-sm pointer-events-none" />
+      <div className="absolute inset-0 bg-white/5 rounded-2xl opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition duration-500 pointer-events-none" />
       
       <button
         onClick={() => setIsOpen(!isOpen)}

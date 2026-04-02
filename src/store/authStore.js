@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { authApi } from "@/lib/api/auth";
-import { transformSignupData } from "@/lib/utils/authTransform";
+import { transformSignupData, transformOtpData, transformLoginData, normalizeUserProfile, transformResetPasswordData } from "@/lib/utils/authTransform";
+import { tokenStorage } from "@/lib/utils/tokenStorage";
 
 /**
  * Auth Store (Zustand)
@@ -10,7 +11,7 @@ import { transformSignupData } from "@/lib/utils/authTransform";
  */
 export const useAuthStore = create((set, get) => ({
   user: null,
-  isAuthenticated: (typeof window !== "undefined" && !!localStorage.getItem("axile_token")),
+  isAuthenticated: (typeof window !== "undefined" && !!tokenStorage.getAccessToken()),
   isLoading: false,
   error: null,
 
@@ -20,18 +21,22 @@ export const useAuthStore = create((set, get) => ({
   login: async (email, password) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await authApi.login(email, password);
+      const payload = transformLoginData(email, password);
+      console.log("Attempting Login with payload:", payload);
+      
+      const res = await authApi.login(payload);
       // Backend returns { access, refresh }
-      if (typeof window !== "undefined") {
-        localStorage.setItem("axile_token", res.access);
-        localStorage.setItem("axile_refresh", res.refresh);
+      if (res.access) {
+        tokenStorage.setTokens(res.access, res.refresh);
       }
       
-      // Fetch full profile info
+      // Fetch full profile info and normalize it
       const profile = await authApi.getProfile();
-      set({ user: profile, isAuthenticated: true });
-      return profile;
+      const normalizedProfile = normalizeUserProfile(profile);
+      set({ user: normalizedProfile, isAuthenticated: true });
+      return normalizedProfile;
     } catch (err) {
+      console.error("Login Backend Error Response:", err.response?.data);
       const msg = err.response?.data?.error || err.response?.data?.message || err.response?.data?.detail || err.message;
       set({ error: msg });
       throw err; // Throw so component catch block triggers
@@ -43,17 +48,24 @@ export const useAuthStore = create((set, get) => ({
   /**
    * Google OAuth login
    */
-  googleSignup: async (idToken) => {
+  googleSignup: async (token) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await authApi.googleSignup(idToken);
-      if (typeof window !== "undefined") {
-        localStorage.setItem("axile_token", res.access);
-        localStorage.setItem("axile_refresh", res.refresh);
+      // Backend may expect "token" or "access_token" or capitalized "Token"
+      // We send both common variants for robustness
+      const res = await authApi.googleSignup({ 
+        token: token,
+        access_token: token,
+        Token: token 
+      });
+      
+      if (res.access) {
+        tokenStorage.setTokens(res.access, res.refresh);
       }
       const profile = await authApi.getProfile();
-      set({ user: profile, isAuthenticated: true });
-      return profile;
+      const normalizedProfile = normalizeUserProfile(profile);
+      set({ user: normalizedProfile, isAuthenticated: true });
+      return normalizedProfile;
     } catch (err) {
       const msg = err.response?.data?.error || err.response?.data?.message || err.message;
       set({ error: msg });
@@ -88,15 +100,20 @@ export const useAuthStore = create((set, get) => ({
   verifyOtp: async (email, otp) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await authApi.verifyOtp(email, otp);
-      if (res.access && typeof window !== "undefined") {
-        localStorage.setItem("axile_token", res.access);
-        localStorage.setItem("axile_refresh", res.refresh);
+      const payload = transformOtpData(email, otp);
+      console.log("Verifying OTP with payload:", payload);
+      
+      const res = await authApi.verifyOtp(payload);
+      if (res.access) {
+        tokenStorage.setTokens(res.access, res.refresh);
         const profile = await authApi.getProfile();
-        set({ user: profile, isAuthenticated: true });
+        const normalizedProfile = normalizeUserProfile(profile);
+        set({ user: normalizedProfile, isAuthenticated: true });
       }
       return res;
     } catch (err) {
+      // LOG THE BACKEND ERROR BODY SO WE CAN SEE MISSING FIELDS
+      console.error("OTP Verification Backend Response:", err.response?.data);
       const msg = err.response?.data?.error || err.response?.data?.message || err.message;
       set({ error: msg });
       throw err;
@@ -123,15 +140,77 @@ export const useAuthStore = create((set, get) => ({
   },
 
   /**
+   * Request password reset OTP
+   */
+  forgotPassword: async (email) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await authApi.forgotPassword(email);
+      return res;
+    } catch (err) {
+      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
+      set({ error: msg });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  /**
+   * Verify password reset OTP
+   */
+  verifyResetOtp: async (email, otp) => {
+    set({ isLoading: true, error: null });
+    try {
+      const payload = transformOtpData(email, otp);
+      const res = await authApi.verifyResetOtp(payload);
+      return res;
+    } catch (err) {
+      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
+      set({ error: msg });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  /**
+   * Reset password using OTP and new password
+   */
+  resetPassword: async (email, otp, newPassword, uid = "", token = "") => {
+    set({ isLoading: true, error: null });
+    try {
+      const payload = transformResetPasswordData(email, otp, newPassword, uid, token);
+      const res = await authApi.resetPassword(payload);
+      return res;
+    } catch (err) {
+      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
+      set({ error: msg });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  /**
    * Fetch current user profile
    */
-  fetchProfile: async () => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("axile_token") : null;
-    if (!token) return;
+   fetchProfile: async () => {
+    const token = tokenStorage.getAccessToken();
+    if (!token) {
+      console.log("fetchProfile: No access token found");
+      return;
+    }
     
     try {
+      console.log("fetchProfile: Fetching profile with token");
       const profile = await authApi.getProfile();
-      set({ user: profile, isAuthenticated: true });
+      console.log("fetchProfile: Raw profile from API:", profile);
+      
+      const normalizedProfile = normalizeUserProfile(profile);
+      console.log("fetchProfile: Normalized profile:", normalizedProfile);
+      
+      set({ user: normalizedProfile, isAuthenticated: true });
     } catch (err) {
       console.error("Failed to fetch profile:", err);
       if (err.response?.status === 401) {
@@ -141,21 +220,37 @@ export const useAuthStore = create((set, get) => ({
   },
 
   /**
+   * Update current user profile
+   */
+  updateProfile: async (data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await authApi.updateProfile(data);
+      const normalizedProfile = normalizeUserProfile(res.profile || res);
+      set({ user: normalizedProfile });
+      return normalizedProfile;
+    } catch (err) {
+      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
+      set({ error: msg });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  /**
    * Logout and clear local state
    */
   logout: async () => {
-    const refresh = typeof window !== "undefined" ? localStorage.getItem("axile_refresh") : null;
+    const refresh = tokenStorage.getRefreshToken();
     if (refresh) {
       try { await authApi.logout(refresh); } catch {}
     }
     
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("axile_token");
-      localStorage.removeItem("axile_refresh");
-    }
+    tokenStorage.clearTokens();
     set({ user: null, isAuthenticated: false });
   },
 
-  setUser: (user) => set({ user, isAuthenticated: !!user }),
+  setUser: (user) => set({ user: user ? normalizeUserProfile(user) : null, isAuthenticated: !!user }),
   clearError: () => set({ error: null }),
 }));
