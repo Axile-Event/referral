@@ -1,73 +1,67 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
-import { useReferral } from "@/lib/hooks/useReferral";
+import React, { useState, useRef, useEffect } from "react";
+import { useReferrableEvents } from "@/lib/hooks/useReferralQueries";
 import { EventCard } from "@/components/event/event-card";
 import { Loader2, Search, Compass, ChevronDown, Zap } from "lucide-react";
 
 const CATEGORIES = ["All", "Tech", "Business", "Music", "Education", "Fashion"];
 
 export default function ReferralEventsPage() {
-  const { referrableEvents, isLoading, fetchReferrableEvents } = useReferral();
+  const { data, isLoading } = useReferrableEvents();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
 
-  useEffect(() => {
-    fetchReferrableEvents();
-  }, [fetchReferrableEvents]);
-
   // Handle the new API response structure { events: [], count: number }
-  const displayEvents = referrableEvents?.events || [];
+  const displayEvents = data?.events || [];
   
   const filteredEvents = displayEvents.filter(e => {
-    const isReferrable = e.use_referral === true;
+    // Only show if referral is enabled
+    if (!e.use_referral) return false;
+    
     const matchesSearch = e.name.toLowerCase().includes(search.toLowerCase()) || 
                          (e.location?.toLowerCase() || "").includes(search.toLowerCase());
     const matchesCategory = activeCategory === "All" || e.category === activeCategory;
-    return isReferrable && matchesSearch && matchesCategory;
+    
+    return matchesSearch && matchesCategory;
   });
 
   return (
-    <div className="space-y-16 pb-32 w-full animate-fade-in font-sans relative">
+    <div className="space-y-16 pb-32 w-full animate-fade-in font-sans relative px-4 sm:px-6 max-w-7xl mx-auto">
       
-      {/* Sexy subtle background */}
+      {/* Visual Background Accent */}
       <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none opacity-30" />
 
-      {/* 2024 Header Section */}
+      {/* Discovery Header Section */}
       <div className="flex flex-col gap-6 pt-4 relative z-10">
-        <div className="max-w-2xl space-y-4">
-           {/* Subtle primary badge */}
+        <div className="max-w-2xl space-y-6">
            <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 backdrop-blur-md px-3 py-1 rounded-full shadow-[0_0_20px_rgba(227,54,41,0.15)]">
               <Zap size={14} className="text-primary fill-current" />
-              <span className="text-[11px] font-bold text-primary tracking-widest uppercase">Earn Commissions</span>
+              <span className="text-[11px] font-bold text-primary tracking-widest uppercase">Direct Marketplace</span>
            </div>
 
-           <h1 className="text-[32px] sm:text-[44px] font-medium tracking-tight text-white/95 leading-[1.1]">
-              Curated Referral Programs
+           <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-white/95 leading-[1.1]">
+              Discover Premium <br /> Referral Programs
            </h1>
-           <p className="text-white/50 text-[15px] sm:text-base leading-relaxed max-w-lg">
-              Find active programs, share your unique link, and automatically earn <span className="text-white/80 font-medium">unlimited commissions</span> on every ticket sale.
+           <p className="text-white/50 text-base sm:text-lg leading-relaxed max-w-lg font-medium">
+              Find verified events, share your unique link, and earn <span className="text-white/80">unlimited commissions</span> on every successful ticket sale.
            </p>
         </div>
 
-        {/* Toolbar */}
+        {/* Toolbar: Search & Filter */}
         <div className="flex flex-col sm:flex-row gap-4 items-stretch lg:items-center mt-6 w-full relative z-[100]">
            
-           {/* Modern Minimal Search */}
-           <div className="relative w-full lg:w-[400px]">
-              <div className="relative">
-                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-primary transition-colors duration-300" size={16} />
-                 <input 
-                    type="text" 
-                    placeholder="Search events or locations..." 
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    className="w-full h-12 bg-white/[0.03] backdrop-blur-md border border-white/5 hover:border-white/10 rounded-2xl py-2 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 focus:bg-white/[0.05] transition-all placeholder:text-white/30 shadow-sm relative z-10"
-                 />
-              </div>
+           <div className="relative w-full lg:w-[450px]">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+              <input 
+                 type="text" 
+                 placeholder="Search events, organizers or locations..." 
+                 value={search}
+                 onChange={e => setSearch(e.target.value)}
+                 className="w-full h-14 bg-white/[0.03] backdrop-blur-md border border-white/5 hover:border-white/10 rounded-2xl pl-12 pr-4 text-sm text-white focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all placeholder:text-white/20 shadow-xl"
+              />
            </div>
 
-           {/* Custom Modern Dropdown Component */}
            <CustomDropdown 
               options={CATEGORIES}
               value={activeCategory}
@@ -80,24 +74,24 @@ export default function ReferralEventsPage() {
       <div className="flex items-center gap-4 relative z-10">
          <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 bg-primary rounded-full shadow-[0_0_10px_rgba(227,54,41,0.8)] animate-pulse" />
-            <span className="text-[13px] font-semibold text-white/60 tracking-widest uppercase">{filteredEvents.length} Active Opportunities</span>
+            <span className="text-[13px] font-extrabold text-white/30 tracking-widest uppercase">{filteredEvents.length} Active Opportunities</span>
          </div>
          <div className="flex-1 h-px bg-white/5" />
       </div>
 
-      {/* Grid */}
+      {/* Program Grid */}
       <div className="relative z-10">
-        {isLoading && (!displayEvents || displayEvents.length === 0) ? (
-          <div className="flex flex-col items-center justify-center p-20 gap-4">
-             <Loader2 className="w-8 h-8 animate-spin text-primary" />
-             <p className="text-sm font-medium text-white/40 tracking-widest uppercase">Loading Programs...</p>
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-32 gap-6">
+             <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+             <p className="text-[11px] font-bold text-white/20 tracking-[0.3em] uppercase">Syncing Marketplace...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10">
             {filteredEvents.map(event => {
               const rewardDisplay = event.referral_reward_type === "percentage"
                 ? `${event.referral_reward_percentage}% Reward`
-                : `₦${event.referral_reward_amount?.toLocaleString()} Reward`;
+                : `₦${(event.referral_reward_amount || 0).toLocaleString()} Reward`;
 
               return (
                 <EventCard 
@@ -115,12 +109,14 @@ export default function ReferralEventsPage() {
           </div>
         )}
 
-        {/* Empty State */}
+        {/* Empty Result State */}
         {!isLoading && filteredEvents.length === 0 && (
-           <div className="flex flex-col items-center justify-center text-center py-24 bg-white/[0.02] rounded-[32px] border border-white/5">
-              <Compass size={32} className="text-white/20 mb-6 stroke-[1.5]" />
-              <h3 className="text-[15px] font-medium text-white mb-2">No programs found</h3>
-              <p className="text-white/40 text-[13px] max-w-sm">We couldn't find any events matching your selected category.</p>
+           <div className="flex flex-col items-center justify-center text-center py-32 bg-white/[0.01] rounded-[40px] border border-white/5 shadow-2xl">
+              <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mb-8">
+                <Compass size={36} className="text-white/10 stroke-[1]" />
+              </div>
+              <h3 className="text-xl font-bold text-white/90 mb-2">No matching programs</h3>
+              <p className="text-white/40 text-[15px] max-w-sm font-medium leading-relaxed">We couldn't find any referral-enabled events matching your current search or category filters.</p>
            </div>
         )}
       </div>
@@ -144,20 +140,18 @@ function CustomDropdown({ options, value, onChange }) {
   }, []);
 
   return (
-    <div className="relative w-full lg:w-[200px] group" ref={dropdownRef}>
-      <div className="absolute inset-0 bg-white/5 rounded-2xl opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition duration-500 pointer-events-none" />
-      
+    <div className="relative w-full lg:w-[220px] group" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative z-10 w-full h-12 bg-[#12121f] border border-white/5 hover:border-white/10 rounded-2xl px-5 flex items-center justify-between text-sm font-medium text-white/90 focus:outline-none focus:border-primary/50 transition-all shadow-sm"
+        className="relative z-10 w-full h-14 bg-[#12121f] border border-white/5 hover:border-white/10 rounded-2xl px-6 flex items-center justify-between text-sm font-bold text-white/90 shadow-xl transition-all active:scale-[0.98]"
         type="button"
       >
-        {value}
-        <ChevronDown size={14} className={`text-white/40 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
+        <span className="truncate">{value}</span>
+        <ChevronDown size={14} className={`text-white/30 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-[#12121f]/95 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] z-[9999] animate-fade-in origin-top p-1">
+        <div className="absolute top-[calc(100%+12px)] left-0 right-0 bg-[#0C0C14]/95 backdrop-blur-3xl border border-white/10 rounded-[24px] overflow-hidden shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] z-[9999] animate-fade-in origin-top p-2">
           {options.map((opt) => (
             <button
               key={opt}
@@ -165,10 +159,10 @@ function CustomDropdown({ options, value, onChange }) {
                 onChange(opt);
                 setIsOpen(false);
               }}
-              className={`w-full text-left px-4 py-2.5 text-[13px] font-medium transition-all rounded-xl ${
+              className={`w-full text-left px-4 py-3 text-[13px] font-bold transition-all rounded-[14px] ${
                 opt === value 
-                  ? "bg-primary text-white font-bold" 
-                  : "text-white/70 hover:bg-white/10 hover:text-white"
+                  ? "bg-primary text-white shadow-lg shadow-primary/20" 
+                  : "text-white/50 hover:bg-white/5 hover:text-white"
               }`}
             >
               {opt}
@@ -178,4 +172,6 @@ function CustomDropdown({ options, value, onChange }) {
       )}
     </div>
   );
+}
+
 }
