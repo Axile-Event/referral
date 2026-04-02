@@ -48,7 +48,7 @@ export function buildRedirectUrl(eventId, code) {
   const cleanId = eventId ? eventId.replace("event:", "") : "";
   // Decoding then encoding ensures we don't end up with double-encoded values like %253A
   const safeCode = code ? decodeURIComponent(decodeURIComponent(code)) : "";
-  return `${mainAppUrl}/events/${encodeURIComponent(cleanId)}?ref=${encodeURIComponent(safeCode)}`;
+  return `${mainAppUrl}/events/${encodeURIComponent(cleanId)}?ref=${safeCode}`;
 }
 
 /**
