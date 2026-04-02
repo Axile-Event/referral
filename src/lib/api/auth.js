@@ -59,4 +59,27 @@ export const authApi = {
   forgotPin: (email) => apiClient.post("/referee/forgot-pin/", { email }).then((r) => r.data),
   changePin: (oldPin, newPin) => 
     apiClient.post("/referee/change-pin/", { old_pin: oldPin, new_pin: newPin }).then((r) => r.data),
+
+  // POST /referee/password/reset/ — { "email" }
+  forgotPassword: (email) => 
+    apiClient.post("/referee/password/reset/", { email }).then((r) => r.data),
+
+  // POST /referee/password/reset/verify-otp/ — { "email", "otp" }
+  verifyResetOtp: (payload) => 
+    apiClient.post("/referee/password/reset/verify-otp/", payload).then((r) => r.data),
+
+  // POST /referee/password/set/ — { "new_password", "email", "otp" }
+  resetPassword: (payload) => 
+    apiClient.post("/referee/password/set/", payload)
+      .catch(async (err) => {
+        // Fallback to simpler endpoint if namespaced fails
+        if (err.response?.status === 404) {
+           const baseUrl = apiClient.defaults.baseURL;
+           const axios = require("axios");
+           const simpleClient = axios.create({ baseURL: baseUrl });
+           return simpleClient.post("/password/set/", payload);
+        }
+        throw err;
+      })
+      .then((r) => r.data),
 };
