@@ -45,3 +45,21 @@ export const referralApi = {
   generateLink: (eventId) =>
     apiClient.post("/referrals/generate/", { eventId }).then((res) => res.data),
 };
+
+/**
+ * trackReferralClick(code, eventId) helper
+ * Logs a click for the referral system.
+ * Uses fire-and-forget logic with silent failure.
+ */
+export const trackReferralClick = async (code, eventId) => {
+  try {
+    // Note: Singular /referral/click/ as per production spec
+    await apiClient.post("/referral/click/", {
+      ref_code: code,
+      event_id: eventId,
+    });
+  } catch (error) {
+    // Silent failure: log error but do not block the redirection flow
+    console.error("Referral click tracking failed silently:", error.response?.data || error.message);
+  }
+};

@@ -2,41 +2,57 @@
 
 import { use, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ReferralLoader } from "@/components/referral/referral-loader";
 import { buildRedirectUrl } from "@/lib/utils/referral";
+import { trackReferralClick } from "@/lib/api/referral";
 
 /**
- * Referral Entry Page
- * Handles redirection from /ref/[code]/event/[id] to the main Axile app
- * Target: https://axiledev.vercel.app/events/[id]?ref=[code]
+ * Referral Redirect Page
+ * Path: /ref/[code]/event/[id]
+ * 
+ * Logic:
+ * 1. Extract and clean params
+ * 2. Track click (fire and forget)
+ * 3. Redirect to main app
  */
 export default function ReferralRedirectPage({ params: paramsPromise }) {
   const router = useRouter();
   const params = use(paramsPromise);
-  const isRedirecting = useRef(false);
+  const hasTracked = useRef(false);
 
   useEffect(() => {
-    // Prevent double-invocation in development/strict mode
-    if (isRedirecting.current) return;
-    isRedirecting.current = true;
+    if (hasTracked.current) return;
+    hasTracked.current = true;
 
-    // 1. Extract params
     const { code, id } = params;
 
-    // 4. Add safety: If code or id missing, redirect to homepage
+    // Safety: Missing params redirect to homepage
     if (!code || !id) {
       router.replace("/");
       return;
     }
 
-    // 3. Redirect correctly to the targeted Axile domain
-    // All ID cleaning and base URL logic is handled by the utility
-    const targetUrl = buildRedirectUrl(id, code);
+    // Clean event ID (remove 'event:' prefix)
+    const cleanId = id.replace("event:", "");
+
+    // Track click (fire and forget - do not await)
+    trackReferralClick(code, cleanId);
+
+    // Redirect to main app using utility (dynamic base URL)
+    const targetUrl = buildRedirectUrl(cleanId, code);
     
-    // Final redirect to the main Axile event page
+    // Immediate redirection
     router.replace(targetUrl);
   }, [params, router]);
 
-  // 5. Minimal UI: Show loader while redirecting
-  return <ReferralLoader text="Redirecting to event..." />;
+  // Minimal centered loader UI
+  return (
+    <div className="fixed inset-0 bg-[#050505] flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+        <p className="text-[13px] text-white/30 font-medium tracking-wide">
+          Redirecting...
+        </p>
+      </div>
+    </div>
+  );
 }

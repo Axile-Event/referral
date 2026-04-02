@@ -8,19 +8,24 @@ export const REFERRAL_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 /**
  * Generate a shareable referral link for a referee and event.
- * Format: /ref/{referee_id}/event/{event_identifier}
+ * Backend provides: { referee_id, event_slug, event_id }
  * 
  * Rules:
  * 1. event_identifier = event_slug OR event_id (with 'event:' prefix removed)
- * 2. referee_id = The unique ID for the user from backend (username or referee_id)
+ * 2. Never use raw event: prefix in URL
+ * 3. Always use referee_id
  */
-export function generateReferralLink(refereeId, eventSlug, eventId) {
-  const baseUrl = process.env.NEXT_PUBLIC_AXILE_DEV_URL?.replace(/\/$/, "") || "https://axilereferraldev.vercel.app";
-  const identifier = eventSlug || (eventId ? eventId.replace("event:", "") : "");
+export function generateReferralLink(data) {
+  if (!data) return "";
+  const { referee_id, event_slug, event_id } = data;
   
-  if (!refereeId || !identifier) return "";
+  // Clean identifier: fallback to ID if slug is missing
+  const identifier = event_slug || (event_id ? event_id.replace("event:", "") : "");
   
-  return `${baseUrl}/ref/${encodeURIComponent(refereeId)}/event/${encodeURIComponent(identifier)}`;
+  if (!referee_id || !identifier) return "";
+  
+  // Production referral domain is hardcoded as per instructions
+  return `https://referral.axile.ng/ref/${referee_id}/event/${identifier}`;
 }
 
 /**
@@ -34,14 +39,15 @@ export function getMainAppUrl() {
 /**
  * Build the redirect URL for the main app with referral attached.
  * 
- * Target: https://axiledev.vercel.app/events/{clean_id}?ref={referee_id}
+ * Target: https://axile.ng/event/{clean_id}?ref={referee_id}
+ * (Domain remains dynamic via getMainAppUrl per user request)
  */
 export function buildRedirectUrl(eventId, code) {
   const mainAppUrl = getMainAppUrl();
   const cleanId = eventId ? eventId.replace("event:", "") : "";
   // Decoding then encoding ensures we don't end up with double-encoded values like %253A
   const safeCode = code ? decodeURIComponent(decodeURIComponent(code)) : "";
-  return `${mainAppUrl}/events/${encodeURIComponent(cleanId)}?ref=${encodeURIComponent(safeCode)}`;
+  return `${mainAppUrl}/event/${encodeURIComponent(cleanId)}?ref=${encodeURIComponent(safeCode)}`;
 }
 
 /**

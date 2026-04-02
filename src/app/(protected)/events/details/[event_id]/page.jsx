@@ -64,7 +64,11 @@ export default function EventReferralDetailPage() {
   // Build link using the global utility to ensure consistency
   // Uses event_slug primarily, or event_id (without 'event:' prefix)
   const referralLink = event
-    ? generateReferralLink(userHandle, event.event_slug, event.event_id)
+    ? generateReferralLink({
+        referee_id: userHandle,
+        event_slug: event.event_slug,
+        event_id: event.event_id,
+      })
     : "";
 
   const handleCopy = () => {
