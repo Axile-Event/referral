@@ -1,250 +1,115 @@
 "use client";
-import { useEffect } from "react";
-import React from "react";
+
+import React, { useEffect } from "react";
 import Link from "next/link";
-import {
-  Ticket, TrendingUp, Wallet, Activity, Compass, User, Users, MousePointerClick, DollarSign,
-} from "lucide-react";
+import { Compass, Zap, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import { useAuthStore } from "@/store/authStore";
-import { useReferralStore } from "@/store/referralStore";
-import { useWalletStore } from "@/store/walletStore";
 import { ReferralBanner } from "@/components/referral/referral-banner";
+import { SummaryCards } from "@/components/referral/summary-cards";
+import { ActivityTable } from "@/components/referral/activity-table";
 
+/**
+ * DashboardPage
+ * 
+ * Production dashboard sourcing data entirely from React Query.
+ * Features:
+ * - Summary lifecycle metrics
+ * - Detailed activity history
+ * - Direct promotion discovery
+ */
 export default function DashboardPage() {
   const { user, fetchProfile, isAuthenticated } = useAuthStore();
   
-  // Debug user details for referral handle identification
-  React.useEffect(() => {
-    if (user) console.log("Current Authenticated User (Event Details):", user);
-  }, [user]);
+  // Ensure profile is loaded on mount
+  useEffect(() => {
+    if (isAuthenticated && !user) {
+      fetchProfile();
+    }
+  }, [isAuthenticated, user, fetchProfile]);
 
-  const { 
-    referrableEvents, 
-    referrals,
-    eventStats, 
-    stats, 
-    fetchReferrableEvents, 
-    fetchUserReferrals,
-    fetchGlobalStats, 
-    isLoading: isReferralLoading 
-  } = useReferralStore();
-  const { 
-    balance, 
-    pending, 
-    totalWithdrawn: totalWithdrawnAP, 
-    fetchWalletData, 
-    fetchTransactionHistory,
-    isLoading: isWalletLoading
-  } = useWalletStore();
-  
-  // Extract first name from user profile (ensure we capture it properly)
+  // Extract display name
   const userName = user?.name 
     ? user.name.split(" ")[0] 
     : (user?.Firstname || user?.firstname || "Partner");
 
-  useEffect(() => {
-    // Ensure profile is loaded on dashboard mount
-    if (isAuthenticated && !user) {
-      fetchProfile();
-    }
-    // Load dashboard stats & events
-    // We fetch user referrals first because we can aggregate stats from them if the global endpoint fails
-    fetchUserReferrals().then(() => {
-      calculateGlobalStats();
-    });
-    
-    fetchGlobalStats(); 
-    fetchReferrableEvents();
-    
-    // fetchWalletData(); // Disabled: wallet endpoints not ready
-    // fetchTransactionHistory(); // Disabled: wallet endpoints not ready
-  }, [isAuthenticated, user, fetchProfile]);
-
-  const formatCurrency = (val) => `₦${(val || 0).toLocaleString()}`;
-
-  // Use the actual generated referrals for "Active Campaigns"
-  const activeCampaigns = referrals || [];
-
   return (
-    <div className="max-w-7xl mx-auto space-y-8 animate-fade-in pb-20">
+    <div className="max-w-7xl mx-auto space-y-10 animate-fade-in pb-24 px-4 sm:px-6">
 
-      {/* Referral Banner */}
+      {/* Branded Banner */}
       <ReferralBanner />
 
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-4 border-b border-white/5">
-        <div>
-           <h1 className="text-3xl font-medium tracking-tight text-white/95 mb-2">Welcome back, {userName}</h1>
-           <p className="text-gray-400">Track your referrals, commissions, and upcoming payouts.</p>
+      {/* Enhanced Header Section */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-6 border-b border-white/5 relative">
+        <div className="space-y-3">
+           <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full border border-primary/20">
+              <Zap size={12} className="text-primary fill-current" />
+              <span className="text-[10px] font-bold text-primary tracking-widest uppercase">Verified Partner Account</span>
+           </div>
+           <h1 className="text-4xl font-semibold tracking-tight text-white/95">Welcome back, {userName}</h1>
+           <p className="text-gray-400 text-[15px] font-medium">Track your link performance and referral conversions in real-time.</p>
         </div>
 
-        <Button asChild className="bg-[#e11d48] hover:bg-[#e11d48]/90 text-white rounded-lg px-6 h-11 shrink-0">
-            <Link href="/events/referral-enabled">
-               <Compass className="mr-2" size={18} /> Discover Events
-            </Link>
-        </Button>
+        <div className="flex items-center gap-4">
+          <Button asChild className="bg-primary hover:bg-primary/90 text-white rounded-xl px-8 h-12 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]">
+              <Link href="/events/referral-enabled">
+                 <Compass className="mr-2" size={20} /> Discover New Events
+              </Link>
+          </Button>
+        </div>
       </div>
 
-      {/* Referral Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          title="Total Referrals"
-          value={stats.totalReferrals || 0}
-          icon={Users}
-          color="text-violet-400"
-          bg="bg-violet-500/10"
-        />
-        <StatCard
-          title="Total Clicks"
-          value={stats.totalClicks || 0}
-          icon={MousePointerClick}
-          color="text-sky-400"
-          bg="bg-sky-500/10"
-        />
-        <StatCard
-          title="Tickets Sold"
-          value={stats.totalTicketsSold || 0}
-          icon={Ticket}
-          color="text-emerald-400"
-          bg="bg-emerald-500/10"
-        />
-        <StatCard
-          title="Referral Earnings"
-          value={formatCurrency(stats.totalEarnings)}
-          icon={DollarSign}
-          color="text-primary"
-          bg="bg-primary/10"
-        />
+      {/* Summary Metrics (React Query Powered) */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 mb-2">
+           <TrendingUp size={16} className="text-primary" />
+           <p className="text-[12px] font-extrabold text-white/30 uppercase tracking-[0.2em]">Lifecycle Performance</p>
+        </div>
+        <SummaryCards />
       </div>
 
-      {/* Wallet Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <StatCard 
-          title="Available Balance" 
-          value={formatCurrency(balance)} 
-          icon={Wallet} 
-          color="text-primary" 
-          bg="bg-primary/10" 
-        />
-        <StatCard 
-          title="Pending Rewards" 
-          value={formatCurrency(pending)} 
-          icon={Activity} 
-          color="text-blue-500" 
-          bg="bg-blue-500/10" 
-        />
-        <StatCard 
-          title="Total Withdrawn" 
-          value={formatCurrency(totalWithdrawnAP)} 
-          icon={Ticket} 
-          color="text-green-500" 
-          bg="bg-green-500/10" 
-        />
-      </div>
+      {/* Two Column Layout: Activity & Promotion */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-10 items-start">
+          
+          {/* Main Activity History */}
+          <div className="space-y-6">
+             <ActivityTable />
+          </div>
 
-      {/* Two columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-8">
-          <div className="bg-[#12121f] rounded-2xl border border-white/5 overflow-hidden">
-            <div className="px-6 py-5 border-b border-white/5 flex justify-between items-center">
-               <h3 className="font-semibold text-white">Active Campaigns</h3>
-               <Link href="/dashboard/referrals" className="text-sm text-primary hover:underline font-bold">
-                  View All
-               </Link>
-            </div>
-
-            {activeCampaigns.length > 0 ? (
-              <div className="divide-y divide-white/5">
-                {activeCampaigns.map((ref) => {
-                  const ev = ref.event || {};
-                  const s = ref.stats || {};
-                  
-                  return (
-                    <div key={ref.id} className="px-6 py-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                          <Ticket size={18} />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-white truncate">{ev.name || 'Untitled Event'}</p>
-                          <p className="text-xs text-gray-500">
-                             {ev.referral_reward_type === 'percentage' 
-                               ? `${ev.referral_reward_percentage}% Reward` 
-                               : `₦${(ev.referral_reward_amount || 0).toLocaleString()} Flat`}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="text-sm font-bold text-white">{formatCurrency(s.revenue || 0)}</p>
-                        <p className="text-xs text-gray-500">{s.tickets_sold || 0} sold</p>
-                      </div>
-                    </div>
-                  );
-                })}
+          {/* Right Sidebar: Utility & placeholders */}
+          <div className="space-y-8 sticky top-8">
+              
+              {/* Promotion Widget */}
+              <div className="bg-[#12121f] border border-white/5 rounded-2xl p-8 relative overflow-hidden group shadow-2xl">
+                  <div className="relative z-10 space-y-6">
+                     <p className="text-sm text-white/40 font-semibold tracking-widest uppercase">Networking Tip</p>
+                     <p className="text-[16px] text-white/90 leading-relaxed font-medium">
+                        Personalize your invitations on LinkedIn and WhatsApp to achieve up to <span className="text-primary">3x higher</span> conversion rates.
+                     </p>
+                     <Button asChild variant="ghost" className="p-0 text-primary hover:text-primary/80 hover:bg-transparent font-bold">
+                        <Link href="/events/referral-enabled">
+                           View promotion guide →
+                        </Link>
+                     </Button>
+                  </div>
+                  <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-primary/10 blur-[50px] rounded-full pointer-events-none group-hover:bg-primary/20 transition-all duration-700" />
               </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center p-20 text-center text-gray-400">
-                <Ticket size={40} className="mb-4 opacity-30" />
-                <p className="text-white font-medium mb-1">No active referrals yet</p>
-                <p className="text-sm mb-6">Start sharing event links to earn commissions.</p>
-                <Button asChild variant="outline" className="border-white/10 text-white rounded-xl">
-                  <Link href="/dashboard/referrals">
-                    Browse Events
-                  </Link>
-                </Button>
+
+              {/* Economy Placeholder (Future Reward System) */}
+              <div className="p-8 bg-[#0C0C14] rounded-2xl border border-white/5 relative overflow-hidden border-dashed opacity-60 grayscale-[0.5]">
+                  <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mb-4">Financial Infrastructure (Locked)</p>
+                  <div className="space-y-4">
+                     <div className="h-4 w-3/4 bg-white/5 rounded-full" />
+                     <div className="h-4 w-1/2 bg-white/5 rounded-full" />
+                  </div>
+                  <p className="text-[12px] text-gray-500 mt-6 font-medium leading-relaxed">
+                     Commissions and wallet withdrawal features are coming soon in the next update.
+                  </p>
               </div>
-            )}
-         </div>
 
-         {/* Right Sidebar Widget */}
-         <div className="space-y-6">
-             <div className="bg-[#12121f] border border-white/5 rounded-2xl p-6">
-                 <div className="flex items-center gap-4 mb-6">
-                     <div className="w-12 h-12 rounded-full bg-primary/20 text-primary flex items-center justify-center">
-                        <User size={24} />
-                     </div>
-                     <div>
-                         <p className="text-sm text-gray-400">Network Tier</p>
-                         <p className="font-bold text-white text-lg">Partner</p>
-                     </div>
-                 </div>
-
-                 <div className="space-y-2">
-                     <div className="flex justify-between text-xs font-medium">
-                         <span className="text-gray-400">Performance Index</span>
-                         <span className="text-primary">High</span>
-                     </div>
-                     <div className="h-2 w-full bg-[#1c1c28] rounded-full overflow-hidden">
-                         <div className="w-full h-full bg-primary rounded-full transition-all" />
-                     </div>
-                 </div>
-             </div>
-
-             <div className="bg-[#1c1c28] rounded-2xl p-5 border border-white/5 flex gap-4">
-                 <TrendingUp size={20} className="text-primary shrink-0" />
-                 <p className="text-sm text-gray-400 leading-relaxed">
-                    <span className="text-white font-medium">Pro Tip: </span>
-                    Share your links on professional networks alongside a personal note to increase conversion rates.
-                 </p>
-             </div>
-         </div>
+          </div>
       </div>
 
-    </div>
-  );
-}
-
-function StatCard({ title, value, subtitle, icon: Icon, color, bg }) {
-  return (
-    <div className="bg-[#12121f] border border-white/5 p-6 rounded-2xl flex items-center gap-4 shadow-sm">
-      <div className={`p-4 rounded-xl ${bg} ${color}`}>
-        <Icon size={24} />
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-400">{title}</p>
-        <p className="text-2xl font-bold text-white leading-none mt-1">{value}</p>
-        {subtitle && <p className="text-xs font-semibold text-gray-500 mt-1">{subtitle}</p>}
-      </div>
     </div>
   );
 }

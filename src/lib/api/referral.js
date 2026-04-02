@@ -44,6 +44,24 @@ export const referralApi = {
   // POST /referrals/generate/ — Create a new tracking link
   generateLink: (eventId) =>
     apiClient.post("/referrals/generate/", { eventId }).then((res) => res.data),
+
+  // ==========================================
+  // REFEREE DASHBOARD (New Endpoints)
+  // ==========================================
+
+  /**
+   * GET /referee/stats/ — Global summary statistics
+   * Expected: { total_clicks, total_conversions, pending_conversions, checked_in_referrals }
+   */
+  getRefereeStats: () =>
+    apiClient.get("/referee/stats/").then((res) => res.data),
+
+  /**
+   * GET /referee/activity/ — Detailed activity history
+   * Expected: Array of { event_name, buyer_id, status, date }
+   */
+  getRefereeActivity: () =>
+    apiClient.get("/referee/activity/").then((res) => res.data),
 };
 
 /**

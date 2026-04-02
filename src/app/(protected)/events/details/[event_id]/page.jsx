@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
+import { LinkDisplay } from "@/components/referral/link-display";
 
 export default function EventReferralDetailPage() {
   const params = useParams();
@@ -233,22 +234,9 @@ export default function EventReferralDetailPage() {
 
                  <div className="h-px w-full bg-white/[0.04] relative z-10" />
 
-                 <div className="space-y-4 relative z-10">
-                    <label className="text-[12px] font-semibold text-white/30 uppercase tracking-widest">Shareable Referral Link</label>
-                    
-                    <div className="bg-[#05050A] border border-white/5 rounded-[20px] p-4 flex items-center relative overflow-hidden">
-                       <p className="text-[13px] text-white/70 truncate flex-1 font-mono tracking-tight leading-none overflow-hidden">
-                          {referralLink}
-                       </p>
-                    </div>
-                    
-                    <Button 
-                       onClick={handleCopy}
-                       className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-7 h-14 rounded-[20px] text-[15px] transition-all active:scale-[0.98] mt-2 flex items-center justify-center gap-2 shadow-[0_10px_20px_rgba(227,54,41,0.2)]"
-                    >
-                       {copied ? "Link Copied" : "Copy Link"}
-                       {copied ? <Check size={18} /> : <ArrowUpRight size={18} className="text-white/70" />}
-                    </Button>
+                 {/* Shared Link Display Component */}
+                 <div className="relative z-10">
+                    <LinkDisplay event={event} referralLink={referralLink} />
                  </div>
 
                  <div className="p-4 bg-yellow-500/5 rounded-[20px] border border-yellow-500/10 relative z-10">
