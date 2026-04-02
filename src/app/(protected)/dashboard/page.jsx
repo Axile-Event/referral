@@ -49,12 +49,17 @@ export default function DashboardPage() {
       fetchProfile();
     }
     // Load dashboard stats & events
-    fetchGlobalStats();
-    fetchUserReferrals();
+    // We fetch user referrals first because we can aggregate stats from them if the global endpoint fails
+    fetchUserReferrals().then(() => {
+      calculateGlobalStats();
+    });
+    
+    fetchGlobalStats(); 
     fetchReferrableEvents();
-    fetchWalletData();
-    fetchTransactionHistory();
-  }, [isAuthenticated, user, fetchProfile, fetchWalletData, fetchTransactionHistory]);
+    
+    // fetchWalletData(); // Disabled: wallet endpoints not ready
+    // fetchTransactionHistory(); // Disabled: wallet endpoints not ready
+  }, [isAuthenticated, user, fetchProfile]);
 
   const formatCurrency = (val) => `₦${(val || 0).toLocaleString()}`;
 

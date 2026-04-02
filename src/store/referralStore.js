@@ -112,17 +112,22 @@ export const useReferralStore = create((set, get) => ({
 
   /**
    * Aggregate stats from all known event campaigns for local calculation fallback.
+   * This is used when the global stats endpoint is not ready.
    */
   calculateGlobalStats: () => {
-    const { eventStats } = get();
-    const statsArray = Object.values(eventStats);
+    const { referrals } = get();
     
-    const aggregated = statsArray.reduce((acc, curr) => ({
-      totalReferrals: acc.totalReferrals + (curr.tickets_sold > 0 ? 1 : 0),
-      totalClicks: acc.totalClicks + (curr.clicks || 0),
-      totalTicketsSold: acc.totalTicketsSold + (curr.tickets_sold || 0),
-      totalEarnings: acc.totalEarnings + (curr.referral_revenue || 0)
-    }), { totalReferrals: 0, totalClicks: 0, totalTicketsSold: 0, totalEarnings: 0 });
+    const aggregated = referrals.reduce((acc, ref) => {
+      // Use ref.stats which is returned by /referrals/ list
+      const s = ref.stats || {};
+      
+      return {
+        totalReferrals: acc.totalReferrals + 1,
+        totalClicks: acc.totalClicks + (Number(s.clicks) || Number(ref.clicks) || 0),
+        totalTicketsSold: acc.totalTicketsSold + (Number(s.tickets_sold) || Number(ref.tickets_sold) || 0),
+        totalEarnings: acc.totalEarnings + (Number(s.revenue) || Number(s.total_earnings) || Number(ref.total_earnings) || 0)
+      };
+    }, { totalReferrals: 0, totalClicks: 0, totalTicketsSold: 0, totalEarnings: 0 });
 
     set({ stats: aggregated });
   },
@@ -134,22 +139,23 @@ export const useReferralStore = create((set, get) => ({
     try {
       set({ isLoading: true });
       console.log("fetchGlobalStats: Fetching global referral metrics...");
+      // If the dashboard metrics have their own endpoint /referrals/stats/
       const data = await referralApi.getStats();
-      console.log("fetchGlobalStats: Success:", data);
-      // data: { total_referrals: n, total_clicks: n, total_tickets_sold: n, total_earnings: n }
+      console.log("fetchGlobalStats: API Response:", data);
+      
       set({ 
         stats: {
-          totalReferrals: data.total_referrals || 0,
-          totalClicks: data.total_clicks || 0,
-          totalTicketsSold: data.total_tickets_sold || 0,
-          totalEarnings: data.total_earnings || 0
+          totalReferrals: Number(data.total_referrals) || 0,
+          totalClicks: Number(data.total_clicks) || 0,
+          totalTicketsSold: Number(data.total_tickets_sold) || 0,
+          totalEarnings: Number(data.total_earnings) || 0
         }
       });
       return data;
     } catch (error) {
-      console.error("Referral Store execution failed [fetchGlobalStats]:", error);
-      const errorMsg = error?.response?.data?.message || error?.message || "Unknown error";
-      console.error(`API Error Detail (Global Stats): ${errorMsg}`);
+      console.error("fetchGlobalStats failed, using local aggregate fallback.");
+      // If the backend /referrals/stats/ is not ready, we rely on local aggregation from the /referrals/ list
+      get().calculateGlobalStats();
     } finally {
       set({ isLoading: false });
     }
