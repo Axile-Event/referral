@@ -25,10 +25,10 @@ export function generateReferralLink(refereeId, eventSlug, eventId) {
 
 /**
  * Get the target URL for the main Axile application. 
- * Falls back to axile.ng in production if not configured.
+ * Falls back to axiledev.vercel.app for development testing.
  */
 export function getMainAppUrl() {
-  return process.env.NEXT_PUBLIC_MAIN_APP_URL?.replace(/\/$/, "") || "https://axile.ng";
+  return process.env.NEXT_PUBLIC_MAIN_APP_URL?.replace(/\/$/, "") || "https://axiledev.vercel.app";
 }
 
 /**
@@ -39,7 +39,9 @@ export function getMainAppUrl() {
 export function buildRedirectUrl(eventId, code) {
   const mainAppUrl = getMainAppUrl();
   const cleanId = eventId ? eventId.replace("event:", "") : "";
-  return `${mainAppUrl}/events/${encodeURIComponent(cleanId)}?ref=${encodeURIComponent(code)}`;
+  // Decoding then encoding ensures we don't end up with double-encoded values like %253A
+  const safeCode = code ? decodeURIComponent(decodeURIComponent(code)) : "";
+  return `${mainAppUrl}/events/${encodeURIComponent(cleanId)}?ref=${encodeURIComponent(safeCode)}`;
 }
 
 /**
