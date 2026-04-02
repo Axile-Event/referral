@@ -4,8 +4,8 @@
  */
 
 const TOKEN_KEYS = {
-  ACCESS: "axile_access_token",
-  REFRESH: "axile_refresh_token",
+  ACCESS: "axile_token",
+  REFRESH: "axile_refresh",
 };
 
 export const tokenStorage = {

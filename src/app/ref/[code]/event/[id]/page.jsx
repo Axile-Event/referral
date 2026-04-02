@@ -8,7 +8,7 @@ import { buildRedirectUrl } from "@/lib/utils/referral";
 /**
  * Referral Entry Page
  * Handles redirection from /ref/[code]/event/[id] to the main Axile app
- * Target: https://axiledev.vercel.app/event/[id]?ref=[code]
+ * Target: https://axiledev.vercel.app/events/[id]?ref=[code]
  */
 export default function ReferralRedirectPage({ params: paramsPromise }) {
   const router = useRouter();

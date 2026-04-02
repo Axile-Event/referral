@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   User, 
   Shield, 
@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import { Input } from "@/components/ui/input.jsx";
+import { useAuthStore } from "@/store/authStore";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 
@@ -26,29 +27,68 @@ const SETTINGS_TABS = [
 ];
 
 export default function SettingsPage() {
+  const { user, fetchProfile, updateProfile, isLoading, isAuthenticated } = useAuthStore();
   const [activeTab, setActiveTab] = useState("profile");
+  const [formData, setFormData] = useState({
+    firstname: "",
+    lastname: "",
+    email: "",
+    password: ""
+  });
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
+  useEffect(() => {
+    if (isAuthenticated && !user) {
+      fetchProfile();
+    }
+  }, [isAuthenticated, user, fetchProfile]);
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        firstname: user.Firstname || user.firstname || "",
+        lastname: user.Lastname || user.lastname || "",
+        email: user.email || "",
+        password: ""
+      });
+    }
+  }, [user]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = async (e) => {
+    if (e) e.preventDefault();
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
-      toast.success("Settings updated successfully!", {
+    try {
+      // API expects capitalized fields from legacy requirements but handle both
+      await updateProfile({
+        Firstname: formData.firstname,
+        Lastname: formData.lastname,
+        Password: formData.password || undefined
+      });
+      
+      toast.success("Profile updated successfully!", {
         style: {
           background: "#161622",
           color: "#fff",
           border: "1px solid rgba(227, 54, 41, 0.2)"
         }
       });
-    }, 1200);
+    } catch (err) {
+      toast.error("Failed to update profile.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <div className="max-w-5xl mx-auto space-y-12 animate-fade-in pb-20 pt-4 px-4 sm:px-0">
       
-      {/* Header */}
       <div className="space-y-3">
-         <h1 className="text-3xl font-bold text-white tracking-tight">Account <span className="text-primary italic">Settings</span></h1>
+         <h1 className="text-3xl font-medium tracking-tight text-white/95">Account Settings</h1>
          <p className="text-white/40 text-sm font-medium">Configure your personal preferences and account security.</p>
       </div>
 
@@ -97,7 +137,15 @@ export default function SettingsPage() {
                transition={{ duration: 0.3, ease: "easeOut" }}
                className="p-6 md:p-12 space-y-10"
              >
-                {activeTab === "profile" && <ProfileSettings onSave={handleSave} isSaving={isSaving} />}
+                {activeTab === "profile" && (
+                  <ProfileSettings 
+                    user={user} 
+                    formData={formData} 
+                    onChange={handleChange} 
+                    onSave={handleSave} 
+                    isSaving={isSaving} 
+                  />
+                )}
                 {activeTab === "billing" && <BillingSettings />}
              </motion.div>
            </AnimatePresence>
@@ -117,7 +165,7 @@ function SectionHeader({ title, subtitle }) {
   );
 }
 
-function ProfileSettings({ onSave, isSaving }) {
+function ProfileSettings({ user, formData, onChange, onSave, isSaving }) {
   return (
     <div className="space-y-12">
        {/* Account Info Section */}
@@ -127,7 +175,11 @@ function ProfileSettings({ onSave, isSaving }) {
           <div className="flex flex-col md:flex-row gap-10 items-start">
              <div className="relative group self-center md:self-start">
                 <div className="w-32 h-32 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden relative shadow-lg">
-                   <User size={48} className="text-white/20" />
+                   {user?.profile_image ? (
+                     <img src={user.profile_image} alt="Avatar" className="w-full h-full object-cover" />
+                   ) : (
+                     <User size={48} className="text-white/20" />
+                   )}
                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 cursor-pointer text-white">
                       <Camera size={20} />
                    </div>
@@ -137,17 +189,43 @@ function ProfileSettings({ onSave, isSaving }) {
              <div className="flex-1 space-y-6 w-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] ml-1">Full Name</label>
-                      <Input defaultValue="Oluwatobi Lupo" className="bg-white/[0.04] border-white/5 rounded-2xl h-12 focus:border-primary/50" />
+                      <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] ml-1">First Name</label>
+                      <Input 
+                        name="firstname"
+                        value={formData.firstname}
+                        onChange={onChange}
+                        className="bg-white/[0.04] border-white/5 rounded-2xl h-12 focus:border-primary/50" 
+                      />
                    </div>
                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] ml-1">Email Address</label>
-                      <Input defaultValue="oluwatobi@axile.ng" className="bg-white/[0.04] border-white/5 rounded-2xl h-12 focus:border-primary/50" />
+                      <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] ml-1">Last Name</label>
+                      <Input 
+                        name="lastname"
+                        value={formData.lastname}
+                        onChange={onChange}
+                        className="bg-white/[0.04] border-white/5 rounded-2xl h-12 focus:border-primary/50" 
+                      />
                    </div>
                 </div>
                 <div className="space-y-2">
+                  <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] ml-1">Email Address</label>
+                  <Input 
+                    disabled
+                    value={formData.email}
+                    className="bg-white/[0.02] border-white/5 rounded-2xl h-12 opacity-50 cursor-not-allowed" 
+                  />
+                  <p className="text-[10px] text-white/20 ml-1">Email cannot be changed after verification.</p>
+                </div>
+                <div className="space-y-2">
                    <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] ml-1">New Password</label>
-                   <Input type="password" placeholder="••••••••••••" className="bg-white/[0.04] border-white/5 rounded-2xl h-12 focus:border-primary/50" />
+                   <Input 
+                    name="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={onChange}
+                    placeholder="••••••••••••" 
+                    className="bg-white/[0.04] border-white/5 rounded-2xl h-12 focus:border-primary/50" 
+                   />
                    <p className="text-[10px] text-white/20 ml-1">Leave blank to keep your current password.</p>
                 </div>
              </div>
@@ -180,7 +258,7 @@ function ProfileSettings({ onSave, isSaving }) {
           <Button 
             onClick={onSave}
             disabled={isSaving}
-            className="bg-primary hover:bg-primary/90 text-white rounded-2xl h-14 px-10 font-bold shadow-2xl shadow-primary/20 transition-all active:scale-95 flex items-center gap-3"
+            className="bg-primary hover:bg-primary/90 text-white rounded-2xl h-14 px-10 font-bold transition-all active:scale-95 flex items-center gap-3"
           >
             {isSaving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
             {isSaving ? "Synchronizing..." : "Apply All Settings"}

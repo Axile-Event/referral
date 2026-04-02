@@ -48,14 +48,14 @@ export default function EventAnalyticsPage() {
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
            <div className="space-y-3">
-              <h1 className="text-3xl font-black text-white tracking-tight leading-none">{event.name}</h1>
+              <h1 className="text-3xl font-medium tracking-tight text-white/95">{event.name}</h1>
               <div className="flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-[0.1em]">
                  <Zap size={12} className="fill-current" />
                  <span>Campaign Active & Syncing</span>
               </div>
            </div>
            
-           <Button className="h-11 rounded-xl bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/20 font-black text-[10px] uppercase tracking-[0.2em] px-6 transition-all active:scale-95 group/share">
+           <Button className="h-11 rounded-xl bg-primary hover:bg-primary/90 text-white font-black text-[10px] uppercase tracking-[0.2em] px-6 transition-all active:scale-95 group/share">
               <Share2 className="mr-2 group-hover:rotate-12 transition-transform" size={14} /> Promote & Share
            </Button>
         </div>
@@ -69,10 +69,7 @@ export default function EventAnalyticsPage() {
       </div>
 
       {/* Glassmorphic Referral Card */}
-      <div className="relative overflow-hidden rounded-[32px] bg-[#12121f] border border-white/5 p-8 md:p-14 text-white shadow-2xl">
-         {/* Background Glow */}
-         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full -mr-48 -mt-48 blur-[100px] opacity-40" />
-         <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/10 rounded-full -ml-32 -mb-32 blur-[80px] opacity-30" />
+      <div className="relative overflow-hidden rounded-[32px] bg-[#12121f] border border-white/5 p-8 md:p-14 text-white">
 
          <div className="relative z-10 max-w-2xl text-center mx-auto space-y-8">
             <div className="space-y-3">
@@ -81,7 +78,6 @@ export default function EventAnalyticsPage() {
             </div>
 
             <div className="group relative">
-               <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-transparent to-primary/20 rounded-[24px] blur-md opacity-0 group-hover:opacity-100 transition duration-700" />
                <div className="relative flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[22px] p-2 pr-2 sm:pr-3">
                   <div className="flex-1 px-5 py-3 text-left">
                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 mb-1">Personal ID</p>
@@ -89,7 +85,7 @@ export default function EventAnalyticsPage() {
                   </div>
                   <Button 
                     onClick={handleCopy}
-                    className="bg-primary hover:bg-primary/90 hover:scale-[1.02] text-white h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-primary/20 transition-all active:scale-95"
+                    className="bg-primary hover:bg-primary/90 hover:scale-[1.02] text-white h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest transition-all active:scale-95"
                   >
                     {copied ? (
                       <> <Check className="mr-2" size={14} /> Copied </>

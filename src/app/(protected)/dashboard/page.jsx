@@ -1,5 +1,5 @@
 "use client";
-
+import { useEffect } from "react";
 import React from "react";
 import Link from "next/link";
 import {
@@ -12,7 +12,13 @@ import { useWalletStore } from "@/store/walletStore";
 import { ReferralBanner } from "@/components/referral/referral-banner";
 
 export default function DashboardPage() {
-  const { user } = useAuthStore();
+  const { user, fetchProfile, isAuthenticated } = useAuthStore();
+  
+  // Debug user details for referral handle identification
+  React.useEffect(() => {
+    if (user) console.log("Current Authenticated User (Event Details):", user);
+  }, [user]);
+
   const { 
     referrableEvents, 
     eventStats, 
@@ -22,30 +28,32 @@ export default function DashboardPage() {
     calculateGlobalStats, 
     isLoading: isReferralLoading 
   } = useReferralStore();
-  const { balance, pending, totalEarned, fetchWalletData, isLoading: isWalletLoading } = useWalletStore();
+  const { 
+    balance, 
+    pending, 
+    totalWithdrawn: totalWithdrawnAP, 
+    fetchWalletData, 
+    fetchTransactionHistory,
+    isLoading: isWalletLoading,
+    apToNaira
+  } = useWalletStore();
   
-  const userName = user?.name?.split(" ")[0] || "Partner";
+  // Extract first name from user profile (ensure we capture it properly)
+  const userName = user?.name 
+    ? user.name.split(" ")[0] 
+    : (user?.Firstname || user?.firstname || "Partner");
 
-  React.useEffect(() => {
-    const loadData = async () => {
-      // 1. Fetch wallet info
-      fetchWalletData();
+  useEffect(() => {
+    // Ensure profile is loaded on dashboard mount
+    if (isAuthenticated && !user) {
+      fetchProfile();
+    }
+    fetchWalletData();
+    fetchTransactionHistory();
+  }, [isAuthenticated, user, fetchProfile, fetchWalletData, fetchTransactionHistory]);
 
-      // 2. Fetch list of possible events
-      const events = await fetchReferrableEvents();
-      
-      // 3. For each event, fetch the user's performance stats
-      if (events && events.length > 0) {
-        await Promise.all(events.map(ev => fetchEventStats(ev.event_id)));
-        // 4. Aggregate for the top summary cards
-        calculateGlobalStats();
-      }
-    };
-
-    loadData();
-  }, [fetchReferrableEvents, fetchEventStats, calculateGlobalStats, fetchWalletData]);
-
-  // Format currency
+  const formatAP = (val) => `${(val || 0).toLocaleString()} AP`;
+  const formatNaira = (val) => `≈ ₦${(apToNaira(val) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
   const formatCurrency = (val) => `₦${(val || 0).toLocaleString()}`;
 
   return (
@@ -57,11 +65,11 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-4 border-b border-white/5">
         <div>
-           <h1 className="text-3xl font-bold text-white mb-2">Welcome back, {userName}</h1>
+           <h1 className="text-3xl font-medium tracking-tight text-white/95 mb-2">Welcome back, {userName}</h1>
            <p className="text-gray-400">Track your referrals, commissions, and upcoming payouts.</p>
         </div>
 
-        <Button asChild className="bg-primary hover:bg-primary/90 text-white rounded-lg px-6 h-11 shrink-0">
+        <Button asChild className="bg-[#e11d48] hover:bg-[#e11d48]/90 text-white rounded-lg px-6 h-11 shrink-0">
             <Link href="/events/referral-enabled">
                <Compass className="mr-2" size={18} /> Discover Events
             </Link>
@@ -93,7 +101,7 @@ export default function DashboardPage() {
         />
         <StatCard
           title="Referral Earnings"
-          value={formatCurrency(stats.totalEarnings)}
+          value={formatAP(stats.totalEarnings)}
           icon={DollarSign}
           color="text-primary"
           bg="bg-primary/10"
@@ -102,9 +110,30 @@ export default function DashboardPage() {
 
       {/* Wallet Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <StatCard title="Available Balance" value={formatCurrency(balance)} icon={Wallet} color="text-primary" bg="bg-primary/10" />
-        <StatCard title="Pending Rewards" value={formatCurrency(pending)} icon={Activity} color="text-blue-500" bg="bg-blue-500/10" />
-        <StatCard title="Total Earned" value={formatCurrency(totalEarned)} icon={Ticket} color="text-green-500" bg="bg-green-500/10" />
+        <StatCard 
+          title="Available Balance" 
+          value={formatAP(balance)} 
+          subtitle={formatNaira(balance)}
+          icon={Wallet} 
+          color="text-primary" 
+          bg="bg-primary/10" 
+        />
+        <StatCard 
+          title="Pending Rewards" 
+          value={formatAP(pending)} 
+          subtitle={formatNaira(pending)}
+          icon={Activity} 
+          color="text-blue-500" 
+          bg="bg-blue-500/10" 
+        />
+        <StatCard 
+          title="Total Withdrawn" 
+          value={formatAP(totalWithdrawnAP)} 
+          subtitle={formatNaira(totalWithdrawnAP)}
+          icon={Ticket} 
+          color="text-green-500" 
+          bg="bg-green-500/10" 
+        />
       </div>
 
       {/* Two columns */}
@@ -199,7 +228,7 @@ export default function DashboardPage() {
   );
 }
 
-function StatCard({ title, value, icon: Icon, color, bg }) {
+function StatCard({ title, value, subtitle, icon: Icon, color, bg }) {
   return (
     <div className="bg-[#12121f] border border-white/5 p-6 rounded-2xl flex items-center gap-4 shadow-sm">
       <div className={`p-4 rounded-xl ${bg} ${color}`}>
@@ -207,7 +236,8 @@ function StatCard({ title, value, icon: Icon, color, bg }) {
       </div>
       <div>
         <p className="text-sm font-medium text-gray-400">{title}</p>
-        <p className="text-2xl font-bold text-white">{value}</p>
+        <p className="text-2xl font-bold text-white leading-none mt-1">{value}</p>
+        {subtitle && <p className="text-xs font-semibold text-gray-500 mt-1">{subtitle}</p>}
       </div>
     </div>
   );

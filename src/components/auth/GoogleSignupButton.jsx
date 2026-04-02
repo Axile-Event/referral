@@ -29,10 +29,18 @@ export function GoogleSignupButton({ variant = "signup" }) {
     onSuccess: async (response) => {
       setIsLoading(true);
       try {
+        console.log("Google Login Success:", response);
+        // Backend expects the access_token to be sent to /referee/google-signup/
         const result = await googleSignup(response.access_token);
         
-        if (result?.access) {
-          toast.success("Great! Logged in with Google.");
+        if (result?.name || result?.email) {
+          toast.success("Account created successfully!", {
+            style: {
+              background: "#161622",
+              color: "#fff",
+              border: "1px solid rgba(227, 54, 41, 0.2)"
+            }
+          });
           router.push("/dashboard");
         }
       } catch (error) {
@@ -40,7 +48,7 @@ export function GoogleSignupButton({ variant = "signup" }) {
                         error?.response?.data?.error ||
                         "Google authentication failed. Please try again.";
         toast.error(errorMsg);
-        console.error("Google signup error:", error?.response?.data);
+        console.error("Google auth error detail:", error?.response?.data);
       } finally {
         setIsLoading(false);
       }
@@ -50,6 +58,7 @@ export function GoogleSignupButton({ variant = "signup" }) {
       setIsLoading(false);
     },
     flow: "implicit",
+    prompt: "select_account",
   });
 
   return (

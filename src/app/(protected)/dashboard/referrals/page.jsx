@@ -41,7 +41,9 @@ export default function ReferralsPage() {
   // We only show events that actually have some recorded performance (tickets sold) 
   // or that the user has interacted with (though the doc doesn't show "joined" state yet).
   // For now, let's show all events the user has stats for.
-  const activeReferrals = referrableEvents.filter(ev => {
+  const events = Array.isArray(referrableEvents) ? referrableEvents : (referrableEvents?.events || []);
+  
+  const activeReferrals = events.filter(ev => {
     const s = eventStats[ev.event_id];
     return s && (s.tickets_sold > 0 || s.tickets?.length > 0);
   });
@@ -67,13 +69,13 @@ export default function ReferralsPage() {
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-primary/20">
                Direct Referrals
             </div>
-            <h1 className="text-3xl font-bold text-white tracking-tight">Campaign <span className="text-primary italic">Portfolio</span></h1>
+            <h1 className="text-3xl font-medium tracking-tight text-white/95">Campaign Portfolio</h1>
             <p className="text-gray-500 text-sm font-medium max-w-md">Track, manage and optimize your promotional performance in real-time.</p>
          </div>
 
          <div className="flex items-center gap-3">
             <div className="relative group hidden sm:block">
-               <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 via-transparent to-primary/30 rounded-xl blur-sm opacity-0 group-hover:opacity-100 transition duration-500" />
+               <div className="absolute -inset-[1px] bg-white/5 rounded-xl opacity-0 group-hover:opacity-100 transition duration-500" />
                <div className="relative">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
                   <Input 
@@ -82,7 +84,7 @@ export default function ReferralsPage() {
                   />
                </div>
             </div>
-            <Button asChild className="bg-primary hover:bg-primary/90 text-white rounded-xl h-11 px-6 font-bold shadow-lg shadow-primary/20 active:scale-95 transition-transform">
+            <Button asChild className="bg-primary hover:bg-primary/90 text-white rounded-xl h-11 px-6 font-bold active:scale-95 transition-transform">
                <Link href="/events/referral-enabled">
                   <Zap size={14} className="mr-2 fill-current" /> Expand
                </Link>
@@ -109,9 +111,9 @@ export default function ReferralsPage() {
           return (
             <div 
               key={eventId}
-              className="group relative bg-[#12121f] rounded-[28px] border border-white/5 hover:border-primary/20 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 flex flex-col h-full overflow-hidden"
+              className="group relative bg-[#12121f] rounded-[28px] border border-white/5 hover:border-primary/20 transition-all duration-500 flex flex-col h-full overflow-hidden"
             >
-              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/5" />
               
               <div className="h-44 relative overflow-hidden bg-black/40 border-b border-white/5">
                 {image && (
@@ -121,7 +123,7 @@ export default function ReferralsPage() {
                     className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 ease-out"
                   />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#12121f] via-[#12121f]/20 to-transparent opacity-80" />
+                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
                 
                 <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(227,54,41,0.8)]" />

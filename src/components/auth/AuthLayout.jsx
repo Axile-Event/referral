@@ -74,7 +74,7 @@ export function AuthSplitLayout({
               <Lock size={28} />
             </motion.div>
             <h2 className="text-4xl font-bold text-white tracking-tight">{title}</h2>
-            <p className="text-gray-400 font-medium">{subtitle}</p>
+            <div className="text-gray-400 font-medium">{subtitle}</div>
           </div>
 
           {/* Form Content */}

@@ -8,20 +8,24 @@ import { walletApi } from "@/lib/api/wallet";
  * Actions: fetchWalletData, requestWithdrawal, fetchTransactionHistory
  */
 export const useWalletStore = create((set) => ({
-  balance: 0,
-  pending: 0,
-  totalEarned: 0, 
+  balance: 0, // In AP
+  pending: 0, // In AP
+  totalWithdrawn: 0, // In AP
   transactions: [],
   isLoading: false,
+
+  // Helper: 1 AP = 10 Naira
+  apToNaira: (ap) => ap * 10,
 
   fetchWalletData: async () => {
     set({ isLoading: true });
     try {
+      // Assuming getBalance returns all stats now
       const data = await walletApi.getBalance();
       set({ 
         balance: data.balance || 0, 
         pending: data.pending || 0, 
-        totalEarned: data.totalEarned || 0 
+        totalWithdrawn: data.totalWithdrawn || 0 
       });
     } catch (error) {
       console.error("Failed to fetch wallet balance:", error);

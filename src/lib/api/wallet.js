@@ -1,19 +1,18 @@
 import apiClient from "./client";
 
 /**
- * Wallet API Methods
- * - GET  /wallet/balance      → getBalance
- * - GET  /wallet/transactions → getTransactions
- * - POST /wallet/withdraw     → requestWithdrawal
- * - GET  /wallet/stats        → getStats
+ * Wallet API Methods (Based on PRD)
+ * - GET  /wallet           → getBalance / getStats
+ * - GET  /wallet/history   → getTransactions
+ * - POST /withdrawals      → requestWithdrawal
  */
 export const walletApi = {
-  getBalance: () => apiClient.get("/wallet/balance/").then((r) => r.data),
+  getBalance: () => apiClient.get("/wallet/").then((r) => r.data),
 
-  getTransactions: () => apiClient.get("/wallet/transactions/").then((r) => r.data),
+  getTransactions: () => apiClient.get("/wallet/history/").then((r) => r.data),
 
   requestWithdrawal: (amount, bankDetails) =>
-    apiClient.post("/wallet/withdraw/", { amount, bankDetails }).then((r) => r.data),
+    apiClient.post("/withdrawals/", { amount, bankDetails }).then((r) => r.data),
 
-  getStats: () => apiClient.get("/wallet/stats/").then((r) => r.data),
+  getStats: () => apiClient.get("/wallet/").then((r) => r.data),
 };
