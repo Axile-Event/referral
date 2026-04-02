@@ -73,7 +73,7 @@ export default function SignUpPage() {
               transition={{ delay: 0.3 }}
               className="text-6xl font-extrabold text-white tracking-tight leading-tight"
             >
-              Start Your <span className="text-primary">Earning Journey</span>
+              Start <span className="text-primary">Making Money</span> Referring Others
             </motion.h1>
             <motion.p 
               initial={{ x: -20, opacity: 0 }}
@@ -81,7 +81,7 @@ export default function SignUpPage() {
               transition={{ delay: 0.5 }}
               className="text-xl text-gray-300 font-medium leading-relaxed"
             >
-              Connect with top-tier events and be rewarded for sharing experiences with your network.
+              Invite your network to exclusive events and earn rewards for every successful referral you make.
             </motion.p>
           </div>
         </div>
@@ -99,8 +99,8 @@ export default function SignUpPage() {
              >
                 <UserIcon size={28} />
              </motion.div>
-             <h2 className="text-4xl font-bold text-white tracking-tight">Create Account</h2>
-             <p className="text-gray-400 font-medium">Be part of the Axile referral ecosystem</p>
+             <h2 className="text-4xl font-bold text-white tracking-tight">Join to Start Earning</h2>
+             <p className="text-gray-400 font-medium">The platform where your network becomes your net worth.</p>
           </div>
 
           {/* Form */}
@@ -185,7 +185,7 @@ export default function SignUpPage() {
                 <Loader2 className="animate-spin" />
               ) : (
                 <>
-                  Register Now 
+                  Start Earning Now 
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
