@@ -133,7 +133,9 @@ export const useReferralStore = create((set, get) => ({
   fetchGlobalStats: async () => {
     try {
       set({ isLoading: true });
+      console.log("fetchGlobalStats: Fetching global referral metrics...");
       const data = await referralApi.getStats();
+      console.log("fetchGlobalStats: Success:", data);
       // data: { total_referrals: n, total_clicks: n, total_tickets_sold: n, total_earnings: n }
       set({ 
         stats: {
@@ -145,7 +147,9 @@ export const useReferralStore = create((set, get) => ({
       });
       return data;
     } catch (error) {
-      console.error("Referral Store error [fetchGlobalStats]:", error);
+      console.error("Referral Store execution failed [fetchGlobalStats]:", error);
+      const errorMsg = error?.response?.data?.message || error?.message || "Unknown error";
+      console.error(`API Error Detail (Global Stats): ${errorMsg}`);
     } finally {
       set({ isLoading: false });
     }
@@ -157,15 +161,26 @@ export const useReferralStore = create((set, get) => ({
   fetchUserReferrals: async () => {
     try {
       set({ isLoading: true });
+      console.log("fetchUserReferrals: Making API call to /referrals/...");
       const data = await referralApi.getUserReferrals();
-      set({ referrals: data || [] });
+      console.log("fetchUserReferrals: Data received successfully:", data);
+      
+      // Handle various response shapes if backend wrapped it
+      const referralsArray = Array.isArray(data) ? data : (data?.referrals || data?.data || []);
+      set({ referrals: referralsArray });
     } catch (error) {
-      console.error("Referral Store error [fetchUserReferrals]:", error);
+      console.error("Referral Store execution failed [fetchUserReferrals]:", error);
+      
+      // Extract specific error info for more detailed logging
+      const errorMsg = error?.response?.data?.message || error?.message || "Unknown error";
+      const status = error?.response?.status;
+      console.error(`API Error Detail: Status ${status}, Message: ${errorMsg}`);
+      
       toast.error("Failed to load your referrals.", { 
         style: { background: "#161622", color: "#fff", border: "1px solid rgba(227, 54, 41, 0.2)" }
       });
     } finally {
-        set({ isLoading: false });
+      set({ isLoading: false });
     }
   },
 
