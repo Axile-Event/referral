@@ -187,8 +187,8 @@ export default function VerifyOtpPage() {
               alt="Axile" 
               className="h-10 w-auto object-contain mb-8 opacity-80"
             />
-            <h3 className="text-2xl font-bold text-white mb-2">Security First</h3>
-            <p className="text-gray-400 max-w-sm">We ensure your account is protected with multi-factor authentication.</p>
+            <h3 className="text-2xl font-bold text-white mb-2">Almost There</h3>
+            <p className="text-gray-400 max-w-sm">Secure your account to start earning from referrals today.</p>
         </div>
       </div>
 
