@@ -12,12 +12,11 @@ import { motion, AnimatePresence } from "framer-motion";
 /**
  * WithdrawModal Component
  */
-export function WithdrawModal({ isOpen, onClose, balance = 0, apToNaira, onWithdraw }) {
+export function WithdrawModal({ isOpen, onClose, balance = 0, onWithdraw }) {
   const [amount, setAmount] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const nairaValue = apToNaira(Number(amount) || 0);
-  const isValid = Number(amount) >= 50 && Number(amount) <= balance;
+  const isValid = Number(amount) >= 500 && Number(amount) <= balance;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -71,9 +70,9 @@ export function WithdrawModal({ isOpen, onClose, balance = 0, apToNaira, onWithd
            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                  <div className="flex justify-between items-baseline px-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Amount (AP)</label>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Amount (₦)</label>
                     <span className="text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary/10 tracking-widest">
-                       Min: 50 AP
+                       Min: ₦500
                     </span>
                  </div>
                  <div className="relative group">
@@ -84,13 +83,12 @@ export function WithdrawModal({ isOpen, onClose, balance = 0, apToNaira, onWithd
                        onChange={(e) => setAmount(e.target.value)}
                        className="text-center text-3xl font-extrabold h-24 rounded-3xl bg-white/5 border-white/10 focus-visible:ring-primary/50"
                     />
-                    <div className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-500 font-bold">AP</div>
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-500 font-bold">₦</div>
                  </div>
                  <div className="flex justify-between items-center px-2 py-1">
                     <p className="text-sm font-medium text-gray-400">
-                       You receive: <span className="text-white font-bold tracking-tight">₦{nairaValue.toLocaleString("en-NG", { minimumFractionDigits: 2 })}</span>
+                       You receive: <span className="text-white font-bold tracking-tight">₦{(Number(amount) || 0).toLocaleString("en-NG", { minimumFractionDigits: 2 })}</span>
                     </p>
-                    <p className="text-xs font-medium text-gray-500 italic">10 AP = ₦100</p>
                  </div>
               </div>
 

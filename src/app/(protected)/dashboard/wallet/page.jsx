@@ -31,7 +31,6 @@ export default function WalletPage() {
     isLoading, 
     fetchWalletData, 
     fetchTransactionHistory,
-    apToNaira,
     requestWithdrawal 
   } = useWalletStore();
 
@@ -65,9 +64,9 @@ export default function WalletPage() {
       {/* Top Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
-          <h1 className="text-3xl font-medium tracking-tight text-white/95">Points Wallet</h1>
+          <h1 className="text-3xl font-medium tracking-tight text-white/95">Earnings Wallet</h1>
           <p className="text-gray-400 font-medium text-sm tracking-tight leading-relaxed">
-            Manage your earned points. 10 AP = ₦100. Min withdrawal: 50 AP.
+            Manage your earned commissions. Direct withdrawal to your bank account.
           </p>
         </div>
         <button 
@@ -84,7 +83,6 @@ export default function WalletPage() {
         <div className="xl:col-span-2 flex">
            <WalletCard 
               balance={balance} 
-              nairaVal={apToNaira(balance)} 
               onWithdraw={() => setIsWithdrawOpen(true)}
               onViewReports={() => toast("Report feature coming soon!")}
            />
@@ -92,7 +90,7 @@ export default function WalletPage() {
         
         <div className="flex flex-col gap-6">
            <StatCard 
-              label="PENDING AP" 
+              label="PENDING EARNINGS" 
               value={pending} 
               icon={Clock} 
            />
@@ -123,7 +121,6 @@ export default function WalletPage() {
             isOpen={isWithdrawOpen} 
             onClose={() => setIsWithdrawOpen(false)}
             balance={balance}
-            apToNaira={apToNaira}
             onWithdraw={handleWithdrawal}
           />
         )}

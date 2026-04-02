@@ -35,8 +35,7 @@ export default function DashboardPage() {
     totalWithdrawn: totalWithdrawnAP, 
     fetchWalletData, 
     fetchTransactionHistory,
-    isLoading: isWalletLoading,
-    apToNaira
+    isLoading: isWalletLoading
   } = useWalletStore();
   
   // Extract first name from user profile (ensure we capture it properly)
@@ -57,8 +56,6 @@ export default function DashboardPage() {
     fetchTransactionHistory();
   }, [isAuthenticated, user, fetchProfile, fetchWalletData, fetchTransactionHistory]);
 
-  const formatAP = (val) => `${(val || 0).toLocaleString()} AP`;
-  const formatNaira = (val) => `≈ ₦${(apToNaira(val) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
   const formatCurrency = (val) => `₦${(val || 0).toLocaleString()}`;
 
   // Use the actual generated referrals for "Active Campaigns"
@@ -109,7 +106,7 @@ export default function DashboardPage() {
         />
         <StatCard
           title="Referral Earnings"
-          value={formatAP(stats.totalEarnings)}
+          value={formatCurrency(stats.totalEarnings)}
           icon={DollarSign}
           color="text-primary"
           bg="bg-primary/10"
@@ -120,24 +117,21 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <StatCard 
           title="Available Balance" 
-          value={formatAP(balance)} 
-          subtitle={formatNaira(balance)}
+          value={formatCurrency(balance)} 
           icon={Wallet} 
           color="text-primary" 
           bg="bg-primary/10" 
         />
         <StatCard 
           title="Pending Rewards" 
-          value={formatAP(pending)} 
-          subtitle={formatNaira(pending)}
+          value={formatCurrency(pending)} 
           icon={Activity} 
           color="text-blue-500" 
           bg="bg-blue-500/10" 
         />
         <StatCard 
           title="Total Withdrawn" 
-          value={formatAP(totalWithdrawnAP)} 
-          subtitle={formatNaira(totalWithdrawnAP)}
+          value={formatCurrency(totalWithdrawnAP)} 
           icon={Ticket} 
           color="text-green-500" 
           bg="bg-green-500/10" 
