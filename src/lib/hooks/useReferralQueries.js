@@ -25,6 +25,17 @@ export function useRefereeActivity() {
 }
 
 /**
+ * useUserReferrals
+ * Fetches all of the current user's generated tracking links/campaigns.
+ */
+export function useUserReferrals() {
+  return useQuery({
+    queryKey: ["referee", "referrals"],
+    queryFn: () => referralApi.getUserReferrals(),
+  });
+}
+
+/**
  * useReferrableEvents
  * Fetches events eligible for referral.
  */
@@ -32,6 +43,18 @@ export function useReferrableEvents() {
   return useQuery({
     queryKey: ["referee", "events"],
     queryFn: () => referralApi.getReferrableEvents(),
+  });
+}
+
+/**
+ * useReferrableEventDetail
+ * Fetches details for a single referrable event.
+ */
+export function useReferrableEventDetail(eventId) {
+  return useQuery({
+    queryKey: ["referee", "events", eventId],
+    queryFn: () => referralApi.getEventDetails(eventId),
+    enabled: !!eventId,
   });
 }
 
