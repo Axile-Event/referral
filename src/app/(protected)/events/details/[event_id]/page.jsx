@@ -30,20 +30,13 @@ export default function EventReferralDetailPage() {
     fetchReferrableEventDetail(identifier);
   }, [identifier, fetchReferrableEventDetail]);
 
-  // Priority for user identification (Referral ID):
-  // Uses the backend-assigned 'referree_id' (e.g. referrer:username123)
-  const userHandle = 
-    user?.referree_id || 
-    user?.referee_id || 
-    user?.username || 
-    user?.Username || 
-    "referee";
+  const username = useAuthStore((s) => s.username);
   
   // Build link using the global utility to ensure consistency
   // Uses event_slug primarily, or event_id (without 'event:' prefix)
   const referralLink = event
     ? generateReferralLink({
-        referee_id: userHandle,
+        username: username || "referee",
         event_slug: event.event_slug,
         event_id: event.event_id,
       })

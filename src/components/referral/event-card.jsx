@@ -11,19 +11,23 @@ import { motion } from "framer-motion";
 
 export function EventCard({ event }) {
   const [copied, setCopied] = useState(false);
-  const user = useAuthStore((s) => s.user);
+  const username = useAuthStore((s) => s.username);
   
-  // Extract referee_id from the user state
-  const referee_id = user?.referree_id || user?.id || "";
-
   // The link generated to share
   const referralLink = generateReferralLink({ 
-    referee_id, 
+    username, 
     event_slug: event.event_slug, 
     event_id: event.event_id || event.id 
   });
 
   const handleCopy = async () => {
+    if (!username) {
+      toast.error("Please set your username in settings first!", {
+        duration: 4000,
+        style: { background: "#161622", color: "#fff", border: "1px solid rgba(227, 54, 41, 0.2)" }
+      });
+      return;
+    }
     if (!referralLink) {
       toast.error("Could not generate referral link");
       return;
@@ -35,11 +39,19 @@ export function EventCard({ event }) {
   };
 
   const shareOnWhatsApp = () => {
+    if (!username) {
+      toast.error("Please set your username in settings first!");
+      return;
+    }
     const text = `Check out ${event.name}! Get your tickets here: ${referralLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   const shareOnTwitter = () => {
+    if (!username) {
+      toast.error("Please set your username in settings first!");
+      return;
+    }
     const text = `Check out ${event.name}! Get your tickets here: ${referralLink}`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
   };

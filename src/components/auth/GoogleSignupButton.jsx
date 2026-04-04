@@ -33,7 +33,7 @@ export function GoogleSignupButton({ variant = "signup" }) {
         // Backend expects the access_token to be sent to /referee/google-signup/
         const result = await googleSignup(response.access_token);
         
-        if (result?.name || result?.email) {
+        if (result?.email || result?.username) {
           toast.success("Account created successfully!", {
             style: {
               background: "#161622",
@@ -41,7 +41,12 @@ export function GoogleSignupButton({ variant = "signup" }) {
               border: "1px solid rgba(227, 54, 41, 0.2)"
             }
           });
-          router.push("/dashboard");
+          
+          if (result.needs_username) {
+            router.push("/dashboard/settings");
+          } else {
+            router.push("/dashboard");
+          }
         }
       } catch (error) {
         const errorMsg = error?.response?.data?.message || 

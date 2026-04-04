@@ -100,8 +100,6 @@ export const normalizeUserProfile = (apiResponse) => {
     Username = "",
     email = "",
     Email = "",
-    referree_id = "",
-    referee_id = "",
     ...rest
   } = profile;
 
@@ -122,8 +120,6 @@ export const normalizeUserProfile = (apiResponse) => {
     name: combinedName,
     username: username || Username || email || Email,
     email: email || Email,
-    // Ensure referee_id is captured from any possible location
-    referree_id: referree_id || referee_id || topLevelFields.referree_id || topLevelFields.referee_id || "",
   };
 
   // Clean up to prevent recursive profile/user/data keys after normalization

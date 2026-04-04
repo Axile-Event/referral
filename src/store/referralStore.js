@@ -105,6 +105,14 @@ export const useReferralStore = create((set, get) => ({
       return stats;
     } catch (error) {
       console.error(`Failed to fetch stats for event ${eventId}:`, error);
+      
+      // Task 6: Handle username_required error
+      if (error.response?.data?.code === "username_required" || error.response?.status === 400) {
+        toast.error("Please set your username in settings to view detailed stats.", {
+          duration: 5000,
+          style: { background: "#161622", color: "#fff", border: "1px solid rgba(227, 54, 41, 0.2)" }
+        });
+      }
     } finally {
       set({ isLoading: false });
     }

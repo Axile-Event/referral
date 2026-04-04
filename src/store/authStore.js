@@ -11,6 +11,7 @@ import { tokenStorage } from "@/lib/utils/tokenStorage";
  */
 export const useAuthStore = create((set, get) => ({
   user: null,
+  username: (typeof window !== "undefined" ? localStorage.getItem("axile_username") : null),
   isAuthenticated: (typeof window !== "undefined" && !!tokenStorage.getAccessToken()),
   isLoading: false,
   error: null,
@@ -61,11 +62,17 @@ export const useAuthStore = create((set, get) => ({
       
       if (res.access) {
         tokenStorage.setTokens(res.access, res.refresh);
+        // Task: Capture User.Username (capital U)
+        if (res.user?.Username) {
+          const username = res.user.Username;
+          set({ username });
+          localStorage.setItem("axile_username", username);
+        }
       }
       const profile = await authApi.getProfile();
       const normalizedProfile = normalizeUserProfile(profile);
       set({ user: normalizedProfile, isAuthenticated: true });
-      return normalizedProfile;
+      return { ...normalizedProfile, needs_username: res.needs_username };
     } catch (err) {
       const msg = err.response?.data?.error || err.response?.data?.message || err.message;
       set({ error: msg });
@@ -106,6 +113,12 @@ export const useAuthStore = create((set, get) => ({
       const res = await authApi.verifyOtp(payload);
       if (res.access) {
         tokenStorage.setTokens(res.access, res.refresh);
+        // Task: Capture user.Username from verify-otp response
+        if (res.user?.Username) {
+          const username = res.user.Username;
+          set({ username });
+          localStorage.setItem("axile_username", username);
+        }
         const profile = await authApi.getProfile();
         const normalizedProfile = normalizeUserProfile(profile);
         set({ user: normalizedProfile, isAuthenticated: true });
@@ -248,7 +261,17 @@ export const useAuthStore = create((set, get) => ({
     }
     
     tokenStorage.clearTokens();
-    set({ user: null, isAuthenticated: false });
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("axile_username");
+    }
+    set({ user: null, username: null, isAuthenticated: false });
+  },
+
+  setUsername: (username) => {
+    set({ username });
+    if (typeof window !== "undefined") {
+      localStorage.setItem("axile_username", username);
+    }
   },
 
   setUser: (user) => set({ user: user ? normalizeUserProfile(user) : null, isAuthenticated: !!user }),

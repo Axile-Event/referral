@@ -8,25 +8,26 @@ export const REFERRAL_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 /**
  * Generate a shareable referral link for a referee and event.
- * Backend provides: { referee_id, event_slug, event_id }
+ * Backend provides: { event_slug, username }
  * 
  * Rules:
- * 1. event_identifier = event_slug OR event_id (with 'event:' prefix removed)
- * 2. Never use raw event: prefix in URL
- * 3. Always use referee_id
+ * 1. Always use event_slug (identifier)
+ * 2. Always use username
+ * 
+ * New Format: referral.axile.ng/event/{event-slug}/{username}
  */
 export function generateReferralLink(data) {
   if (!data) return "";
-  const { referee_id, event_slug, event_id } = data;
+  const { event_slug, username, event_id } = data;
   
-  // Clean identifier: fallback to ID if slug is missing
+  // Clean identifier: use event_slug
   const identifier = event_slug || (event_id ? event_id.replace("event:", "") : "");
   
-  if (!referee_id || !identifier) return "";
+  if (!username || !identifier) return "";
   
-  // Use development URL for the dev branch as requested
-  const baseUrl = process.env.NEXT_PUBLIC_AXILE_DEV_URL?.replace(/\/$/, "") || "https://axilereferraldev.vercel.app";
-  return `${baseUrl}/ref/${referee_id}/event/${identifier}`;
+  // Use development URL or production APP URL
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://axilereferraldev.vercel.app";
+  return `${baseUrl}/event/${identifier}/${username}`;
 }
 
 /**
