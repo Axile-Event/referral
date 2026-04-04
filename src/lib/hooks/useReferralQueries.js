@@ -32,9 +32,27 @@ export function useRefereeStats() {
 
         results.forEach(result => {
           if (result.status === "fulfilled" && result.value) {
-            totals.tickets_sold += (result.value.tickets_sold || 0);
-            totals.referral_revenue += (result.value.referral_revenue || 0);
-            // Add other metrics as they become available in the event stats
+            const eventStats = result.value;
+            const tickets = eventStats.tickets || [];
+            
+            totals.tickets_sold += (eventStats.tickets_sold || 0);
+
+            // Split revenue by checked-in status
+            tickets.forEach(ticket => {
+              const ticketPrice = Number(ticket.category_price) || 0;
+              // Assuming 'is_checked_in' is the field for check-in status
+              if (ticket.status?.toLowerCase() === "checked_in" || ticket.is_checked_in === true) {
+                totals.referral_revenue += ticketPrice;
+                totals.checked_in += 1;
+              } else {
+                totals.pending_earnings += ticketPrice;
+              }
+            });
+
+            // If the backend also provides a global revenue we use it as fallback if tickets array is empty
+            if (tickets.length === 0) {
+              totals.referral_revenue += (eventStats.referral_revenue || 0);
+            }
           }
         });
 
