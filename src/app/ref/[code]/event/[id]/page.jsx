@@ -49,13 +49,13 @@ export default function ReferralRedirectPage({ params: paramsPromise }) {
     <div className="fixed inset-0 bg-[#050505] flex items-center justify-center">
       <div className="flex flex-col items-center gap-6">
         <img 
-          src="/axile-logo-main.png" 
+          src="/Axile logo.png" 
           alt="Axile Logo" 
           className="h-8 w-auto object-contain animate-pulse"
         />
         <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
         <p className="text-[13px] text-white/30 font-medium tracking-wide">
-          Redirecting...
+          Syncing Referral {params?.code ? `(${params.code})` : ""}...
         </p>
       </div>
     </div>
