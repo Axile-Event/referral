@@ -40,11 +40,39 @@ export function useRefereeStats() {
           balance: 0
         };
 
-        eventStats.forEach(({ stats }) => {
+        eventStats.forEach(({ event, stats }) => {
+            const tickets = stats.tickets || [];
             totals.tickets_sold += (stats.tickets_sold || 0);
-            totals.referral_revenue += (stats.referral_revenue || 0);
-            totals.pending_earnings += (stats.pending_earnings || 0);
-            totals.checked_in += (stats.checked_in_count || 0);
+
+            tickets.forEach(ticket => {
+                const rewardType = event?.referral_reward_type || stats?.referral_reward_type;
+                const rewardAmount = Number(event?.referral_reward_amount || stats?.referral_reward_amount || 0);
+                const rewardPercentage = Number(event?.referral_reward_percentage || stats?.referral_reward_percentage || 0);
+                const ticketPrice = Number(ticket.category_price || 0);
+
+                let reward = 0;
+                if (rewardType === 'flat') {
+                    reward = rewardAmount;
+                } else if (rewardType === 'percentage') {
+                    reward = (ticketPrice * rewardPercentage) / 100;
+                }
+
+                const isSettled = ticket.status?.toLowerCase() === "used" || 
+                                 ticket.status?.toLowerCase() === "checked_in" || 
+                                 ticket.is_checked_in === true;
+
+                if (isSettled) {
+                    totals.referral_revenue += reward;
+                    totals.checked_in += 1;
+                } else {
+                    totals.pending_earnings += reward;
+                }
+            });
+
+            // Fallback for events with 0 tickets but summary revenue (shouldn't happen with status rule, but for edge cases)
+            if (tickets.length === 0) {
+                totals.referral_revenue += (stats.referral_revenue || 0);
+            }
         });
 
         // Try wallet stats as bonus
