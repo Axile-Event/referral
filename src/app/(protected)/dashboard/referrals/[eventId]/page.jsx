@@ -27,11 +27,11 @@ export default function ReferralDetailsPage({ params: paramsPromise }) {
   const { data: stats, isLoading: isStatsLoading } = useEventStats(eventId);
 
   const tickets = stats?.tickets || [];
-  const isLoading = isEventLoading || isStatsLoading;
+  const isLoading = (isEventLoading || isStatsLoading) && (!selectedEvent || !stats);
   
   const formatCurrency = (val) => `₦${(val || 0).toLocaleString()}`;
 
-  if (isLoading && !selectedEvent) {
+  if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
          <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
@@ -84,7 +84,7 @@ export default function ReferralDetailsPage({ params: paramsPromise }) {
                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 md:gap-8">
                   <MetaItem icon={Calendar} label="Event Date" value={selectedEvent?.date ? new Date(selectedEvent.date).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : "TBA"} />
                   <MetaItem icon={TrendingUp} label="Your Reward" value={selectedEvent?.referral_reward_type === 'percentage' ? `${selectedEvent.referral_reward_percentage}% Share` : formatCurrency(selectedEvent?.referral_reward_amount)} color="text-primary" />
-                  <MetaItem icon={Users} label="Referral Name" value={stats.referral_name || "N/A"} />
+                  <MetaItem icon={Users} label="Referral Name" value={stats?.referral_name || "N/A"} />
                </div>
             </div>
          </div>
@@ -94,15 +94,15 @@ export default function ReferralDetailsPage({ params: paramsPromise }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
          <SummaryCard 
             title="Referral Revenue" 
-            value={formatCurrency(stats.referral_revenue)} 
+            value={formatCurrency(stats?.referral_revenue)} 
             icon={Wallet} 
             color="text-green-500" 
             bg="bg-green-500/10" 
-            metric={`${((stats.referral_revenue || 0) / (selectedEvent?.category_price || 1) * 10).toFixed(1)}% Yield`}
+            metric={`${((stats?.referral_revenue || 0) / (selectedEvent?.category_price || 1) * 10).toFixed(1)}% Yield`}
          />
          <SummaryCard 
             title="Conversions" 
-            value={stats.tickets_sold || 0} 
+            value={stats?.tickets_sold || 0} 
             icon={CheckCircle} 
             color="text-primary" 
             bg="bg-primary/10" 
