@@ -44,7 +44,7 @@ export default function ReferralEntryPage({ params: paramsPromise }) {
       />
       <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
       <h1 className="text-xl font-semibold mb-2">
-        {username ? `Syncing @${username}'s Referral...` : "Syncing Referral..."}
+        {username ? `Redirecting to @${username}'s Referral...` : "Redirecting..."}
       </h1>
       <p className="text-white/60 text-sm italic">You're being redirected to the event page</p>
     </div>

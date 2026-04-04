@@ -55,7 +55,7 @@ export default function ReferralRedirectPage({ params: paramsPromise }) {
         />
         <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
         <p className="text-[13px] text-white/30 font-medium tracking-wide">
-          Syncing Referral {params?.code ? `(${params.code})` : ""}...
+          Redirecting {params?.code ? `(${params.code})` : ""}...
         </p>
       </div>
     </div>
