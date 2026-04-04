@@ -31,35 +31,12 @@ export default function EventReferralDetailPage() {
   }, [identifier, fetchReferrableEventDetail]);
 
   // Priority for user identification (Referral ID):
-  // We check multiple keys and nested structures (profile, user, data) to handle wrapped API responses.
+  // Uses the backend-assigned 'referree_id' (e.g. referrer:username123)
   const userHandle = 
-    user?.profile?.referree_id ||
-    user?.profile?.referee_id ||
-    user?.profile?.username ||
-    user?.profile?.Username ||
     user?.referree_id || 
     user?.referee_id || 
     user?.username || 
     user?.Username || 
-    user?.user?.username ||
-    user?.user?.Username ||
-    user?.user?.referree_id ||
-    user?.user?.referee_id ||
-    user?.data?.username ||
-    user?.data?.Username ||
-    user?.data?.referree_id ||
-    user?.data?.referee_id ||
-    user?.handle ||
-    (user?.profile?.firstname && user?.profile?.lastname ? `${user.profile.firstname}-${user.profile.lastname}`.toLowerCase() : null) ||
-    (user?.first_name && user?.last_name ? `${user.first_name}-${user.last_name}`.toLowerCase() : null) ||
-    (user?.user?.first_name && user?.user?.last_name ? `${user.user.first_name}-${user.user.last_name}`.toLowerCase() : null) ||
-    user?.profile?.firstname?.toLowerCase() ||
-    user?.first_name?.toLowerCase() ||
-    user?.user?.first_name?.toLowerCase() ||
-    user?.profile?.id ||
-    user?.id ||
-    user?.pk ||
-    user?.user?.id ||
     "referee";
   
   // Build link using the global utility to ensure consistency

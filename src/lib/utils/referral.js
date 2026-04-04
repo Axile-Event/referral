@@ -64,7 +64,7 @@ export function isReferralExpired(timestamp) {
  */
 export function isValidReferralCode(code) {
   if (!code || typeof code !== "string") return false;
-  return /^[A-Za-z0-9_-]{3,64}$/.test(code.trim());
+  return /^[A-Za-z0-9_:-]{3,64}$/.test(code.trim());
 }
 
 /**

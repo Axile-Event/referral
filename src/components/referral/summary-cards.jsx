@@ -30,8 +30,15 @@ export function SummaryCards() {
 
   const cards = [
     {
+      title: "Total Clicks",
+      value: formatValue(stats?.total_clicks),
+      icon: MousePointerClick,
+      color: "text-blue-400",
+      bg: "bg-blue-500/10",
+    },
+    {
       title: "Total Conversions",
-      value: formatValue(stats?.total_conversions),
+      value: formatValue(stats?.total_conversions !== undefined ? stats.total_conversions : stats?.tickets_sold),
       icon: TrendingUp,
       color: "text-emerald-400",
       bg: "bg-emerald-500/10",
@@ -53,7 +60,7 @@ export function SummaryCards() {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {cards.map((card, i) => (
         <div 
           key={i} 

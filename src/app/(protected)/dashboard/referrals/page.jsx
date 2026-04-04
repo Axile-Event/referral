@@ -77,7 +77,7 @@ export default function ReferralsPage() {
             ? `${event.referral_reward_percentage}%` 
             : `₦${(event.referral_reward_amount || 0).toLocaleString()}`;
 
-          const conversions = stats.tickets_sold || 0;
+          const conversions = (stats.tickets_sold ?? stats.total_conversions) || 0;
           const status = "Active";
 
           return (

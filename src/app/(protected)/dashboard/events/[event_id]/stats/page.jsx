@@ -79,24 +79,22 @@ export default function EventStatsPage({ params: paramsPromise }) {
   }
 
   // Handle display formatting
-  const displayRevenue = stats?.referral_revenue != null && stats.referral_revenue !== 0 
+  const displayRevenue = stats?.referral_revenue != null 
     ? `₦${Number(stats.referral_revenue).toLocaleString()}` 
-    : "--";
+    : "₦0";
     
-  const displayTicketsSold = stats?.tickets_sold != null 
-    ? Number(stats.tickets_sold) 
-    : 0;
+  const displayTicketsSold = (stats?.tickets_sold ?? stats?.total_conversions) || 0;
 
-  const displayReferralName = stats?.referral_name || "--";
+  const displayReferralName = stats?.referral_name || "Campaign Stats";
   const tickets = Array.isArray(stats?.tickets) ? stats.tickets : [];
 
   return (
     <div className="p-6 md:p-10 w-full max-w-7xl mx-auto space-y-10 pb-20">
       {/* Header */}
       <div className="space-y-6">
-        <Link href="/dashboard/events" className="inline-flex items-center text-sm font-bold text-gray-400 hover:text-primary transition-colors mb-2">
+        <Link href="/dashboard/referrals" className="inline-flex items-center text-sm font-bold text-gray-400 hover:text-primary transition-colors mb-2">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Events
+          Back to Campaigns
         </Link>
         
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/10">
@@ -107,7 +105,7 @@ export default function EventStatsPage({ params: paramsPromise }) {
               className="flex items-center gap-2 mb-2"
             >
                <BarChart3 className="w-5 h-5 text-primary" />
-               <span className="text-sm font-bold text-primary tracking-widest uppercase">Performance Stats</span>
+               <span className="text-sm font-bold text-primary tracking-widest uppercase">{stats?.event_name || "Campaign Stats"}</span>
             </motion.div>
             <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
               {displayReferralName}
@@ -180,7 +178,7 @@ export default function EventStatsPage({ params: paramsPromise }) {
                 onClick={handleCopy}
                 className="flex-1 bg-white text-black hover:bg-gray-200 h-12 rounded-xl font-bold"
               >
-                {copied ? <CheckCircle2 className="w-5 h-5 mr-2" /> : <Copy className="w-5 h-5 mr-2" />}
+                {copied ? <Check className="w-5 h-5 mr-2" /> : <Copy className="w-5 h-5 mr-2" />}
                 Copy Link
               </Button>
               <Button 
