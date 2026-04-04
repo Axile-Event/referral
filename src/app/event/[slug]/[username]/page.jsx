@@ -43,6 +43,11 @@ export default function ReferralEntryPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0A0A0A] text-white">
+      <img 
+        src="/axile-logo-main.png" 
+        alt="Axile" 
+        className="h-12 w-auto object-contain mb-10 animate-pulse"
+      />
       <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
       <h1 className="text-xl font-semibold mb-2">Syncing Referral...</h1>
       <p className="text-white/60 text-sm">Redirecting you to the event page</p>
