@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { referralApi } from "@/lib/api/referral";
+import { walletApi } from "@/lib/api/wallet";
 
 /**
  * useRefereeStats
@@ -8,8 +9,26 @@ import { referralApi } from "@/lib/api/referral";
 export function useRefereeStats() {
   return useQuery({
     queryKey: ["referee", "stats"],
-    queryFn: () => referralApi.getRefereeStats(),
-    // Global defaults handle staleTime and refetchInterval
+    queryFn: async () => {
+      try {
+        const data = await walletApi.getStats();
+        return {
+          tickets_sold: data.tickets_sold || 0,
+          referral_revenue: data.referral_revenue || 0,
+          pending_earnings: data.pending_earnings || 0,
+          checked_in: data.checked_in || 0,
+          balance: data.balance || 0,
+        };
+      } catch (error) {
+        console.error("DEBUG: Global stats fetch failed:", {
+          status: error.response?.status,
+          url: error.config?.url,
+          message: error.response?.data || error.message
+        });
+        console.warn("Global stats not available, returning defaults.");
+        return { tickets_sold: 0, referral_revenue: 0, pending_earnings: 0, checked_in: 0, balance: 0 };
+      }
+    },
   });
 }
 
@@ -34,7 +53,13 @@ export function useEventStats(eventId) {
 export function useRefereeActivity() {
   return useQuery({
     queryKey: ["referee", "activity"],
-    queryFn: () => referralApi.getRefereeActivity(),
+    queryFn: async () => {
+      try {
+        return await walletApi.getTransactions();
+      } catch (error) {
+        return [];
+      }
+    },
   });
 }
 
@@ -56,7 +81,11 @@ export function useUserReferrals() {
 export function useReferrableEvents() {
   return useQuery({
     queryKey: ["referee", "events"],
-    queryFn: () => referralApi.getReferrableEvents(),
+    queryFn: async () => {
+      const data = await referralApi.getReferrableEvents();
+      console.log("DEBUG: Raw Response from /referee/events/:", data);
+      return data;
+    },
   });
 }
 

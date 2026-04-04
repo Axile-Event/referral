@@ -84,13 +84,13 @@ export function ActivityTable() {
                           <Ticket size={14} />
                        </div>
                        <span className="text-sm font-medium text-white/90 truncate max-w-[200px]">
-                         {entry.event_name || "Unknown Event"}
+                         {entry.event_name || entry.description || "Activity Entry"}
                        </span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <span className="text-[13px] font-mono text-gray-500">
-                      {entry.buyer_id ? `${entry.buyer_id.slice(0, 4)}****` : "Anonymous"}
+                      {entry.buyer_id ? `${entry.buyer_id.slice(0, 4)}****` : (entry.amount ? `₦${entry.amount}` : "---")}
                     </span>
                   </td>
                   <td className="px-6 py-4">
@@ -98,7 +98,7 @@ export function ActivityTable() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <span className="text-[13px] text-gray-400 font-medium">
-                      {entry.date ? new Date(entry.date).toLocaleDateString("en-GB", {
+                      { (entry.date || entry.timestamp || entry.created_at) ? new Date(entry.date || entry.timestamp || entry.created_at).toLocaleDateString("en-GB", {
                          day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
                       }) : "--"}
                     </span>

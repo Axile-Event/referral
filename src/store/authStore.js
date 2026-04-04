@@ -237,7 +237,10 @@ export const useAuthStore = create((set, get) => ({
 
       set({ user: normalizedProfile, isAuthenticated: true });
     } catch (err) {
-      console.error("Failed to fetch profile:", err);
+      console.error("DEBUG: Failed to fetch /referee/profile/:", {
+        status: err.response?.status,
+        data: err.response?.data || err.message
+      });
       if (err.response?.status === 401) {
         get().logout();
       }
@@ -250,7 +253,8 @@ export const useAuthStore = create((set, get) => ({
   updateProfile: async (data) => {
     set({ isLoading: true, error: null });
     try {
-      const normalizedProfile = normalizeUserProfile(res.profile || res);
+      const res = await authApi.updateProfile(data);
+      const normalizedProfile = normalizeUserProfile(res.profile || res.data || res);
       
       // Synchronize username
       if (normalizedProfile.username) {
@@ -264,6 +268,40 @@ export const useAuthStore = create((set, get) => ({
       const msg = err.response?.data?.error || err.response?.data?.message || err.message;
       set({ error: msg });
       throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  /**
+   * Update user password
+   */
+  changePassword: async (old_password, new_password) => {
+    set({ isLoading: true, error: null });
+    try {
+      await authApi.changePassword(old_password, new_password);
+      return true;
+    } catch (err) {
+      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
+      set({ error: msg });
+      return false;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  /**
+   * Set user PIN
+   */
+  setPin: async (pin) => {
+    set({ isLoading: true, error: null });
+    try {
+      await authApi.createPin(pin);
+      return true;
+    } catch (err) {
+      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
+      set({ error: msg });
+      return false;
     } finally {
       set({ isLoading: false });
     }

@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils/cn";
 export function SummaryCards() {
   const { data: stats, isLoading, error } = useRefereeStats();
 
+  console.log("DEBUG: SummaryCards UI Data:", { stats, isLoading, error });
+
   // If loading or error, we show the skeleton or fallback UI
   if (isLoading) {
     return (
@@ -28,31 +30,36 @@ export function SummaryCards() {
     return val.toLocaleString();
   };
 
+  const formatCurrency = (val) => {
+    if (val === undefined || val === null) return "₦0";
+    return `₦${val.toLocaleString()}`;
+  };
+
   const cards = [
     {
-      title: "Total Clicks",
-      value: formatValue(stats?.total_clicks),
-      icon: MousePointerClick,
+      title: "Tickets Sold",
+      value: formatValue(stats?.tickets_sold),
+      icon: TrendingUp,
       color: "text-blue-400",
       bg: "bg-blue-500/10",
     },
     {
-      title: "Total Conversions",
-      value: formatValue(stats?.total_conversions !== undefined ? stats.total_conversions : stats?.tickets_sold),
-      icon: TrendingUp,
+      title: "Revenue Generated",
+      value: formatCurrency(stats?.referral_revenue),
+      icon: MousePointerClick, // Or relevant icon
       color: "text-emerald-400",
       bg: "bg-emerald-500/10",
     },
     {
-      title: "Pending",
-      value: formatValue(stats?.pending_conversions),
+      title: "Pending Rewards",
+      value: formatCurrency(stats?.pending_earnings),
       icon: Clock,
       color: "text-amber-400",
       bg: "bg-amber-500/10",
     },
     {
-      title: "Checked In",
-      value: formatValue(stats?.checked_in_referrals),
+      title: "Available Balance",
+      value: formatCurrency(stats?.balance),
       icon: UserCheck,
       color: "text-violet-400",
       bg: "bg-violet-500/10",

@@ -8,18 +8,22 @@ import { useAuthStore } from "@/store/authStore";
 import { ReferralBanner } from "@/components/referral/referral-banner";
 import { SummaryCards } from "@/components/referral/summary-cards";
 import { ActivityTable } from "@/components/referral/activity-table";
+import { useReferrableEvents, useEventStats } from "@/lib/hooks/useReferralQueries";
 
 /**
  * DashboardPage
- * 
- * Production dashboard sourcing data entirely from React Query.
- * Features:
- * - Summary lifecycle metrics
- * - Detailed activity history
- * - Direct promotion discovery
  */
 export default function DashboardPage() {
   const { user, fetchProfile, isAuthenticated } = useAuthStore();
+  
+  // Debug: Trigger event list fetch to check for hidden stats
+  useReferrableEvents();
+
+  // Debug: Specifically check the 'event:EV-35925' (Phunk) stats
+  const { data: statsData } = useEventStats("event:EV-35925");
+  if (statsData) {
+    console.log("DEBUG: Official Referral Stats Response:", statsData);
+  }
   
   // Ensure profile is loaded on mount
   useEffect(() => {

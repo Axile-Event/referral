@@ -23,45 +23,20 @@ export const referralApi = {
     apiClient.get(`/referee/events/${identifier}/`).then((res) => res.data),
 
   /**
-   * GET /referee/<event_id>/stats/ — Self stats for referee
+   * GET /referee/<event_id>/stats/ — Individual program metrics and ticket history.
+   * This is the primary source of stats for the referee.
    */
   getEventStats: (eventId) => 
     apiClient.get(`/referee/${eventId}/stats/`).then((res) => res.data),
 
-  // GET /referrals/ — List of user's active tracking links/campaigns
-  getUserReferrals: () => apiClient.get("/referrals/").then((r) => r.data),
-
-  // GET /referrals/stats/ — Overall referral earnings & metrics
-  getStats: () => apiClient.get("/referrals/stats/").then((r) => r.data),
-
-  // POST /referrals/<id>/disable/ — Deactivate a link
-  disableLink: (id) => apiClient.post(`/referrals/${id}/disable/`).then((r) => r.data),
-
-  // POST /referrals/track/ — Logs a link click
-  trackClick: (code, eventId) =>
-    apiClient.post("/referrals/track/", { code, eventId }).then((r) => r.data),
-
-  // POST /referrals/generate/ — Create a new tracking link
-  generateLink: (eventId) =>
-    apiClient.post("/referrals/generate/", { eventId }).then((res) => res.data),
-
   // ==========================================
-  // REFEREE DASHBOARD (New Endpoints)
+  // FEEDBACK & ERROR HANDLING
   // ==========================================
 
   /**
-   * GET /referee/stats/ — Global summary statistics
-   * Expected: { total_clicks, total_conversions, pending_conversions, checked_in_referrals }
+   * Note: Global summary endpoints (/referrals/stats/) are not currently
+   * available on the backend. Use getEventStats per event id for now.
    */
-  getRefereeStats: () =>
-    apiClient.get("/referee/stats/").then((res) => res.data),
-
-  /**
-   * GET /referee/activity/ — Detailed activity history
-   * Expected: Array of { event_name, buyer_id, status, date }
-   */
-  getRefereeActivity: () =>
-    apiClient.get("/referee/activity/").then((res) => res.data),
 };
 
 /**
