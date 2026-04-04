@@ -19,7 +19,7 @@ export const referralApi = {
   /**
    * Fetches detailed data for a specific referrable event.
    */
-  getEventDetail: (identifier) => 
+  getEventDetails: (identifier) => 
     apiClient.get(`/referee/events/${identifier}/`).then((res) => res.data),
 
   /**
@@ -30,13 +30,33 @@ export const referralApi = {
     apiClient.get(`/referee/${eventId}/stats/`).then((res) => res.data),
 
   // ==========================================
-  // FEEDBACK & ERROR HANDLING
+  // REFERRALS & TRACKING
   // ==========================================
 
   /**
-   * Note: Global summary endpoints (/referrals/stats/) are not currently
-   * available on the backend. Use getEventStats per event id for now.
+   * Fetches the programs the user is currently promoting.
    */
+  getUserReferrals: () =>
+    apiClient.get("/referrals/").then((res) => res.data),
+
+  /**
+   * GET /referrals/stats/ — Global summary statistics.
+   * NOTE: Backend endpoint is not currently ready.
+   */
+  getStats: () =>
+    apiClient.get("/referrals/stats/").then((res) => res.data),
+
+  /**
+   * POST /referrals/generate/ — Requests a new tracking code/link.
+   */
+  generateLink: (eventId) =>
+    apiClient.post("/referrals/generate/", { event_id: eventId }).then((res) => res.data),
+
+  /**
+   * POST /referral/click/ — Logs a click for the tracking system.
+   */
+  trackClick: (code, eventId) =>
+    apiClient.post("/referral/click/", { ref_code: code, event_id: eventId }).then((res) => res.data),
 };
 
 /**

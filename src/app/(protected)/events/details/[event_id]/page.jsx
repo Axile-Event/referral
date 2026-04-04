@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { useReferral } from "@/lib/hooks/useReferral";
-import { generateReferralLink } from "@/lib/utils/referral";
+import { generateReferralLink, formatRewardLabel } from "@/lib/utils/referral";
 import { 
   ArrowLeft, Copy, Check, ArrowUpRight, Share2, Zap, Loader2
 } from "lucide-react";
@@ -72,9 +72,7 @@ export default function EventReferralDetailPage() {
     );
   }
 
-  const rewardText = event.referral_reward_type === 'percentage' 
-    ? `${event.referral_reward_percentage}%`
-    : `₦${event.referral_reward_amount?.toLocaleString()}`;
+  const rewardText = formatRewardLabel(event);
 
   const eventDate = event.date ? new Date(event.date).toLocaleDateString("en-US", {
     weekday: "long", month: "long", day: "numeric", year: "numeric",

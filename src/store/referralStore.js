@@ -75,7 +75,7 @@ export const useReferralStore = create((set, get) => ({
   fetchReferrableEventDetail: async (identifier) => {
     try {
       set({ isLoading: true, selectedEvent: null });
-      const data = await referralApi.getEventDetail(identifier);
+      const data = await referralApi.getEventDetails(identifier);
       set({ selectedEvent: data });
       return data;
     } catch (error) {
@@ -203,7 +203,6 @@ export const useReferralStore = create((set, get) => ({
    */
   generateReferralLink: async (eventId) => {
     try {
-      set({ isLoading: true });
       set({ isLoading: true });
       const res = await referralApi.generateLink(eventId);
       toast.success("Tracking link generated successfully!");

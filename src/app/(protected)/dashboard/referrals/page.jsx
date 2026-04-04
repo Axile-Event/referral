@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button.jsx";
 import { Input } from "@/components/ui/input.jsx";
 import { useUserReferrals, useRefereeStats } from "@/lib/hooks/useReferralQueries";
+import { formatRewardLabel } from "@/lib/utils/referral";
 
 export default function ReferralsPage() {
   const { data: userReferrals, isLoading, isError } = useUserReferrals();
@@ -72,9 +73,7 @@ export default function ReferralsPage() {
         {filteredReferrals.map((event) => {
           const stats = event.stats || {};
           
-          const reward = event.referral_reward_type === 'percentage' 
-            ? `${event.referral_reward_percentage}%` 
-            : `₦${(event.referral_reward_amount || 0).toLocaleString()}`;
+          const reward = formatRewardLabel(event);
 
           const ticketsSold = stats.tickets_sold || 0;
           const revenue = stats.referral_revenue || 0;
