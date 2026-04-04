@@ -40,17 +40,30 @@ export function useRefereeStats() {
           balance: 0
         };
 
-        eventStats.forEach(({ stats }) => {
+        eventStats.forEach(({ event, stats }) => {
             const tickets = stats.tickets || [];
             totals.tickets_sold += (stats.tickets_sold || 0);
 
             tickets.forEach(ticket => {
                 const ticketPrice = Number(ticket.category_price) || 0;
+                
+                // Calculate correct reward based on event settings
+                let reward = 0;
+                const rewardType = event?.referral_reward_type || stats?.referral_reward_type;
+                const rewardAmount = Number(event?.referral_reward_amount || stats?.referral_reward_amount || 0);
+                const rewardPercentage = Number(event?.referral_reward_percentage || stats?.referral_reward_percentage || 0);
+
+                if (rewardType === 'flat') {
+                    reward = rewardAmount;
+                } else if (rewardType === 'percentage') {
+                    reward = (ticketPrice * rewardPercentage) / 100;
+                }
+
                 if (ticket.status?.toLowerCase() === "checked_in" || ticket.is_checked_in === true) {
-                    totals.referral_revenue += ticketPrice;
+                    totals.referral_revenue += reward;
                     totals.checked_in += 1;
                 } else {
-                    totals.pending_earnings += ticketPrice;
+                    totals.pending_earnings += reward;
                 }
             });
 
