@@ -31,9 +31,15 @@ export const useAuthStore = create((set, get) => ({
         tokenStorage.setTokens(res.access, res.refresh);
       }
       
-      // Fetch full profile info and normalize it
       const profile = await authApi.getProfile();
       const normalizedProfile = normalizeUserProfile(profile);
+      
+      // Synchronize username
+      if (normalizedProfile.username) {
+        set({ username: normalizedProfile.username });
+        localStorage.setItem("axile_username", normalizedProfile.username);
+      }
+
       set({ user: normalizedProfile, isAuthenticated: true });
       return normalizedProfile;
     } catch (err) {
@@ -223,6 +229,12 @@ export const useAuthStore = create((set, get) => ({
       const normalizedProfile = normalizeUserProfile(profile);
       console.log("fetchProfile: Normalized profile:", normalizedProfile);
       
+      // Synchronize username
+      if (normalizedProfile.username) {
+        set({ username: normalizedProfile.username });
+        localStorage.setItem("axile_username", normalizedProfile.username);
+      }
+
       set({ user: normalizedProfile, isAuthenticated: true });
     } catch (err) {
       console.error("Failed to fetch profile:", err);
@@ -238,8 +250,14 @@ export const useAuthStore = create((set, get) => ({
   updateProfile: async (data) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await authApi.updateProfile(data);
       const normalizedProfile = normalizeUserProfile(res.profile || res);
+      
+      // Synchronize username
+      if (normalizedProfile.username) {
+        set({ username: normalizedProfile.username });
+        localStorage.setItem("axile_username", normalizedProfile.username);
+      }
+
       set({ user: normalizedProfile });
       return normalizedProfile;
     } catch (err) {

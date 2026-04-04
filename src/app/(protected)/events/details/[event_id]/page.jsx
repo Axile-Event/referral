@@ -30,7 +30,7 @@ export default function EventReferralDetailPage() {
     fetchReferrableEventDetail(identifier);
   }, [identifier, fetchReferrableEventDetail]);
 
-  const username = useAuthStore((s) => s.username);
+  const username = useAuthStore((s) => s.user?.username || s.username);
   
   // Build link using the global utility to ensure consistency
   // Uses event_slug primarily, or event_id (without 'event:' prefix)

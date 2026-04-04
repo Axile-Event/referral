@@ -26,11 +26,9 @@ export default function EventStatsPage({ params: paramsPromise }) {
   } = useEventStats(eventId);
 
   const [copied, setCopied] = useState(false);
-  const referee_id = user?.referree_id || user?.id || "";
-
+  const username = user?.username || "";
   const referralLink = generateReferralLink({ 
-    referee_id, 
-    // we don't have the slug directly on this page via URL, so we rely on eventId 
+    username, 
     event_id: eventId 
   });
 
