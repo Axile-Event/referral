@@ -90,7 +90,7 @@ export function ActivityTable() {
                   </td>
                   <td className="px-6 py-4">
                     <span className="text-[13px] font-mono text-gray-500">
-                      {entry.buyer_id ? `${entry.buyer_id.slice(0, 4)}****` : (entry.amount ? `₦${entry.amount}` : "---")}
+                      {entry.buyer_name || entry.buyer_id ? (entry.buyer_name || `${entry.buyer_id.slice(0, 4)}****`) : (entry.amount || entry.category_price ? `₦${entry.amount || entry.category_price}` : "---")}
                     </span>
                   </td>
                   <td className="px-6 py-4">

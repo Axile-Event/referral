@@ -19,8 +19,8 @@ export default function DashboardPage() {
   // Debug: Trigger event list fetch to check for hidden stats
   useReferrableEvents();
 
-  // Debug: Specifically check the 'event:EV-35925' (Phunk) stats
-  const { data: statsData } = useEventStats("event:EV-35925");
+  // Debug: Specifically check the 'event:EV-18868' (Phunk) stats
+  const { data: statsData } = useEventStats("event:EV-18868");
   if (statsData) {
     console.log("DEBUG: Official Referral Stats Response:", statsData);
   }

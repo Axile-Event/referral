@@ -7,28 +7,51 @@ import { walletApi } from "@/lib/api/wallet";
  * Fetches the global summary statistics for the dashboard.
  */
 export function useRefereeStats() {
+  const queryClient = useQueryClient();
+  
   return useQuery({
-    queryKey: ["referee", "stats"],
+    queryKey: ["referee", "stats", "aggregated"],
     queryFn: async () => {
       try {
-        const data = await walletApi.getStats();
-        return {
-          tickets_sold: data.tickets_sold || 0,
-          referral_revenue: data.referral_revenue || 0,
-          pending_earnings: data.pending_earnings || 0,
-          checked_in: data.checked_in || 0,
-          balance: data.balance || 0,
+        // 1. Fetch the list of events
+        const eventRes = await referralApi.getReferrableEvents();
+        const events = eventRes.events || [];
+        
+        let totals = {
+          tickets_sold: 0,
+          referral_revenue: 0,
+          pending_earnings: 0,
+          checked_in: 0,
+          balance: 0
         };
-      } catch (error) {
-        console.error("DEBUG: Global stats fetch failed:", {
-          status: error.response?.status,
-          url: error.config?.url,
-          message: error.response?.data || error.message
+
+        // 2. Aggregate stats from each event
+        // We use Promise.allSettled to ensure one bad event doesn't break the whole dashboard
+        const statsPromises = events.map(ev => referralApi.getEventStats(ev.event_id));
+        const results = await Promise.allSettled(statsPromises);
+
+        results.forEach(result => {
+          if (result.status === "fulfilled" && result.value) {
+            totals.tickets_sold += (result.value.tickets_sold || 0);
+            totals.referral_revenue += (result.value.referral_revenue || 0);
+            // Add other metrics as they become available in the event stats
+          }
         });
-        console.warn("Global stats not available, returning defaults.");
+
+        // 3. Try to get balance from wallet as a bonus, but don't fail if it 404s
+        try {
+          const wallet = await walletApi.getStats();
+          totals.balance = wallet.balance || 0;
+        } catch (e) { /* ignore wallet 404 */ }
+
+        console.log("DEBUG: Aggregated Dashboard Stats:", totals);
+        return totals;
+      } catch (error) {
+        console.error("DEBUG: Aggregation failed:", error);
         return { tickets_sold: 0, referral_revenue: 0, pending_earnings: 0, checked_in: 0, balance: 0 };
       }
     },
+    refetchInterval: 30000, // Refresh every 30s
   });
 }
 
@@ -52,14 +75,43 @@ export function useEventStats(eventId) {
  */
 export function useRefereeActivity() {
   return useQuery({
-    queryKey: ["referee", "activity"],
+    queryKey: ["referee", "activity", "aggregated"],
     queryFn: async () => {
       try {
-        return await walletApi.getTransactions();
+        // 1. Fetch events
+        const eventRes = await referralApi.getReferrableEvents();
+        const events = eventRes.events || [];
+
+        // 2. Aggregate tickets from stats
+        const results = await Promise.allSettled(events.map(ev => referralApi.getEventStats(ev.event_id)));
+        let allTickets = [];
+
+        results.forEach((result, idx) => {
+           if (result.status === "fulfilled" && result.value?.tickets) {
+              const eventInfo = events[idx];
+              const eventTickets = result.value.tickets.map(t => ({
+                 ...t,
+                 event_name: eventInfo.name,
+                 event_id: eventInfo.event_id,
+                 // Map tickets field to activity table field names
+                 status: t.status || "sold",
+                 date: t.purchase_date || t.created_at || new Date().toISOString()
+              }));
+              allTickets = [...allTickets, ...eventTickets];
+           }
+        });
+
+        // Sort by date descending
+        allTickets.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        console.log("DEBUG: Consolidating Activity from Tickets:", allTickets);
+        return allTickets;
       } catch (error) {
+        console.error("DEBUG: Activity aggregation failed:", error);
         return [];
       }
     },
+    refetchInterval: 60000,
   });
 }
 
@@ -69,8 +121,35 @@ export function useRefereeActivity() {
  */
 export function useUserReferrals() {
   return useQuery({
-    queryKey: ["referee", "referrals"],
-    queryFn: () => referralApi.getUserReferrals(),
+    queryKey: ["referee", "referrals", "active"],
+    queryFn: async () => {
+      try {
+        const eventRes = await referralApi.getReferrableEvents();
+        const events = eventRes.events || [];
+        
+        // Fetch stats for all events in parallel to find active ones
+        const statsResults = await Promise.allSettled(events.map(ev => referralApi.getEventStats(ev.event_id)));
+        
+        const activeCampaigns = [];
+        statsResults.forEach((result, idx) => {
+          if (result.status === "fulfilled" && result.value) {
+            // Only consider it an 'active campaign' if tickets have been sold
+            if (result.value.tickets_sold > 0) {
+              activeCampaigns.push({
+                ...events[idx],
+                stats: result.value
+              });
+            }
+          }
+        });
+
+        console.log("DEBUG: Discovered Active Campaigns:", activeCampaigns);
+        return activeCampaigns;
+      } catch (error) {
+        console.error("DEBUG: Failed to discover active referrals:", error);
+        return [];
+      }
+    },
   });
 }
 

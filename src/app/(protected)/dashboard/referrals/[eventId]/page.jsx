@@ -17,27 +17,17 @@ import {
   Ticket as TicketIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
-import { useReferralStore } from "@/store/referralStore";
+import { useReferrableEventDetail, useEventStats } from "@/lib/hooks/useReferralQueries";
 
 export default function ReferralDetailsPage({ params: paramsPromise }) {
   const params = use(paramsPromise);
   const eventId = params.eventId;
   
-  const { 
-    selectedEvent, 
-    eventStats, 
-    fetchReferrableEventDetail, 
-    fetchEventStats, 
-    isLoading 
-  } = useReferralStore();
+  const { data: selectedEvent, isLoading: isEventLoading } = useReferrableEventDetail(eventId);
+  const { data: stats, isLoading: isStatsLoading } = useEventStats(eventId);
 
-  useEffect(() => {
-    fetchReferrableEventDetail(eventId);
-    fetchEventStats(eventId);
-  }, [eventId, fetchReferrableEventDetail, fetchEventStats]);
-
-  const stats = eventStats[eventId] || {};
-  const tickets = stats.tickets || [];
+  const tickets = stats?.tickets || [];
+  const isLoading = isEventLoading || isStatsLoading;
   
   const formatCurrency = (val) => `₦${(val || 0).toLocaleString()}`;
 

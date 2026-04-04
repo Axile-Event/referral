@@ -69,20 +69,20 @@ export default function ReferralsPage() {
 
       {/* Campaign Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredReferrals.map((ref) => {
-          const event = ref.event || {};
-          const stats = ref.stats || {};
+        {filteredReferrals.map((event) => {
+          const stats = event.stats || {};
           
           const reward = event.referral_reward_type === 'percentage' 
             ? `${event.referral_reward_percentage}%` 
             : `₦${(event.referral_reward_amount || 0).toLocaleString()}`;
 
-          const conversions = (stats.tickets_sold ?? stats.total_conversions) || 0;
+          const ticketsSold = stats.tickets_sold || 0;
+          const revenue = stats.referral_revenue || 0;
           const status = "Active";
 
           return (
             <div 
-              key={ref.id}
+              key={event.event_id}
               className="group relative bg-[#12121f] rounded-[32px] border border-white/5 hover:border-primary/30 transition-all duration-500 flex flex-col h-full overflow-hidden shadow-2xl"
             >
               <div className="h-48 relative overflow-hidden bg-black/40 border-b border-white/5">
@@ -102,24 +102,24 @@ export default function ReferralsPage() {
               <div className="p-8 flex flex-col flex-1 gap-6">
                 <div>
                   <h3 className="text-xl font-bold text-white group-hover:text-primary transition-colors leading-tight line-clamp-1">{event.name}</h3>
-                  <p className="text-[11px] text-gray-500 mt-2 flex items-center gap-2">
-                    <Calendar size={12} /> {event.date ? new Date(event.date).toLocaleDateString() : "TBA"}
+                  <p className="text-[11px] text-gray-400 mt-2 flex items-center gap-2 font-medium">
+                    <Calendar size={12} className="text-primary" /> {event.date ? new Date(event.date).toLocaleDateString() : "TBA"}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white/[0.03] border border-white/5 p-4 rounded-2xl">
-                    <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Reward</p>
-                    <p className="text-lg font-bold text-white">{reward}</p>
+                  <div className="bg-white/[0.03] border border-white/5 p-4 rounded-2xl group-hover:border-primary/10 transition-colors">
+                    <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1.5 italic">Tickets Sold</p>
+                    <p className="text-lg font-bold text-white">{ticketsSold}</p>
                   </div>
-                  <div className="bg-white/[0.03] border border-white/5 p-4 rounded-2xl">
-                    <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Conversions</p>
-                    <p className="text-lg font-bold text-white">{conversions}</p>
+                  <div className="bg-white/[0.03] border border-white/5 p-4 rounded-2xl group-hover:border-primary/10 transition-colors">
+                    <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1.5 italic">Revenue</p>
+                    <p className="text-lg font-bold text-emerald-400">₦{revenue.toLocaleString()}</p>
                   </div>
                 </div>
 
-                <Button asChild variant="outline" className="mt-auto h-14 rounded-2xl border-white/5 hover:border-primary/50 hover:bg-primary/5 text-white/80 hover:text-white font-bold text-xs uppercase tracking-widest flex items-center justify-between px-6 transition-all active:scale-95">
-                  <Link href={`/dashboard/referrals/${ref.id}`}>
+                <Button asChild variant="outline" className="mt-auto h-14 rounded-2xl border-white/5 hover:border-primary/50 hover:bg-primary/5 text-white/80 hover:text-white font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-between px-6 transition-all active:scale-95 shadow-xl">
+                  <Link href={`/dashboard/referrals/${event.event_id}`}>
                     Performance Stats
                     <ArrowUpRight size={18} className="text-primary" />
                   </Link>
@@ -131,7 +131,7 @@ export default function ReferralsPage() {
 
         {/* Dynamic Placeholder for Empty Opportunities */}
         <Link 
-          href="/events/referral-enabled" 
+          href="/dashboard/events" 
           className="group relative border-2 border-dashed border-white/5 rounded-[32px] flex flex-col items-center justify-center p-12 text-center space-y-6 hover:border-primary/20 hover:bg-primary/[0.02] transition-all duration-300 min-h-[400px] shadow-2xl shadow-primary/5"
         >
            <div className="w-20 h-20 rounded-3xl bg-primary/5 flex items-center justify-center text-gray-600 group-hover:text-primary group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
