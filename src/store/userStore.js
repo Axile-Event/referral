@@ -18,9 +18,26 @@ export const useUserStore = create((set) => ({
     set({ isLoading: true });
     try {
       const { data } = await userApi.getProfile();
-      set({ profile: data });
+      set({ profile: data?.profile || data?.user || data });
+      return data?.profile || data?.user || data;
     } catch {
       toast.error("Failed to load profile", toastTheme);
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  updateProfile: async (data) => {
+    set({ isLoading: true });
+    try {
+      const res = await userApi.updateProfile(data);
+      const updatedProfile = res.data?.profile || res.data?.user || res.data;
+      set({ profile: updatedProfile });
+      toast.success("Profile updated successfully!", toastTheme);
+      return updatedProfile;
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Failed to update profile", toastTheme);
+      return null;
     } finally {
       set({ isLoading: false });
     }

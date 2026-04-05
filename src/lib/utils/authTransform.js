@@ -82,8 +82,12 @@ export const normalizeUserProfile = (apiResponse) => {
     return null;
   }
 
-  // Handle wrapped response: { message: "...", profile: { ... } }
-  const profile = apiResponse.profile || apiResponse;
+  // Handle wrapped response: { message: "...", profile: { ... }, referree_id: "..." }
+  // We want to extract the profile data but also keep any other top-level fields
+  const profile = apiResponse.profile || apiResponse.user || apiResponse.data || apiResponse;
+  
+  // If apiResponse is wrapped, we want to make sure fields like referree_id from the top level are preserved
+  const topLevelFields = (apiResponse.profile || apiResponse.user || apiResponse.data) ? apiResponse : {};
 
   const {
     Firstname = "",
@@ -107,17 +111,23 @@ export const normalizeUserProfile = (apiResponse) => {
   const combinedName = name || full_name || (firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName || username || Username || "Partner");
 
   const normalized = {
+    ...topLevelFields, // Keep original top-level fields if wrapped
     ...rest,
     Firstname: firstName,
     Lastname: lastName,
     firstname: firstName,
     lastname: lastName,
-    name: combinedName, // Add this for easy access in dashboard
+    name: combinedName,
     username: username || Username || email || Email,
     email: email || Email,
   };
 
-  console.log("normalizeUserProfile - Input:", profile);
+  // Clean up to prevent recursive profile/user/data keys after normalization
+  delete normalized.profile;
+  delete normalized.user;
+  delete normalized.data;
+
+  console.log("normalizeUserProfile - Input:", apiResponse);
   console.log("normalizeUserProfile - Output:", normalized);
 
   return normalized;

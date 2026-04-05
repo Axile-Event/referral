@@ -60,7 +60,7 @@ export function Navbar({ onMenuClick }) {
                   Login
                 </Link>
                 <Button asChild className="bg-primary hover:bg-primary/90 text-white rounded-md px-6">
-                  <Link href="/signup">Get Started</Link>
+                  <Link href="/signup">Start Earning</Link>
                 </Button>
              </div>
           )}

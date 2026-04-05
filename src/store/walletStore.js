@@ -8,19 +8,16 @@ import { walletApi } from "@/lib/api/wallet";
  * Actions: fetchWalletData, requestWithdrawal, fetchTransactionHistory
  */
 export const useWalletStore = create((set) => ({
-  balance: 0, // In AP
-  pending: 0, // In AP
-  totalWithdrawn: 0, // In AP
+  balance: 0, // In Naira
+  pending: 0, // In Naira
+  totalWithdrawn: 0, // In Naira
   transactions: [],
   isLoading: false,
-
-  // Helper: 1 AP = 10 Naira
-  apToNaira: (ap) => ap * 10,
 
   fetchWalletData: async () => {
     set({ isLoading: true });
     try {
-      // Assuming getBalance returns all stats now
+      // Assuming getBalance returns all stats in Naira now
       const data = await walletApi.getBalance();
       set({ 
         balance: data.balance || 0, 

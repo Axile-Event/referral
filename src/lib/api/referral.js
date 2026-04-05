@@ -19,29 +19,60 @@ export const referralApi = {
   /**
    * Fetches detailed data for a specific referrable event.
    */
-  getEventDetail: (identifier) => 
+  getEventDetails: (identifier) => 
     apiClient.get(`/referee/events/${identifier}/`).then((res) => res.data),
 
   /**
-   * GET /referee/<event_id>/stats/ — Self stats for referee
+   * GET /referee/<event_id>/stats/ — Individual program metrics and ticket history.
+   * This is the primary source of stats for the referee.
    */
   getEventStats: (eventId) => 
     apiClient.get(`/referee/${eventId}/stats/`).then((res) => res.data),
 
-  // GET /referrals/ — List of user's active tracking links/campaigns
-  getUserReferrals: () => apiClient.get("/referrals/").then((r) => r.data),
+  // ==========================================
+  // REFERRALS & TRACKING
+  // ==========================================
 
-  // GET /referrals/stats/ — Overall referral earnings & metrics
-  getStats: () => apiClient.get("/referrals/stats/").then((r) => r.data),
+  /**
+   * Fetches the programs the user is currently promoting.
+   */
+  getUserReferrals: () =>
+    apiClient.get("/referrals/").then((res) => res.data),
 
-  // POST /referrals/<id>/disable/ — Deactivate a link
-  disableLink: (id) => apiClient.post(`/referrals/${id}/disable/`).then((r) => r.data),
+  /**
+   * GET /referrals/stats/ — Global summary statistics.
+   * NOTE: Backend endpoint is not currently ready.
+   */
+  getStats: () =>
+    apiClient.get("/referrals/stats/").then((res) => res.data),
 
-  // POST /referrals/track/ — Logs a link click
-  trackClick: (code, eventId) =>
-    apiClient.post("/referrals/track/", { code, eventId }).then((r) => r.data),
-
-  // POST /referrals/generate/ — Create a new tracking link
+  /**
+   * POST /referrals/generate/ — Requests a new tracking code/link.
+   */
   generateLink: (eventId) =>
-    apiClient.post("/referrals/generate/", { eventId }).then((res) => res.data),
+    apiClient.post("/referrals/generate/", { event_id: eventId }).then((res) => res.data),
+
+  /**
+   * POST /referral/click/ — Logs a click for the tracking system.
+   */
+  trackClick: (code, eventId) =>
+    apiClient.post("/referral/click/", { ref_code: code, event_id: eventId }).then((res) => res.data),
+};
+
+/**
+ * trackReferralClick(code, eventId) helper
+ * Logs a click for the referral system.
+ * Uses fire-and-forget logic with silent failure.
+ */
+export const trackReferralClick = async (code, eventId) => {
+  try {
+    // Note: Singular /referral/click/ as per production spec
+    await apiClient.post("/referral/click/", {
+      ref_code: code,
+      event_id: eventId,
+    });
+  } catch (error) {
+    // Silent failure: log error but do not block the redirection flow
+    console.error("Referral click tracking failed silently:", error.response?.data || error.message);
+  }
 };

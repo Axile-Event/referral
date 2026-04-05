@@ -38,10 +38,10 @@ export default function SignUpPage() {
   const onSubmit = async (data) => {
     try {
       await signup(data);
-      toast.success("Account created! Check your email for verification.");
+      toast.success("Signup successful. Check your email for the OTP verification code.");
       router.push(`/verify-otp?email=${encodeURIComponent(data.email)}`);
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Signup failed");
+      toast.error(error?.response?.data?.message || "Signup failed. Please check your details and try again.");
     }
   };
 

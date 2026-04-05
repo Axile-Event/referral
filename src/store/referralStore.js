@@ -75,7 +75,7 @@ export const useReferralStore = create((set, get) => ({
   fetchReferrableEventDetail: async (identifier) => {
     try {
       set({ isLoading: true, selectedEvent: null });
-      const data = await referralApi.getEventDetail(identifier);
+      const data = await referralApi.getEventDetails(identifier);
       set({ selectedEvent: data });
       return data;
     } catch (error) {
@@ -105,26 +105,68 @@ export const useReferralStore = create((set, get) => ({
       return stats;
     } catch (error) {
       console.error(`Failed to fetch stats for event ${eventId}:`, error);
+      
+      // Task 6: Handle username_required error
+      if (error.response?.data?.code === "username_required" || error.response?.status === 400) {
+        toast.error("Please set your username in settings to view detailed stats.", {
+          duration: 5000,
+          style: { background: "#161622", color: "#fff", border: "1px solid rgba(227, 54, 41, 0.2)" }
+        });
+      }
     } finally {
       set({ isLoading: false });
     }
   },
 
   /**
-   * Aggregate stats from all known event campaigns for the dashboard summary.
+   * Aggregate stats from all known event campaigns for local calculation fallback.
+   * This is used when the global stats endpoint is not ready.
    */
   calculateGlobalStats: () => {
-    const { eventStats } = get();
-    const statsArray = Object.values(eventStats);
+    const { referrals } = get();
     
-    const aggregated = statsArray.reduce((acc, curr) => ({
-      totalReferrals: acc.totalReferrals + (curr.tickets_sold > 0 ? 1 : 0),
-      totalClicks: 0,
-      totalTicketsSold: acc.totalTicketsSold + (curr.tickets_sold || 0),
-      totalEarnings: acc.totalEarnings + (curr.referral_revenue || 0)
-    }), { totalReferrals: 0, totalClicks: 0, totalTicketsSold: 0, totalEarnings: 0 });
+    const aggregated = referrals.reduce((acc, ref) => {
+      // Use ref.stats which is returned by /referrals/ list
+      const s = ref.stats || {};
+      
+      return {
+        totalReferrals: acc.totalReferrals + 1,
+        totalClicks: acc.totalClicks + (Number(s.clicks) || Number(ref.clicks) || 0),
+        totalTicketsSold: acc.totalTicketsSold + (Number(s.tickets_sold) || Number(ref.tickets_sold) || 0),
+        totalEarnings: acc.totalEarnings + (Number(s.revenue) || Number(s.total_earnings) || Number(ref.total_earnings) || 0)
+      };
+    }, { totalReferrals: 0, totalClicks: 0, totalTicketsSold: 0, totalEarnings: 0 });
 
     set({ stats: aggregated });
+  },
+
+  /**
+   * Fetches global metrics from the backend for the main dashboard.
+   */
+  fetchGlobalStats: async () => {
+    try {
+      set({ isLoading: true });
+      console.log("fetchGlobalStats: Fetching global referral metrics...");
+      // If the dashboard metrics have their own endpoint /referrals/stats/
+      const data = await referralApi.getStats();
+      console.log("fetchGlobalStats: API Response:", data);
+      
+      set({ 
+        stats: {
+          totalReferrals: Number(data.total_referrals) || 0,
+          totalClicks: Number(data.total_clicks) || 0,
+          totalTicketsSold: Number(data.total_tickets_sold) || 0,
+          totalEarnings: Number(data.total_earnings) || 0
+        }
+      });
+      return data;
+    } catch (error) {
+      console.error("fetchGlobalStats failed, using local aggregate fallback.");
+      // If the backend /referrals/stats/ is not ready, we rely on local aggregation from the /referrals/ list
+      get().calculateGlobalStats();
+    } finally {
+      set({ isLoading: false });
+    }
   },
 
   /**
@@ -133,15 +175,26 @@ export const useReferralStore = create((set, get) => ({
   fetchUserReferrals: async () => {
     try {
       set({ isLoading: true });
+      console.log("fetchUserReferrals: Making API call to /referrals/...");
       const data = await referralApi.getUserReferrals();
-      set({ referrals: data || [] });
+      console.log("fetchUserReferrals: Data received successfully:", data);
+      
+      // Handle various response shapes if backend wrapped it
+      const referralsArray = Array.isArray(data) ? data : (data?.referrals || data?.data || []);
+      set({ referrals: referralsArray });
     } catch (error) {
-      console.error("Referral Store error [fetchUserReferrals]:", error);
+      console.error("Referral Store execution failed [fetchUserReferrals]:", error);
+      
+      // Extract specific error info for more detailed logging
+      const errorMsg = error?.response?.data?.message || error?.message || "Unknown error";
+      const status = error?.response?.status;
+      console.error(`API Error Detail: Status ${status}, Message: ${errorMsg}`);
+      
       toast.error("Failed to load your referrals.", { 
         style: { background: "#161622", color: "#fff", border: "1px solid rgba(227, 54, 41, 0.2)" }
       });
     } finally {
-        set({ isLoading: false });
+      set({ isLoading: false });
     }
   },
 
@@ -150,7 +203,6 @@ export const useReferralStore = create((set, get) => ({
    */
   generateReferralLink: async (eventId) => {
     try {
-      set({ isLoading: true });
       set({ isLoading: true });
       const res = await referralApi.generateLink(eventId);
       toast.success("Tracking link generated successfully!");

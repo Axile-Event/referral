@@ -52,7 +52,7 @@ export function TransactionList({ transactions = [] }) {
               <th className="px-8 py-6 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Description</th>
               <th className="px-8 py-6 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Type</th>
               <th className="px-8 py-6 text-[10px] font-bold text-gray-500 uppercase tracking-widest text-center">Status</th>
-              <th className="px-8 py-6 text-[10px] font-bold text-gray-500 uppercase tracking-widest text-right">Amount (AP)</th>
+              <th className="px-8 py-6 text-[10px] font-bold text-gray-500 uppercase tracking-widest text-right">Amount (₦)</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/[0.02]">
@@ -87,7 +87,7 @@ export function TransactionList({ transactions = [] }) {
                      "text-sm font-extrabold tracking-tight",
                      tx.type === "referral" ? "text-green-500" : "text-white"
                    )}>
-                     {tx.type === "referral" ? "+" : "-"}{tx.amount.toLocaleString()} AP
+                     {tx.type === "referral" ? "+₦" : "-₦"}{tx.amount.toLocaleString()}
                    </p>
                 </td>
               </tr>

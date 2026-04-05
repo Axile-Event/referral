@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Lock, ArrowRight, Loader2, Mail } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -19,6 +19,29 @@ function VerifyOtpForm() {
   const email = searchParams.get("email") || "";
   const { verifyOtp, resendOtp, isLoading } = useAuthStore();
   const [resendTimer, setResendTimer] = useState(0);
+  const [otpExpiryTimer, setOtpExpiryTimer] = useState(600);
+
+  useEffect(() => {
+    if (otpExpiryTimer <= 0) return;
+
+    const interval = setInterval(() => {
+      setOtpExpiryTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [otpExpiryTimer]);
+
+  const formatCountdown = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes}:${secs.toString().padStart(2, "0")}`;
+  };
   
   // Cooldown logic
   const startCooldown = () => {
@@ -42,6 +65,7 @@ function VerifyOtpForm() {
     try {
       await resendOtp(email);
       toast.success("New verification code sent!");
+      setOtpExpiryTimer(600);
       startCooldown();
     } catch (error) {
       const msg = error.response?.data?.error || error.response?.data?.message || "Failed to resend code.";
@@ -61,6 +85,11 @@ function VerifyOtpForm() {
   const onSubmit = async (data) => {
     if (!email) {
       toast.error("Email is missing. Please go back to signup.");
+      return;
+    }
+
+    if (otpExpiryTimer <= 0) {
+      toast.error("This OTP has expired. Please request a new code.");
       return;
     }
 
@@ -89,6 +118,9 @@ function VerifyOtpForm() {
         <h2 className="text-4xl font-bold text-white tracking-tight">Verify Email</h2>
         <p className="text-gray-400 font-medium">
           We've sent a 6-digit code to <span className="text-white font-bold">{email || "your email"}</span>
+        </p>
+        <p className={`text-sm font-semibold ${otpExpiryTimer > 0 ? "text-amber-400" : "text-red-400"}`}>
+          OTP expires in: {formatCountdown(otpExpiryTimer)}
         </p>
       </div>
 
@@ -131,7 +163,7 @@ function VerifyOtpForm() {
           type="submit" 
           size="lg" 
           className="w-full h-14 rounded-2xl font-bold text-base group relative overflow-hidden"
-          disabled={isLoading}
+          disabled={isLoading || otpExpiryTimer <= 0}
         >
           {isLoading ? (
             <Loader2 className="animate-spin" />
@@ -187,8 +219,8 @@ export default function VerifyOtpPage() {
               alt="Axile" 
               className="h-10 w-auto object-contain mb-8 opacity-80"
             />
-            <h3 className="text-2xl font-bold text-white mb-2">Security First</h3>
-            <p className="text-gray-400 max-w-sm">We ensure your account is protected with multi-factor authentication.</p>
+            <h3 className="text-2xl font-bold text-white mb-2">Almost There</h3>
+            <p className="text-gray-400 max-w-sm">Secure your account to start earning from referrals today.</p>
         </div>
       </div>
 

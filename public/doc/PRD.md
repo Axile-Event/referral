@@ -16,7 +16,7 @@ Let event organizers control referral incentives
 
 Shares event referral link
 
-Earns AP after ticket is used (checked-in)
+Earns Naira after ticket is used (checked-in)
 
 2. Buyer
 
@@ -53,15 +53,11 @@ Calculation:
 
 Fixed:
 
-e.g. 10 AP per ticket
+e.g. ₦100 per ticket
 
 Percentage:
 
 e.g. 30% of ticket price
-
-Convert:
-
-10 AP = ₦100
 
 3. Referral Flow
 
@@ -79,13 +75,11 @@ Ticket checked-in → reward credited
 
 4. Wallet
 
-points_balance
-
-naira_equivalent
+balance
 
 5. Withdrawal
 
-Min: 50 AP
+Min: ₦500
 
 Status:
 
@@ -103,7 +97,7 @@ Ticket purchased
 
 Ticket checked-in
 
-Points credited
+Naira credited
 
 User withdraws
 
@@ -124,11 +118,11 @@ Tooltip UI
 
 📊 2. Referral Dashboard
 
-Total AP earned
+Total Earnings
 
-Pending AP (not yet checked-in)
+Pending Earnings (not yet checked-in)
 
-Withdrawable AP
+Withdrawable Balance
 
 List:
 
@@ -223,11 +217,11 @@ POST /internal/tickets/checkin
 Logic:
 if referral_exists:
     if reward_type == "fixed":
-        points = reward_value
+        reward_amount = reward_value
     else:
-        points = (ticket_price * reward_value / 100) / 10  # convert to AP
+        reward_amount = (ticket_price * reward_value / 100)
 
-    credit_user(referrer_id, points)
+    credit_user(referrer_id, reward_amount)
 
 Status → credited
 
@@ -238,7 +232,7 @@ GET /wallet/history
 POST /withdrawals
 GET  /withdrawals
 Rule:
-if points < 50:
+if balance < 500:
     reject()
 🧠 Data Models (Simplified)
 referrals
@@ -248,7 +242,7 @@ referrals
   "buyer_id": "",
   "event_id": "",
   "ticket_id": "",
-  "points": 0,
+  "amount": 0,
   "status": "pending | credited"
 }
 

@@ -18,9 +18,9 @@ export function formatDate(date) {
   }).format(new Date(date));
 }
 
-export function formatReferralLink(code) {
-  const base = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  return `${base}/ref/${code}`;
+export function formatReferralLink(eventSlug, username) {
+  const base = process.env.NEXT_PUBLIC_APP_URL || "https://axilereferraldev.vercel.app";
+  return `${base}/event/${eventSlug}/${username}`;
 }
 
 export function truncate(str, length = 40) {

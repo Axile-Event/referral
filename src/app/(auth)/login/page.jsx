@@ -85,7 +85,7 @@ export default function LoginPage() {
               className="px-4 py-1 rounded-full bg-white/5 border border-white/10 w-fit backdrop-blur-sm flex items-center gap-2"
             >
                <Sparkles size={14} className="text-primary" />
-               <span className="text-sm font-bold text-gray-300">Welcome Back</span>
+               <span className="text-sm font-bold text-gray-300">Ready to Earn More?</span>
             </motion.div>
             <motion.h1 
               initial={{ x: -20, opacity: 0 }}
@@ -94,7 +94,7 @@ export default function LoginPage() {
               className="text-6xl font-extrabold text-white tracking-tight leading-[1.1]"
             >
               Sign In to <br />
-              <span className="text-primary">Referral Dashboard</span>
+              <span className="text-primary">Start Earning</span>
             </motion.h1>
             <motion.p 
               initial={{ x: -20, opacity: 0 }}
@@ -102,7 +102,7 @@ export default function LoginPage() {
               transition={{ delay: 0.5 }}
               className="text-xl text-gray-400 font-medium max-w-sm"
             >
-              Access your rewards, track referrals, and find the best events.
+              Track your referrals, manage your rewards, and discover new ways to make money.
             </motion.p>
           </div>
         </div>
@@ -119,8 +119,8 @@ export default function LoginPage() {
             >
                <Lock size={28} />
             </motion.div>
-            <h2 className="text-4xl font-bold text-white tracking-tight">Login</h2>
-            <p className="text-gray-400 font-medium">Enter your credentials to continue</p>
+            <h2 className="text-4xl font-bold text-white tracking-tight">Login to Your Account</h2>
+            <p className="text-gray-400 font-medium">Access your earning dashboard to continue</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
