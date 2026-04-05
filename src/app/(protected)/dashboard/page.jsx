@@ -8,7 +8,6 @@ import { useAuthStore } from "@/store/authStore";
 import { ReferralBanner } from "@/components/referral/referral-banner";
 import { SummaryCards } from "@/components/referral/summary-cards";
 import { ActivityTable } from "@/components/referral/activity-table";
-import { useReferrableEvents, useEventStats } from "@/lib/hooks/useReferralQueries";
 
 /**
  * DashboardPage
@@ -39,16 +38,16 @@ export default function DashboardPage() {
         <div className="space-y-3">
            <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full border border-primary/20">
               <Zap size={12} className="text-primary fill-current" />
-              <span className="text-[10px] font-bold text-primary tracking-widest uppercase">Verified Partner Account</span>
+              <span className="text-[11px] font-semibold text-primary">Partner account</span>
            </div>
            <h1 className="text-4xl font-semibold tracking-tight text-white/95">Welcome back, {userName}</h1>
-           <p className="text-gray-400 text-[15px] font-medium">Track your overall referral conversions across all events.</p>
+           <p className="text-gray-400 text-[15px] font-normal">Track referral performance across your events.</p>
         </div>
 
         <div className="flex items-center gap-4">
           <Button asChild className="bg-primary hover:bg-primary/90 text-white rounded-xl px-8 h-12 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]">
               <Link href="/events/referral-enabled">
-                 <Compass className="mr-2" size={20} /> Discover New Events
+                         <Compass className="mr-2" size={20} /> Explore events
               </Link>
           </Button>
         </div>
@@ -58,7 +57,7 @@ export default function DashboardPage() {
       <div className="space-y-4">
         <div className="flex items-center gap-2 mb-2">
            <TrendingUp size={16} className="text-primary" />
-           <p className="text-[12px] font-extrabold text-white/30 uppercase tracking-[0.2em]">Lifecycle Performance</p>
+                <p className="text-[12px] font-semibold text-white/40 uppercase tracking-wide">Performance overview</p>
         </div>
         <SummaryCards />
       </div>
@@ -75,24 +74,23 @@ export default function DashboardPage() {
           <div className="space-y-8 sticky top-8">
               
               {/* Promotion Widget */}
-              <div className="bg-[#12121f] border border-white/5 rounded-2xl p-8 relative overflow-hidden group shadow-2xl">
+              <div className="bg-[#12121f] border border-white/5 rounded-2xl p-8 relative overflow-hidden group shadow-lg">
                   <div className="relative z-10 space-y-6">
-                     <p className="text-sm text-white/40 font-semibold tracking-widest uppercase">Networking Tip</p>
+                     <p className="text-sm text-white/40 font-medium">Networking tip</p>
                      <p className="text-[16px] text-white/90 leading-relaxed font-medium">
-                        Personalize your invitations on LinkedIn and WhatsApp to achieve up to <span className="text-primary">3x higher</span> conversion rates.
+                        Personalize invites on LinkedIn and WhatsApp to improve conversion rates.
                      </p>
-                     <Button asChild variant="ghost" className="p-0 text-primary hover:text-primary/80 hover:bg-transparent font-bold">
+                     <Button asChild variant="ghost" className="p-0 text-primary hover:text-primary/80 hover:bg-transparent font-semibold">
                         <Link href="/events/referral-enabled">
                            View promotion guide →
                         </Link>
                      </Button>
                   </div>
-                  <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-primary/10 blur-[50px] rounded-full pointer-events-none group-hover:bg-primary/20 transition-all duration-700" />
               </div>
 
               {/* Economy Placeholder (Future Reward System) */}
-              <div className="p-8 bg-[#0C0C14] rounded-2xl border border-white/5 relative overflow-hidden border-dashed opacity-60 grayscale-[0.5]">
-                  <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mb-4">Financial Infrastructure (Locked)</p>
+              <div className="p-8 bg-[#0C0C14] rounded-2xl border border-white/5 relative overflow-hidden border-dashed opacity-80">
+                  <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-4">Financial infrastructure (locked)</p>
                   <div className="space-y-4">
                      <div className="h-4 w-3/4 bg-white/5 rounded-full" />
                      <div className="h-4 w-1/2 bg-white/5 rounded-full" />
