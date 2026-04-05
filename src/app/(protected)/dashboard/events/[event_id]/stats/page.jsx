@@ -121,7 +121,7 @@ export default function EventStatsPage({ params: paramsPromise }) {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-br from-[#0a0a14] to-[#12121a] border border-white/10 rounded-3xl p-8 relative overflow-hidden"
+          className="bg-[#11111b] border border-white/10 rounded-3xl p-8 relative overflow-hidden"
         >
           <div className="absolute top-0 right-0 p-6 opacity-10">
             <Ticket className="w-24 h-24 text-white" />
@@ -136,7 +136,7 @@ export default function EventStatsPage({ params: paramsPromise }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-gradient-to-br from-primary/10 to-[#12121a] border border-primary/20 rounded-3xl p-8 relative overflow-hidden"
+          className="bg-[#141824] border border-primary/20 rounded-3xl p-8 relative overflow-hidden"
         >
           <div className="absolute top-0 right-0 p-6 opacity-20">
             <TrendingUp className="w-24 h-24 text-primary" />

@@ -80,11 +80,11 @@ export function EventCard({ event }) {
           alt={event.name}
           className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14] to-transparent opacity-90" />
+        <div className="absolute inset-0 bg-black/45" />
         
         {/* Reward Badge */}
         {rewardText && (
-          <div className="absolute top-4 right-4 bg-primary text-black px-3 py-1 text-xs font-bold rounded-full shadow-lg">
+          <div className="absolute top-4 right-4 bg-primary text-black px-3 py-1 text-xs font-semibold rounded-full shadow-md">
             Earn {rewardText}
           </div>
         )}
@@ -92,7 +92,7 @@ export function EventCard({ event }) {
 
       <div className="p-6 flex-1 flex flex-col space-y-5">
         <div className="space-y-2">
-          <h3 className="text-xl font-bold text-white line-clamp-1 group-hover:text-primary transition-colors" title={event.name}>
+          <h3 className="text-xl font-semibold text-white line-clamp-1 group-hover:text-primary transition-colors" title={event.name}>
             {event.name}
           </h3>
           <div className="flex flex-col space-y-1.5 text-sm text-gray-400">
@@ -110,7 +110,7 @@ export function EventCard({ event }) {
         {/* Link Generation Box */}
         {event.use_referral ? (
           <div className="space-y-3 mt-auto">
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Your Referral Link</label>
+            <label className="text-xs font-medium text-gray-500">Your referral link</label>
             <div className="flex bg-[#12121a] rounded-xl border border-white/10 p-1 relative items-center group/input">
               <input
                 type="text"
@@ -153,7 +153,7 @@ export function EventCard({ event }) {
           </div>
         ) : (
           <div className="mt-auto p-4 bg-white/5 border border-white/5 rounded-xl text-center">
-            <span className="text-sm text-gray-400 font-medium tracking-wide">
+            <span className="text-sm text-gray-400 font-medium">
               Referral not available
             </span>
           </div>
@@ -162,8 +162,8 @@ export function EventCard({ event }) {
         {/* Actions */}
         <div className="pt-2 border-t border-white/10">
           <Link href={`/dashboard/events/${event.event_id || event.id}/stats`} className="w-full">
-            <Button className="w-full bg-white/5 hover:bg-white/10 text-white border-none transition-colors group/btn h-10">
-              <BarChart2 className="w-4 h-4 mr-2 text-primary group-hover/btn:scale-110 transition-transform" />
+            <Button className="w-full bg-white/5 hover:bg-white/10 text-white border-none transition-colors h-10">
+              <BarChart2 className="w-4 h-4 mr-2 text-primary" />
               View Stats
             </Button>
           </Link>

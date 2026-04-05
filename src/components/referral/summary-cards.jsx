@@ -11,8 +11,6 @@ import { cn } from "@/lib/utils/cn";
 export function SummaryCards() {
   const { data: stats, isLoading, error } = useRefereeStats();
 
-  console.log("DEBUG: SummaryCards UI Data:", { stats, isLoading, error });
-
   // If loading or error, we show the skeleton or fallback UI
   if (isLoading) {
     return (
@@ -71,14 +69,14 @@ export function SummaryCards() {
       {cards.map((card, i) => (
         <div 
           key={i} 
-          className="bg-[#12121f] border border-white/5 p-6 rounded-2xl flex items-center gap-4 shadow-sm hover:border-white/10 transition-colors"
+          className="bg-[#12121f] border border-white/5 p-6 rounded-2xl flex items-center gap-4 shadow-lg hover:border-white/10 transition-colors"
         >
           <div className={cn("p-4 rounded-xl", card.bg, card.color)}>
             <card.icon size={24} />
           </div>
           <div>
-            <p className="text-[13px] font-medium text-gray-400 tracking-wide uppercase">{card.title}</p>
-            <p className="text-3xl font-bold text-white leading-none mt-1">
+            <p className="text-[12px] font-medium text-gray-400">{card.title}</p>
+            <p className="text-3xl font-semibold text-white leading-none mt-1">
               {card.value}
             </p>
           </div>

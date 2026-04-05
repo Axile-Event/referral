@@ -39,9 +39,9 @@ export function ActivityTable() {
   };
 
   return (
-    <div className="bg-[#12121f] rounded-2xl border border-white/5 overflow-hidden shadow-2xl">
+    <div className="bg-[#12121f] rounded-2xl border border-white/5 overflow-hidden shadow-lg">
       <div className="px-6 py-5 border-b border-white/5 flex justify-between items-center">
-        <h3 className="font-semibold text-white/90">Referral Activity</h3>
+        <h3 className="font-semibold text-white/90">Referral activity</h3>
         <span className="text-[12px] text-gray-500 font-medium">{activity?.length || 0} entries</span>
       </div>
 
@@ -65,10 +65,10 @@ export function ActivityTable() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-white/[0.01]">
-                <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/5">Event Name</th>
-                <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/5">Buyer</th>
-                <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/5">Status</th>
-                <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 text-right">Date</th>
+                <th className="px-6 py-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wide border-b border-white/5">Event</th>
+                <th className="px-6 py-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wide border-b border-white/5">Buyer</th>
+                <th className="px-6 py-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wide border-b border-white/5">Status</th>
+                <th className="px-6 py-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wide border-b border-white/5 text-right">Date</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
