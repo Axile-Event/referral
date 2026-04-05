@@ -35,11 +35,11 @@ export default function SignUpPage() {
   const onSubmit = async (data) => {
     try {
       await signup(data);
-      toast.success("Account created successfully! Please verify your email.");
+      toast.success("Signup successful. Check your email for the OTP verification code.");
       // Redirect to OTP verification page with email as query param
       router.push(`/verify-otp?email=${encodeURIComponent(data.email)}`);
     } catch (error) {
-      toast.error(parseApiError(error) || "Invalid credentials. Please try again.");
+      toast.error(parseApiError(error) || "Signup failed. Please check your details and try again.");
     }
   };
 
