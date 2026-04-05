@@ -3,11 +3,10 @@ import { Button } from "@/components/ui/button.jsx";
 
 /**
  * Wallet Card Component
- * Redesigned to match the "Available Points" view.
+ * Redesigned to match the "Available Earnings" view.
  * 
  * Props:
- * - balance: Points available
- * - nairaVal: Equivalent in Naira (already converted)
+ * - balance: Naira available
  * - onWithdraw: Action trigger
  * - onViewReports: Action trigger
  */
@@ -21,16 +20,13 @@ export function WalletCard({ balance = 0, nairaVal = 0, onWithdraw, onViewReport
 
       <div className="relative z-10 space-y-2">
         <p className="text-xs font-bold uppercase tracking-[3px] text-white/70 leading-none">
-          AVAILABLE POINTS (AP)
+          AVAILABLE BALANCE
         </p>
         <div className="space-y-1">
           <h2 className="text-8xl font-extrabold tracking-[-3px] leading-tight flex items-baseline">
-            {balance.toLocaleString(undefined, { minimumFractionDigits: 1 })}{" "}
-            <span className="text-4xl tracking-normal ml-3 font-bold opacity-90">AP</span>
+            <span className="text-5xl mr-2 font-bold opacity-90">₦</span>
+            {balance.toLocaleString(undefined, { minimumFractionDigits: 1 })}
           </h2>
-          <p className="text-2xl font-bold text-white/50 tracking-tight leading-none pl-1">
-             ≈ ₦{nairaVal.toLocaleString("en-NG", { minimumFractionDigits: 2 })}
-          </p>
         </div>
       </div>
 

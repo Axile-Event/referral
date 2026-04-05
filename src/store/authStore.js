@@ -11,6 +11,7 @@ import { tokenStorage } from "@/lib/utils/tokenStorage";
  */
 export const useAuthStore = create((set, get) => ({
   user: null,
+  username: (typeof window !== "undefined" ? localStorage.getItem("axile_username") : null),
   isAuthenticated: (typeof window !== "undefined" && !!tokenStorage.getAccessToken()),
   isLoading: false,
   error: null,
@@ -30,9 +31,15 @@ export const useAuthStore = create((set, get) => ({
         tokenStorage.setTokens(res.access, res.refresh);
       }
       
-      // Fetch full profile info and normalize it
       const profile = await authApi.getProfile();
       const normalizedProfile = normalizeUserProfile(profile);
+      
+      // Synchronize username
+      if (normalizedProfile.username) {
+        set({ username: normalizedProfile.username });
+        localStorage.setItem("axile_username", normalizedProfile.username);
+      }
+
       set({ user: normalizedProfile, isAuthenticated: true });
       return normalizedProfile;
     } catch (err) {
@@ -61,11 +68,17 @@ export const useAuthStore = create((set, get) => ({
       
       if (res.access) {
         tokenStorage.setTokens(res.access, res.refresh);
+        // Task: Capture User.Username (capital U)
+        if (res.user?.Username) {
+          const username = res.user.Username;
+          set({ username });
+          localStorage.setItem("axile_username", username);
+        }
       }
       const profile = await authApi.getProfile();
       const normalizedProfile = normalizeUserProfile(profile);
       set({ user: normalizedProfile, isAuthenticated: true });
-      return normalizedProfile;
+      return { ...normalizedProfile, needs_username: res.needs_username };
     } catch (err) {
       const msg = err.response?.data?.error || err.response?.data?.message || err.message;
       set({ error: msg });
@@ -106,6 +119,12 @@ export const useAuthStore = create((set, get) => ({
       const res = await authApi.verifyOtp(payload);
       if (res.access) {
         tokenStorage.setTokens(res.access, res.refresh);
+        // Task: Capture user.Username from verify-otp response
+        if (res.user?.Username) {
+          const username = res.user.Username;
+          set({ username });
+          localStorage.setItem("axile_username", username);
+        }
         const profile = await authApi.getProfile();
         const normalizedProfile = normalizeUserProfile(profile);
         set({ user: normalizedProfile, isAuthenticated: true });
@@ -210,9 +229,18 @@ export const useAuthStore = create((set, get) => ({
       const normalizedProfile = normalizeUserProfile(profile);
       console.log("fetchProfile: Normalized profile:", normalizedProfile);
       
+      // Synchronize username
+      if (normalizedProfile.username) {
+        set({ username: normalizedProfile.username });
+        localStorage.setItem("axile_username", normalizedProfile.username);
+      }
+
       set({ user: normalizedProfile, isAuthenticated: true });
     } catch (err) {
-      console.error("Failed to fetch profile:", err);
+      console.error("DEBUG: Failed to fetch /referee/profile/:", {
+        status: err.response?.status,
+        data: err.response?.data || err.message
+      });
       if (err.response?.status === 401) {
         get().logout();
       }
@@ -226,13 +254,54 @@ export const useAuthStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await authApi.updateProfile(data);
-      const normalizedProfile = normalizeUserProfile(res.profile || res);
+      const normalizedProfile = normalizeUserProfile(res.profile || res.data || res);
+      
+      // Synchronize username
+      if (normalizedProfile.username) {
+        set({ username: normalizedProfile.username });
+        localStorage.setItem("axile_username", normalizedProfile.username);
+      }
+
       set({ user: normalizedProfile });
       return normalizedProfile;
     } catch (err) {
       const msg = err.response?.data?.error || err.response?.data?.message || err.message;
       set({ error: msg });
       throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  /**
+   * Update user password
+   */
+  changePassword: async (old_password, new_password) => {
+    set({ isLoading: true, error: null });
+    try {
+      await authApi.changePassword(old_password, new_password);
+      return true;
+    } catch (err) {
+      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
+      set({ error: msg });
+      return false;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  /**
+   * Set user PIN
+   */
+  setPin: async (pin) => {
+    set({ isLoading: true, error: null });
+    try {
+      await authApi.createPin(pin);
+      return true;
+    } catch (err) {
+      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
+      set({ error: msg });
+      return false;
     } finally {
       set({ isLoading: false });
     }
@@ -248,7 +317,17 @@ export const useAuthStore = create((set, get) => ({
     }
     
     tokenStorage.clearTokens();
-    set({ user: null, isAuthenticated: false });
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("axile_username");
+    }
+    set({ user: null, username: null, isAuthenticated: false });
+  },
+
+  setUsername: (username) => {
+    set({ username });
+    if (typeof window !== "undefined") {
+      localStorage.setItem("axile_username", username);
+    }
   },
 
   setUser: (user) => set({ user: user ? normalizeUserProfile(user) : null, isAuthenticated: !!user }),

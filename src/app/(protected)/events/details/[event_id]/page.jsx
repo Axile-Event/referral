@@ -4,12 +4,13 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { useReferral } from "@/lib/hooks/useReferral";
-import { generateReferralLink } from "@/lib/utils/referral";
+import { generateReferralLink, formatRewardLabel } from "@/lib/utils/referral";
 import { 
   ArrowLeft, Copy, Check, ArrowUpRight, Share2, Zap, Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
+import { LinkDisplay } from "@/components/referral/link-display";
 
 export default function EventReferralDetailPage() {
   const params = useParams();
@@ -29,42 +30,16 @@ export default function EventReferralDetailPage() {
     fetchReferrableEventDetail(identifier);
   }, [identifier, fetchReferrableEventDetail]);
 
-  // Priority for user identification (Referral ID):
-  // We check multiple keys and nested structures (profile, user, data) to handle wrapped API responses.
-  const userHandle = 
-    user?.profile?.referree_id ||
-    user?.profile?.referee_id ||
-    user?.profile?.username ||
-    user?.profile?.Username ||
-    user?.referree_id || 
-    user?.referee_id || 
-    user?.username || 
-    user?.Username || 
-    user?.user?.username ||
-    user?.user?.Username ||
-    user?.user?.referree_id ||
-    user?.user?.referee_id ||
-    user?.data?.username ||
-    user?.data?.Username ||
-    user?.data?.referree_id ||
-    user?.data?.referee_id ||
-    user?.handle ||
-    (user?.profile?.firstname && user?.profile?.lastname ? `${user.profile.firstname}-${user.profile.lastname}`.toLowerCase() : null) ||
-    (user?.first_name && user?.last_name ? `${user.first_name}-${user.last_name}`.toLowerCase() : null) ||
-    (user?.user?.first_name && user?.user?.last_name ? `${user.user.first_name}-${user.user.last_name}`.toLowerCase() : null) ||
-    user?.profile?.firstname?.toLowerCase() ||
-    user?.first_name?.toLowerCase() ||
-    user?.user?.first_name?.toLowerCase() ||
-    user?.profile?.id ||
-    user?.id ||
-    user?.pk ||
-    user?.user?.id ||
-    "referee";
+  const username = useAuthStore((s) => s.user?.username || s.username);
   
   // Build link using the global utility to ensure consistency
   // Uses event_slug primarily, or event_id (without 'event:' prefix)
   const referralLink = event
-    ? generateReferralLink(userHandle, event.event_slug, event.event_id)
+    ? generateReferralLink({
+        username: username || "referee",
+        event_slug: event.event_slug,
+        event_id: event.event_id,
+      })
     : "";
 
   const handleCopy = () => {
@@ -97,9 +72,7 @@ export default function EventReferralDetailPage() {
     );
   }
 
-  const rewardText = event.referral_reward_type === 'percentage' 
-    ? `${event.referral_reward_percentage}%`
-    : `₦${event.referral_reward_amount?.toLocaleString()}`;
+  const rewardText = formatRewardLabel(event);
 
   const eventDate = event.date ? new Date(event.date).toLocaleDateString("en-US", {
     weekday: "long", month: "long", day: "numeric", year: "numeric",
@@ -229,22 +202,9 @@ export default function EventReferralDetailPage() {
 
                  <div className="h-px w-full bg-white/[0.04] relative z-10" />
 
-                 <div className="space-y-4 relative z-10">
-                    <label className="text-[12px] font-semibold text-white/30 uppercase tracking-widest">Shareable Referral Link</label>
-                    
-                    <div className="bg-[#05050A] border border-white/5 rounded-[20px] p-4 flex items-center relative overflow-hidden">
-                       <p className="text-[13px] text-white/70 truncate flex-1 font-mono tracking-tight leading-none overflow-hidden">
-                          {referralLink}
-                       </p>
-                    </div>
-                    
-                    <Button 
-                       onClick={handleCopy}
-                       className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-7 h-14 rounded-[20px] text-[15px] transition-all active:scale-[0.98] mt-2 flex items-center justify-center gap-2 shadow-[0_10px_20px_rgba(227,54,41,0.2)]"
-                    >
-                       {copied ? "Link Copied" : "Copy Link"}
-                       {copied ? <Check size={18} /> : <ArrowUpRight size={18} className="text-white/70" />}
-                    </Button>
+                 {/* Shared Link Display Component */}
+                 <div className="relative z-10">
+                    <LinkDisplay event={event} referralLink={referralLink} />
                  </div>
 
                  <div className="p-4 bg-yellow-500/5 rounded-[20px] border border-yellow-500/10 relative z-10">

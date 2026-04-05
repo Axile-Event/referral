@@ -17,31 +17,60 @@ import {
   Ticket as TicketIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
-import { useReferralStore } from "@/store/referralStore";
+import { useReferrableEventDetail, useEventStats } from "@/lib/hooks/useReferralQueries";
 
 export default function ReferralDetailsPage({ params: paramsPromise }) {
   const params = use(paramsPromise);
   const eventId = params.eventId;
   
-  const { 
-    selectedEvent, 
-    eventStats, 
-    fetchReferrableEventDetail, 
-    fetchEventStats, 
-    isLoading 
-  } = useReferralStore();
+  const { data: selectedEvent, isLoading: isEventLoading } = useReferrableEventDetail(eventId);
+  const { data: stats, isLoading: isStatsLoading } = useEventStats(eventId);
 
-  useEffect(() => {
-    fetchReferrableEventDetail(eventId);
-    fetchEventStats(eventId);
-  }, [eventId, fetchReferrableEventDetail, fetchEventStats]);
-
-  const stats = eventStats[eventId] || {};
-  const tickets = stats.tickets || [];
+  const tickets = stats?.tickets || [];
+  const isLoading = (isEventLoading || isStatsLoading) && (!selectedEvent || !stats);
   
+  // Calculate status-aware stats
+  const { settledTotal, pendingTotal, checkedInCount } = React.useMemo(() => {
+    let settled = 0;
+    let pending = 0;
+    let count = 0;
+    
+    if (stats?.tickets) {
+      stats.tickets.forEach(ticket => {
+        const rewardType = selectedEvent?.referral_reward_type || stats?.referral_reward_type;
+        const rewardAmount = Number(selectedEvent?.referral_reward_amount || stats?.referral_reward_amount || 0);
+        const rewardPercentage = Number(selectedEvent?.referral_reward_percentage || stats?.referral_reward_percentage || 0);
+        const ticketPrice = Number(ticket.category_price || 0);
+
+        let reward = 0;
+        if (rewardType === 'flat') {
+          reward = rewardAmount;
+        } else if (rewardType === 'percentage') {
+          reward = (ticketPrice * rewardPercentage) / 100;
+        }
+
+        const isSettled = ticket.status?.toLowerCase() === "used" || 
+                         ticket.status?.toLowerCase() === "checked_in" || 
+                         ticket.is_checked_in === true;
+        
+        if (isSettled) {
+          settled += reward;
+          count += 1;
+        } else {
+          pending += reward;
+        }
+      });
+    } else {
+      // Fallback if no tickets list but summary exists
+      settled = stats?.referral_revenue || 0;
+    }
+    
+    return { settledTotal: settled, pendingTotal: pending, checkedInCount: count };
+  }, [stats, selectedEvent]);
+
   const formatCurrency = (val) => `₦${(val || 0).toLocaleString()}`;
 
-  if (isLoading && !selectedEvent) {
+  if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
          <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
@@ -94,7 +123,7 @@ export default function ReferralDetailsPage({ params: paramsPromise }) {
                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 md:gap-8">
                   <MetaItem icon={Calendar} label="Event Date" value={selectedEvent?.date ? new Date(selectedEvent.date).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : "TBA"} />
                   <MetaItem icon={TrendingUp} label="Your Reward" value={selectedEvent?.referral_reward_type === 'percentage' ? `${selectedEvent.referral_reward_percentage}% Share` : formatCurrency(selectedEvent?.referral_reward_amount)} color="text-primary" />
-                  <MetaItem icon={Users} label="Referral Name" value={stats.referral_name || "N/A"} />
+                  <MetaItem icon={Users} label="Referral Name" value={stats?.referral_name || "N/A"} />
                </div>
             </div>
          </div>
@@ -104,27 +133,27 @@ export default function ReferralDetailsPage({ params: paramsPromise }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
          <SummaryCard 
             title="Referral Revenue" 
-            value={formatCurrency(stats.referral_revenue)} 
-            icon={Wallet} 
+            value={formatCurrency(settledTotal)} 
+            icon={CheckCircle} 
             color="text-green-500" 
             bg="bg-green-500/10" 
-            metric={`${((stats.referral_revenue || 0) / (selectedEvent?.category_price || 1) * 10).toFixed(1)}% Yield`}
+            metric={`${checkedInCount} Checked In`}
+         />
+         <SummaryCard 
+            title="Pending Rewards" 
+            value={formatCurrency(pendingTotal)} 
+            icon={Clock} 
+            color="text-amber-500" 
+            bg="bg-amber-500/10" 
+            metric="Awaiting Check-in"
          />
          <SummaryCard 
             title="Conversions" 
-            value={stats.tickets_sold || 0} 
-            icon={CheckCircle} 
+            value={stats?.tickets_sold || 0} 
+            icon={TrendingUp} 
             color="text-primary" 
             bg="bg-primary/10" 
-            metric="Tickets Sold"
-         />
-         <SummaryCard 
-            title="Program ROI" 
-            value={selectedEvent?.referral_reward_type === 'percentage' ? 'High' : 'Stable'} 
-            icon={TrendingUp} 
-            color="text-sky-400" 
-            bg="bg-sky-500/10" 
-            metric="Referee Rating"
+            metric="Total Orders"
          />
       </div>
 
@@ -148,13 +177,26 @@ export default function ReferralDetailsPage({ params: paramsPromise }) {
                      <tr className="bg-white/[0.02] border-b border-white/5">
                         <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Buyer Identity</th>
                         <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Ticket Classification</th>
-                        <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Transaction Value</th>
+                        <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Your Reward</th>
                         <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Settlement Status</th>
                         <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Details</th>
                      </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.03]">
-                     {tickets.length > 0 ? tickets.map((ticket, i) => (
+                     {tickets.length > 0 ? tickets.map((ticket, i) => {
+                        const rewardType = selectedEvent?.referral_reward_type || stats?.referral_reward_type;
+                        const rewardAmount = Number(selectedEvent?.referral_reward_amount || stats?.referral_reward_amount || 0);
+                        const rewardPercentage = Number(selectedEvent?.referral_reward_percentage || stats?.referral_reward_percentage || 0);
+                        const ticketPrice = Number(ticket.category_price || 0);
+
+                        let reward = 0;
+                        if (rewardType === 'flat') {
+                           reward = rewardAmount;
+                        } else if (rewardType === 'percentage') {
+                           reward = (ticketPrice * rewardPercentage) / 100;
+                        }
+
+                        return (
                         <tr key={ticket.id || i} className="group hover:bg-white/[0.01] transition-colors">
                            <td className="px-8 py-6">
                               <div className="flex flex-col">
@@ -170,8 +212,8 @@ export default function ReferralDetailsPage({ params: paramsPromise }) {
                                  <span className="text-sm font-bold text-white/80">{ticket.category_name || "General Admission"}</span>
                               </div>
                            </td>
-                           <td className="px-8 py-6 font-black text-sm text-white/90">
-                              {formatCurrency(ticket.category_price)}
+                           <td className="px-8 py-6 font-black text-sm text-emerald-400">
+                              {formatCurrency(reward)}
                            </td>
                            <td className="px-8 py-6">
                               <StatusBadge status={ticket.status} />
@@ -182,7 +224,8 @@ export default function ReferralDetailsPage({ params: paramsPromise }) {
                               </button>
                            </td>
                         </tr>
-                     )) : (
+                        );
+                     }) : (
                         <tr>
                            <td colSpan="5" className="px-8 py-20 text-center">
                               <div className="max-w-xs mx-auto space-y-4">
@@ -240,15 +283,15 @@ function MetaItem({ icon: Icon, label, value, color = "text-white/40" }) {
 }
 
 function StatusBadge({ status }) {
-   const isPaid = status?.toLowerCase() === "confirmed" || status?.toLowerCase() === "paid";
+   const isSettled = status?.toLowerCase() === "used" || status?.toLowerCase() === "checked_in";
    return (
       <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-[0.15em] ${
-         isPaid 
+         isSettled 
            ? "bg-green-500/10 border-green-500/20 text-green-500" 
            : "bg-yellow-500/10 border-yellow-500/20 text-yellow-500"
       }`}>
-         <div className={`w-1 h-1 rounded-full ${isPaid ? "bg-green-500" : "bg-yellow-500"} shadow-lg`} />
-         {status || "Pending"}
+         <div className={`w-1 h-1 rounded-full ${isSettled ? "bg-green-500" : "bg-yellow-500"} shadow-lg`} />
+         {isSettled ? "Settled" : (status || "Pending")}
       </div>
    );
 }

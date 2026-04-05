@@ -60,6 +60,10 @@ export const authApi = {
   changePin: (oldPin, newPin) => 
     apiClient.post("/referee/change-pin/", { old_pin: oldPin, new_pin: newPin }).then((r) => r.data),
 
+  // POST /password/change/
+  changePassword: (old_password, new_password) => 
+    apiClient.post("/password/change/", { old_password, new_password }).then((r) => r.data),
+
   // POST /referee/password/reset/ — { "email" }
   forgotPassword: (email) => 
     apiClient.post("/referee/password/reset/", { email }).then((r) => r.data),

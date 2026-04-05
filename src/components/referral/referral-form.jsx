@@ -1,5 +1,6 @@
 import { useReferralStore } from "@/store/referralStore";
 import { useState } from "react";
+import { useInvalidateReferralData } from "@/lib/hooks/useReferralQueries";
 import toast from "react-hot-toast";
 
 /**
@@ -11,12 +12,15 @@ import toast from "react-hot-toast";
 export function ReferralForm({ eventId, onSuccess }) {
   const [generating, setGenerating] = useState(false);
   const generateReferralLink = useReferralStore((s) => s.generateReferralLink);
+  const invalidate = useInvalidateReferralData();
 
   const handleGenerate = async () => {
     setGenerating(true);
     try {
       const link = await generateReferralLink(eventId);
       if (link) {
+        // Invalidate queries to ensure dashboard metrics are updated
+        invalidate();
         onSuccess?.(link);
         toast.success("Referral link generated!");
       }

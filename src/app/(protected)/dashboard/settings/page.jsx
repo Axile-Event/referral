@@ -13,7 +13,7 @@ import {
   UserCircle
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useUserStore } from "@/store/userStore";
+import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import toast from "react-hot-toast";
@@ -29,7 +29,26 @@ const toastTheme = {
 };
 
 export default function SettingsPage() {
-  const { logout, changePassword, setPin, isLoading } = useUserStore();
+  const { user: profile, fetchProfile, updateProfile, logout, changePassword, setPin } = useAuthStore();
+  const isLoading = useAuthStore(state => state.isLoading);
+
+  // Profile/Username state
+  const [userData, setUserData] = useState({ username: "", firstname: "", lastname: "" });
+
+  useEffect(() => {
+    const loadData = async () => {
+      const p = await fetchProfile();
+      console.log("DEBUG: SettingsPage Profile Load:", p);
+      if (p) {
+        setUserData({
+          username: p.username || p.Username || "",
+          firstname: p.Firstname || p.firstname || "",
+          lastname: p.Lastname || p.lastname || ""
+        });
+      }
+    };
+    loadData();
+  }, [fetchProfile]);
 
   // Password Update
   const [showPass, setShowPass] = useState(false);
@@ -39,6 +58,12 @@ export default function SettingsPage() {
   const [pinVal, setPinVal] = useState("");
 
   const onlyDigits = (v) => v.replace(/\D/g, "").slice(0, 4);
+
+  const handleProfileSubmit = async (e) => {
+    e.preventDefault();
+    if (!userData.username) return toast.error("Public Handle/Username is required for referral tracking", toastTheme);
+    await updateProfile(userData);
+  };
 
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
@@ -77,6 +102,61 @@ export default function SettingsPage() {
 
       <div className="bg-[#12121f] rounded-[32px] border border-white/5 overflow-hidden shadow-2xl divide-y divide-white/[0.04]">
         
+        {/* ─── PROFILE IDENTITY SECTION ─── */}
+        <section className="p-8 md:p-10 space-y-8">
+           <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500">
+                <UserCircle size={20} />
+              </div>
+              <div className="flex-1">
+                 <h2 className="text-lg font-bold text-white tracking-tight italic">Account Identity</h2>
+                 <p className="text-xs text-white/30 font-medium">This is how you will be identified on referral links and the leaderboard</p>
+              </div>
+           </div>
+
+           <form onSubmit={handleProfileSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] ml-1">Referral Handle (Username)</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 font-bold text-lg">@</span>
+                    <Input 
+                      placeholder="e.g. samkiel"
+                      value={userData.username}
+                      onChange={e => setUserData({ ...userData, username: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '') })}
+                      className="bg-white/[0.03] border-white/5 h-12 rounded-xl focus:border-rose-500/40 pl-10 font-bold text-lg"
+                    />
+                  </div>
+                  <p className="text-[10px] text-white/20 ml-2">Must be lowercase letters and numbers only.</p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] ml-1">First Name</label>
+                  <Input 
+                    placeholder="First Name"
+                    value={userData.firstname}
+                    onChange={e => setUserData({ ...userData, firstname: e.target.value })}
+                    className="bg-white/[0.03] border-white/5 h-12 rounded-xl focus:border-primary/40 font-medium"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] ml-1">Last Name</label>
+                  <Input 
+                    placeholder="Last Name"
+                    value={userData.lastname}
+                    onChange={e => setUserData({ ...userData, lastname: e.target.value })}
+                    className="bg-white/[0.03] border-white/5 h-12 rounded-xl focus:border-primary/40 font-medium"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                 <Button type="submit" disabled={isLoading} className="h-12 px-10 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-rose-500 hover:bg-rose-400">
+                    {isLoading ? "Saving..." : "Save Identity"}
+                 </Button>
+              </div>
+           </form>
+        </section>
         {/* ─── PASSWORD SECTION (GROUPED) ─── */}
         <section className="p-8 md:p-10 space-y-8">
            <div className="flex items-center gap-3">
