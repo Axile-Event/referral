@@ -28,18 +28,13 @@ export default function DashboardPage() {
     : (user?.Firstname || user?.firstname || "Partner");
 
   return (
-    <div className="max-w-7xl mx-auto space-y-10 animate-fade-in pb-24 px-4 sm:px-6">
-
-      {/* Branded Banner */}
-      <ReferralBanner />
-
-      {/* Enhanced Header Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-6 border-b border-white/5 relative">
+    <div className="w-full space-y-8 animate-fade-in pb-24">
+      {/* Banner & Header Section */}
+      <div className="space-y-4">
+        <ReferralBanner />
+        
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-6 border-b border-white/5 relative px-4 sm:px-6">
         <div className="space-y-3">
-           <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full border border-primary/20">
-              <Zap size={12} className="text-primary fill-current" />
-              <span className="text-[11px] font-semibold text-primary">Partner account</span>
-           </div>
            <h1 className="text-4xl font-semibold tracking-tight text-white/95">Welcome back, {userName}</h1>
            <p className="text-gray-400 text-[15px] font-normal">Track referral performance across your events.</p>
         </div>
@@ -52,9 +47,10 @@ export default function DashboardPage() {
           </Button>
         </div>
       </div>
+      </div>
 
       {/* Summary Metrics */}
-      <div className="space-y-4">
+      <div className="space-y-4 px-4 sm:px-6">
         <div className="flex items-center gap-2 mb-2">
            <TrendingUp size={16} className="text-primary" />
                 <p className="text-[12px] font-semibold text-white/40 uppercase tracking-wide">Performance overview</p>

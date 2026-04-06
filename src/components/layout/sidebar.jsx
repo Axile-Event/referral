@@ -46,12 +46,12 @@ export function Sidebar({ isOpen, onClose }) {
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Logo Section */}
-        <div className="h-[72px] px-6 border-b border-white/10 flex items-center justify-between sticky top-0 bg-[#0a0a14] z-10">
+        <div className="h-20 px-6 border-b border-white/10 flex items-center justify-between sticky top-0 bg-[#0a0a14] z-10 transition-all duration-300">
           <Link href="/" onClick={onClose} className="flex">
             <img 
               src="/axile-logo-main-cropped.png" 
               alt="Axile" 
-              className="h-12 w-auto object-contain brightness-110"
+              className="h-16 w-auto object-contain brightness-110"
             />
           </Link>
           <Button 

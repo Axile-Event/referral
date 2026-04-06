@@ -78,7 +78,7 @@ export default function ReferralDetailsPage({ params: paramsPromise }) {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-10 animate-fade-in pb-32 pt-4 px-4 sm:px-0">
+    <div className="max-w-6xl mx-auto space-y-8 animate-fade-in pb-32 px-4 sm:px-0">
       
       {/* Navigation & Actions */}
       <div className="flex items-center justify-between">
@@ -258,8 +258,8 @@ function SummaryCard({ title, value, icon: Icon, color, bg, metric }) {
             <span className="text-[11px] font-medium text-white/30">{metric}</span>
          </div>
          <div className="space-y-1 relative z-10">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-white/40">{title}</p>
-            <p className="text-4xl font-semibold text-white tracking-tight">{value}</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-white/30">{title}</p>
+            <p className="text-2xl font-black text-white leading-tight">{value}</p>
          </div>
       </div>
    );
