@@ -34,7 +34,11 @@ export function GoogleSignupButton({ variant = "signup" }) {
         const result = await googleSignup(response.access_token);
         
         if (result?.email || result?.username) {
-          toast.success("Account created successfully!", {
+          const successMsg = variant === "login" 
+            ? "Login successful! Welcome back." 
+            : "Account created successfully! Welcome to Axile.";
+
+          toast.success(successMsg, {
             style: {
               background: "#161622",
               color: "#fff",
