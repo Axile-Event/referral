@@ -57,16 +57,23 @@ export default function SettingsPage() {
 
   const onlyDigits = (v) => v.replace(/\D/g, "").slice(0, 4);
 
-  // Determine if they actually have a set username vs a default email placeholder
-  const hasExistingUsername = profile ? Boolean((profile.username || profile.Username) && (profile.username !== profile.email) && !(profile.username || "").includes('@') && !profile.needs_username) : false;
+  const currentUsername = profile?.username || profile?.Username || "";
+  const isDefaultUsername = (currentUsername === profile?.email) || (currentUsername || "").includes('@') || profile?.needs_username;
 
   const handleUsernameSubmit = async (e) => {
     e.preventDefault();
-    if (hasExistingUsername) return; // safety catch
     if (!usernameVal) return toast.error("Username is required", toastTheme);
-    await updateProfile({ username: usernameVal });
-    // After success, it will update profile state and disable the field if successful
-    toast.success("Username set successfully!", toastTheme);
+    if (usernameVal === currentUsername && !isDefaultUsername) {
+      return toast.error("Please choose a different username", toastTheme);
+    }
+    
+    try {
+      await updateProfile({ username: usernameVal });
+      toast.success("Username updated successfully!", toastTheme);
+    } catch (err) {
+      const msg = err.response?.data?.username?.[0] || err.response?.data?.error || "Failed to update username";
+      toast.error(msg, toastTheme);
+    }
   };
 
   const handlePasswordSubmit = async (e) => {
@@ -135,8 +142,9 @@ export default function SettingsPage() {
             </div>
             <div>
               <h2 className="text-sm font-bold text-white tracking-tight">Profile Username</h2>
-              <p className={`text-[11px] sm:text-xs font-medium ${hasExistingUsername ? "text-emerald-400" : "text-white/40"}`}>
-                {hasExistingUsername ? "✓ You already have a username set." : "Set a unique username for your account."}
+              <p className={`text-[11px] sm:text-xs font-medium ${!isDefaultUsername ? "text-emerald-400" : "text-white/40"}`}>
+                {!isDefaultUsername ? "Update your unique username." : "Set a unique username for your account."}
+                {!isDefaultUsername && <span className="block text-white/20 mt-1 uppercase text-[9px] font-black tracking-tighter">Changing will break old referral links</span>}
               </p>
             </div>
           </div>
@@ -149,13 +157,16 @@ export default function SettingsPage() {
               <Input 
                 placeholder="New Username"
                 value={usernameVal}
-                disabled={hasExistingUsername}
                 onChange={e => setUsernameVal(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                className={`bg-black/20 border-white/5 h-11 rounded-xl pl-10 font-bold text-sm text-white ${hasExistingUsername ? 'opacity-50 cursor-not-allowed text-white/50' : 'focus:border-blue-500/50'}`}
+                className="bg-black/20 border-white/5 h-11 rounded-xl pl-10 font-bold text-sm text-white focus:border-blue-500/50"
               />
             </div>
-            <Button type="submit" disabled={isLoading || hasExistingUsername} className={`h-11 px-6 rounded-xl font-bold text-[11px] uppercase tracking-wider text-white transition-all w-full sm:w-auto shrink-0 shadow-sm ${hasExistingUsername ? 'bg-white/5 text-white/30 cursor-not-allowed border border-white/5' : 'bg-blue-600 hover:bg-blue-500'}`}>
-              {hasExistingUsername ? "Locked" : "Set Username"}
+            <Button 
+              type="submit" 
+              disabled={isLoading || (usernameVal === currentUsername && !isDefaultUsername)} 
+              className="h-11 px-6 rounded-xl font-bold text-[11px] uppercase tracking-wider text-white transition-all w-full sm:w-auto shrink-0 shadow-sm bg-blue-600 hover:bg-blue-500 disabled:opacity-50"
+            >
+              {!isDefaultUsername ? "Update Username" : "Set Username"}
             </Button>
           </form>
         </div>
