@@ -35,14 +35,14 @@ export default function EventsPage() {
     return null;
   }
 
-  // Handle referee_id missing case
-  const referee_id = user?.referree_id || user?.id; // fallback to ID just in case
-  if (!referee_id) {
+  // Handle username missing case (formerly referee_id)
+  const identifier = user?.username;
+  if (!identifier) {
     return (
       <div className="p-8 sm:p-12 w-full h-[60vh] flex flex-col justify-center items-center text-center space-y-4">
         <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
         <h2 className="text-2xl font-bold text-white tracking-tight">Missing Referee Profile</h2>
-        <p className="text-gray-400 max-w-sm">We could not verify your referee identity. Please log in again to resolve this issue.</p>
+        <p className="text-gray-400 max-w-sm">We could not verify your referee identity. Please ensure you have a username set in settings.</p>
         <Button onClick={() => router.push("/login")} className="mt-6 rounded-full px-8">
           Return to Login
         </Button>

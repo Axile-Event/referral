@@ -69,14 +69,14 @@ export function SummaryCards() {
       {cards.map((card, i) => (
         <div 
           key={i} 
-          className="bg-[#12121f] border border-white/5 p-6 rounded-2xl flex items-center gap-4 shadow-lg hover:border-white/10 transition-colors"
+          className="bg-[#12121f] border border-white/5 p-5 rounded-2xl flex flex-col gap-4 shadow-lg hover:border-white/10 transition-colors"
         >
-          <div className={cn("p-4 rounded-xl", card.bg, card.color)}>
-            <card.icon size={24} />
+          <div className={cn("p-3 rounded-xl w-fit", card.bg, card.color)}>
+            <card.icon size={20} />
           </div>
           <div>
-            <p className="text-[12px] font-medium text-gray-400">{card.title}</p>
-            <p className="text-3xl font-semibold text-white leading-none mt-1">
+            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{card.title}</p>
+            <p className="text-2xl font-black text-white leading-tight mt-1">
               {card.value}
             </p>
           </div>

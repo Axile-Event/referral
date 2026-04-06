@@ -27,7 +27,7 @@ const STATUS_CONFIG = {
     className: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
   },
   confirmed: {
-    label: "Payment confirmed",
+    label: "Confirmed",
     className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
   },
   checked_in: {

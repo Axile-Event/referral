@@ -134,7 +134,7 @@ Organizer JWT required.
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| **POST** | `/organiser/<event_id>/referral-stats/` | Bulk stats for referral IDs passed in body |
+| **POST** | `/organiser/<event_id>/referral-stats/` | Bulk stats for username passed in body |
 
 ### Response fields
 
@@ -151,8 +151,8 @@ Request body format:
 ```json
 {
   "referrals": [
-    { "referee_id": "organiser:abc123" },
-    { "referee_id": "organiser:def456" }
+    { "username": "organiser:abc123" },
+    { "username": "organiser:def456" }
   ]
 }
 ```
