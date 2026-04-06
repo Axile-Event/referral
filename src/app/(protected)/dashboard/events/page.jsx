@@ -58,7 +58,7 @@ export default function EventsPage() {
           <div className="w-16 h-16 border-4 border-white/5 rounded-full" />
           <Loader2 className="w-16 h-16 text-primary animate-spin absolute inset-0" />
         </div>
-        <p className="text-gray-400 font-medium tracking-wide animate-pulse">Loading amazing events...</p>
+        <p className="text-gray-400 font-medium">Loading events...</p>
       </div>
     );
   }
@@ -95,15 +95,15 @@ export default function EventsPage() {
             className="flex items-center gap-2 mb-2"
           >
              <Calendar className="w-5 h-5 text-primary" />
-             <span className="text-sm font-bold text-primary tracking-widest uppercase">Marketplace</span>
+             <span className="text-sm font-semibold text-primary tracking-wide uppercase">Marketplace</span>
           </motion.div>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">Refer & Earn</h1>
-          <p className="text-lg text-gray-400 font-medium max-w-2xl pt-2">
-            Browse our curated list of high-tier events. Generate your unique links and start making money immediately.
+          <h1 className="text-4xl sm:text-5xl font-semibold text-white tracking-tight">Refer and earn</h1>
+          <p className="text-base text-gray-400 font-normal max-w-2xl pt-2">
+            Browse referral-enabled events, generate your unique links, and track results.
           </p>
         </div>
         <div className="bg-white/5 border border-white/10 px-5 py-3 rounded-2xl flex flex-col">
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Available Events</span>
+          <span className="text-xs font-medium text-gray-500">Available events</span>
           <span className="text-2xl font-bold text-white">{referrableEvents.length}</span>
         </div>
       </div>
@@ -113,7 +113,7 @@ export default function EventsPage() {
         <div className="w-full flex justify-center py-24 border border-dashed border-white/10 rounded-3xl bg-white/5">
           <div className="text-center space-y-4 max-w-sm">
              <Calendar className="w-16 h-16 text-gray-600 mx-auto" />
-             <h3 className="text-2xl font-bold text-white">No events available</h3>
+             <h3 className="text-2xl font-semibold text-white">No events available</h3>
              <p className="text-gray-400">There are currently no events active in the referral marketplace. Check back soon!</p>
           </div>
         </div>
