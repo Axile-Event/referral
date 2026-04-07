@@ -59,6 +59,7 @@ export function useRefereeStats() {
 
                 const isSettled = ticket.status?.toLowerCase() === "used" || 
                                  ticket.status?.toLowerCase() === "checked_in" || 
+                                 ticket.status?.toLowerCase() === "confirmed" || 
                                  ticket.is_checked_in === true;
 
                 if (isSettled) {
@@ -85,6 +86,30 @@ export function useRefereeStats() {
       } catch (error) {
         console.error("Aggregation failed:", error);
         return { tickets_sold: 0, referral_revenue: 0, pending_earnings: 0, checked_in: 0, balance: 0 };
+      }
+    },
+    refetchInterval: 30000,
+  });
+}
+
+/**
+ * useRefereeEarningsList
+ * Aggregates all referrable event stats into an array formatted like Wallet Transactions
+ * so that the Earnings History always has data even if the actual wallet api is empty.
+ */
+export function useRefereeEarningsList() {
+  return useQuery({
+    queryKey: ["referee", "earnings", "list"],
+    queryFn: async () => {
+      try {
+        const eventStats = await fetchAllEventStats();
+        return eventStats.map(({ event, stats }) => ({
+            ...stats,
+            event_name: event.name,
+            event_id: event.event_id,
+        })).filter(stats => (stats.referral_revenue > 0 || stats.tickets_sold > 0));
+      } catch (error) {
+        return [];
       }
     },
     refetchInterval: 30000,

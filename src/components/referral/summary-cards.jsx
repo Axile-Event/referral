@@ -14,8 +14,8 @@ export function SummaryCards() {
   // If loading or error, we show the skeleton or fallback UI
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[...Array(4)].map((_, i) => (
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        {[...Array(3)].map((_, i) => (
           <div key={i} className="h-[120px] bg-[#12121f] animate-pulse rounded-2xl border border-white/5" />
         ))}
       </div>
@@ -44,16 +44,9 @@ export function SummaryCards() {
     {
       title: "Revenue Generated",
       value: formatCurrency(stats?.referral_revenue),
-      icon: MousePointerClick, // Or relevant icon
+      icon: MousePointerClick, 
       color: "text-emerald-400",
       bg: "bg-emerald-500/10",
-    },
-    {
-      title: "Pending Rewards",
-      value: formatCurrency(stats?.pending_earnings),
-      icon: Clock,
-      color: "text-amber-400",
-      bg: "bg-amber-500/10",
     },
     {
       title: "Available Balance",
@@ -65,7 +58,7 @@ export function SummaryCards() {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
       {cards.map((card, i) => (
         <div 
           key={i} 
