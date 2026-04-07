@@ -15,6 +15,7 @@ import { motion } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { OTPInput } from "@/components/ui/otp-input";
 import toast from "react-hot-toast";
 
 const toastTheme = {
@@ -230,28 +231,32 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <form onSubmit={handlePinSetup} className="flex flex-col sm:flex-row gap-3 sm:items-center">
-            <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-3">
-              <Input 
-                type="password" 
-                maxLength={4} 
-                placeholder="Enter PIN" 
+          <form onSubmit={handlePinSetup} className="flex flex-col gap-6">
+            <div className="space-y-2">
+              <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest ml-1">New 4-digit PIN</p>
+              <OTPInput 
+                length={4} 
                 value={pinData.pin}
-                onChange={e => setPinData({...pinData, pin: onlyDigits(e.target.value)})}
-                className="bg-black/20 border-white/5 h-11 w-full sm:w-36 text-center text-lg tracking-[0.3em] font-black rounded-xl focus:border-emerald-500/50 text-white placeholder:tracking-normal placeholder:text-white/40 placeholder:text-sm placeholder:font-medium"
-              />
-              <Input 
-                type="password" 
-                maxLength={4} 
-                placeholder="Confirm PIN" 
-                value={pinData.confirm}
-                onChange={e => setPinData({...pinData, confirm: onlyDigits(e.target.value)})}
-                className="bg-black/20 border-white/5 h-11 w-full sm:w-36 text-center text-lg tracking-[0.3em] font-black rounded-xl focus:border-emerald-500/50 text-white placeholder:tracking-normal placeholder:text-white/40 placeholder:text-sm placeholder:font-medium"
+                onChange={v => setPinData({...pinData, pin: v})}
+                centered={false}
+                size="sm"
               />
             </div>
-            <Button type="submit" disabled={isLoading} className="h-11 px-6 rounded-xl font-bold text-[11px] uppercase tracking-wider bg-emerald-500 hover:bg-emerald-400 text-white transition-all w-full sm:w-auto shrink-0 shadow-sm sm:ml-auto">
-               Set PIN
-            </Button>
+            <div className="space-y-2">
+              <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest ml-1">Confirm PIN</p>
+              <OTPInput 
+                length={4} 
+                value={pinData.confirm}
+                onChange={v => setPinData({...pinData, confirm: v})}
+                centered={false}
+                size="sm"
+              />
+            </div>
+            <div className="flex justify-end">
+              <Button type="submit" disabled={isLoading} className="h-11 px-8 rounded-xl font-bold text-[11px] uppercase tracking-wider bg-emerald-500 hover:bg-emerald-400 text-white transition-all w-full sm:w-auto shadow-sm">
+                 Set PIN
+              </Button>
+            </div>
           </form>
         </div>
 

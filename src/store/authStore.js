@@ -297,6 +297,11 @@ export const useAuthStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       await authApi.createPin(pin);
+      // Update local state to reflect PIN is set
+      const currentUser = get().user;
+      if (currentUser) {
+        set({ user: { ...currentUser, has_pin: true, pin_set: true } });
+      }
       return true;
     } catch (err) {
       const msg = err.response?.data?.error || err.response?.data?.message || err.message;
