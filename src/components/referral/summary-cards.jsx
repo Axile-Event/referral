@@ -1,17 +1,31 @@
 import React from "react";
 import { MousePointerClick, TrendingUp, Clock, UserCheck } from "lucide-react";
 import { useRefereeStats } from "@/lib/hooks/useReferralQueries";
+import { useWalletStore } from "@/store/walletStore";
 import { cn } from "@/lib/utils/cn";
+import { useEffect } from "react";
 
 /**
  * SummaryCards
- * Displays the 4 primary metrics for the referral dashboard.
- * Sourced directly from GET /referee/stats/.
+ * Displays the 3 primary metrics for the referral dashboard.
  */
 export function SummaryCards() {
   const { data: stats, isLoading, error } = useRefereeStats();
+  const { availableBalance, payoutRequests, fetchWalletData, fetchPayoutRequests, totalWithdrawn } = useWalletStore();
 
-  // If loading or error, we show the skeleton or fallback UI
+  useEffect(() => {
+     fetchWalletData();
+     fetchPayoutRequests();
+  }, [fetchWalletData, fetchPayoutRequests]);
+
+  // Calculate pending payouts to visually deduct
+  const pendingPayoutsAmount = payoutRequests?.reduce((sum, req) => {
+     return req.status?.toLowerCase() === 'pending' ? sum + parseFloat(req.amount || 0) : sum;
+  }, 0) || 0;
+
+  // Synced deductive balance logic — use wallet store balance as source of truth
+  const derivedBalance = availableBalance > 0 ? availableBalance : ((stats?.total_referral_earnings || 0) - totalWithdrawn);
+  const accurateBalance = Math.max(0, derivedBalance - pendingPayoutsAmount);
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -36,21 +50,21 @@ export function SummaryCards() {
   const cards = [
     {
       title: "Tickets Sold",
-      value: formatValue(stats?.tickets_sold),
+      value: formatValue(stats?.total_tickets_sold),
       icon: TrendingUp,
       color: "text-blue-400",
       bg: "bg-blue-500/10",
     },
     {
       title: "Revenue Generated",
-      value: formatCurrency(stats?.referral_revenue),
-      icon: MousePointerClick, 
+      value: formatCurrency(stats?.total_referral_earnings),
+      icon: MousePointerClick,
       color: "text-emerald-400",
       bg: "bg-emerald-500/10",
     },
     {
       title: "Available Balance",
-      value: formatCurrency(stats?.balance),
+      value: formatCurrency(accurateBalance),
       icon: UserCheck,
       color: "text-violet-400",
       bg: "bg-violet-500/10",

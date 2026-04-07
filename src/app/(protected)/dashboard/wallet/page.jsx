@@ -39,24 +39,30 @@ export default function WalletPage() {
     fetchPayoutRequests
   } = useWalletStore();
 
-  const { data: aggregatedStats } = useRefereeStats();
+  const { data: dashboardStats } = useRefereeStats();
   const { data: fallbackEarnings } = useRefereeEarningsList();
 
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [isAddBankOpen, setIsAddBankOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("transactions"); // "transactions" | "payouts"
+  const [activeTab, setActiveTab] = useState("transactions");
 
-  // Calculate if they have any payouts waiting for admin approval
+  // Pending payouts to visually deduct (backend doesn't debit until admin approves)
   const pendingPayoutsAmount = payoutRequests?.reduce((sum, req) => {
      return req.status?.toLowerCase() === 'pending' ? sum + parseFloat(req.amount || 0) : sum;
   }, 0) || 0;
 
-  // Guaranteed synced values:
-  const displayEarnings = storeTotalEarnings > 0 ? storeTotalEarnings : (aggregatedStats?.referral_revenue || 0);
-  const displayBalance = storeBalance > 0 ? storeBalance : Math.max(0, displayEarnings - totalWithdrawn - pendingPayoutsAmount);
-  
-  // Guaranteed list:
-  const displayTransactions = transactions?.length > 0 ? transactions : (fallbackEarnings || []);
+  // Use correct field names from /referee/dashboard/stats/
+  const displayEarnings = parseFloat(dashboardStats?.total_referral_earnings ?? storeTotalEarnings ?? 0);
+  const backendBalance = parseFloat(storeBalance ?? 0);
+  const displayBalance = Math.max(0, backendBalance - pendingPayoutsAmount);
+
+  // Earnings history: wallet transactions > dashboard recent_activity > event fallback
+  const recentActivity = dashboardStats?.recent_activity || [];
+  const displayTransactions = transactions?.length > 0 
+    ? transactions 
+    : recentActivity.length > 0 
+      ? recentActivity 
+      : (fallbackEarnings || []);
 
   useEffect(() => {
     fetchWalletData();
