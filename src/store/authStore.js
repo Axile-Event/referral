@@ -12,6 +12,7 @@ import { tokenStorage } from "@/lib/utils/tokenStorage";
 export const useAuthStore = create((set, get) => ({
   user: null,
   username: (typeof window !== "undefined" ? localStorage.getItem("axile_username") : null),
+  authMethod: (typeof window !== "undefined" ? localStorage.getItem("axile_authMethod") : null),
   isAuthenticated: (typeof window !== "undefined" && !!tokenStorage.getAccessToken()),
   isLoading: false,
   error: null,
@@ -40,7 +41,10 @@ export const useAuthStore = create((set, get) => ({
         localStorage.setItem("axile_username", normalizedProfile.username);
       }
 
-      set({ user: normalizedProfile, isAuthenticated: true });
+      set({ user: normalizedProfile, isAuthenticated: true, authMethod: "email" });
+      if (typeof window !== "undefined") {
+        localStorage.setItem("axile_authMethod", "email");
+      }
       return normalizedProfile;
     } catch (err) {
       console.error("Login Backend Error Response:", err.response?.data);
@@ -77,7 +81,10 @@ export const useAuthStore = create((set, get) => ({
       }
       const profile = await authApi.getProfile();
       const normalizedProfile = normalizeUserProfile(profile);
-      set({ user: normalizedProfile, isAuthenticated: true });
+      set({ user: normalizedProfile, isAuthenticated: true, authMethod: "google" });
+      if (typeof window !== "undefined") {
+        localStorage.setItem("axile_authMethod", "google");
+      }
       return { ...normalizedProfile, needs_username: res.needs_username };
     } catch (err) {
       const msg = err.response?.data?.error || err.response?.data?.message || err.message;
@@ -127,7 +134,10 @@ export const useAuthStore = create((set, get) => ({
         }
         const profile = await authApi.getProfile();
         const normalizedProfile = normalizeUserProfile(profile);
-        set({ user: normalizedProfile, isAuthenticated: true });
+        set({ user: normalizedProfile, isAuthenticated: true, authMethod: "email" });
+        if (typeof window !== "undefined") {
+          localStorage.setItem("axile_authMethod", "email");
+        }
       }
       return res;
     } catch (err) {
@@ -293,10 +303,15 @@ export const useAuthStore = create((set, get) => ({
   /**
    * Set user PIN
    */
+  /**
+   * Set PIN
+   */
   setPin: async (pin) => {
     set({ isLoading: true, error: null });
     try {
       await authApi.createPin(pin);
+      // Fetch updated profile to get has_pin status
+      await get().fetchProfile();
       return true;
     } catch (err) {
       const msg = err.response?.data?.error || err.response?.data?.message || err.message;
@@ -319,14 +334,22 @@ export const useAuthStore = create((set, get) => ({
     tokenStorage.clearTokens();
     if (typeof window !== "undefined") {
       localStorage.removeItem("axile_username");
+      localStorage.removeItem("axile_authMethod");
     }
-    set({ user: null, username: null, isAuthenticated: false });
+    set({ user: null, username: null, authMethod: null, isAuthenticated: false });
   },
 
   setUsername: (username) => {
     set({ username });
     if (typeof window !== "undefined") {
       localStorage.setItem("axile_username", username);
+    }
+  },
+
+  setAuthMethod: (method) => {
+    set({ authMethod: method });
+    if (typeof window !== "undefined") {
+      localStorage.setItem("axile_authMethod", method);
     }
   },
 
