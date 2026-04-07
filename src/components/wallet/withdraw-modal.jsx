@@ -3,20 +3,29 @@ import {
   X, 
   ArrowRight, 
   AlertCircle,
-  PiggyBank
+  PiggyBank,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import { Input } from "@/components/ui/input.jsx";
 import { motion, AnimatePresence } from "framer-motion";
+import { useWalletStore } from "@/store/walletStore";
+import { toast } from "react-hot-toast";
 
 /**
  * WithdrawModal Component
  */
-export function WithdrawModal({ isOpen, onClose, balance = 0, onWithdraw }) {
+export function WithdrawModal({ isOpen, onClose, availableBalance: propBalance }) {
+  const { availableBalance: storeBalance, withdraw, hasBankAccount } = useWalletStore();
   const [amount, setAmount] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isValid = Number(amount) >= 500 && Number(amount) <= balance;
+  const availableBalance = propBalance !== undefined ? propBalance : storeBalance;
+
+  const minAmount = 1000;
+  // Strip commas before calculating the numerical value
+  const numAmount = Number(amount.replace(/,/g, '')) || 0;
+  const isValid = numAmount >= minAmount && numAmount <= availableBalance && hasBankAccount;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,10 +33,15 @@ export function WithdrawModal({ isOpen, onClose, balance = 0, onWithdraw }) {
     
     setIsSubmitting(true);
     try {
-      await onWithdraw(Number(amount));
-      onClose();
+      const res = await withdraw(numAmount);
+      if (res.success) {
+        toast.success(res.message || "Withdrawal request submitted!");
+        onClose();
+      } else {
+        toast.error(res.error || "Withdrawal failed");
+      }
     } catch (err) {
-      console.error(err);
+      toast.error("An unexpected error occurred");
     } finally {
       setIsSubmitting(false);
     }
@@ -67,47 +81,71 @@ export function WithdrawModal({ isOpen, onClose, balance = 0, onWithdraw }) {
               </button>
            </div>
 
+           {!hasBankAccount && (
+             <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex gap-3 items-start animate-pulse">
+                <AlertCircle size={18} className="text-amber-500 shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-500 font-medium leading-normal">
+                   Please link a bank account before you can request a withdrawal.
+                </p>
+             </div>
+           )}
+
            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                  <div className="flex justify-between items-baseline px-1">
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Amount (₦)</label>
-                    <span className="text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary/10 tracking-widest">
-                       Min: ₦500
+                    <span className="text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary/10 tracking-widest uppercase">
+                       Min: ₦{minAmount.toLocaleString()}
                     </span>
                  </div>
                  <div className="relative group">
                     <Input 
-                       type="number"
+                       type="text"
                        placeholder="0.00"
                        value={amount}
-                       onChange={(e) => setAmount(e.target.value)}
-                       className="text-center text-3xl font-extrabold h-24 rounded-3xl bg-white/5 border-white/10 focus-visible:ring-primary/50"
+                       onChange={(e) => {
+                          // Allow only numbers and decimal
+                          const raw = e.target.value.replace(/[^0-9.]/g, '');
+                          if (raw.split('.').length > 2) return; // Prevent multiple decimals
+                          const parts = raw.split('.');
+                          if (parts[0]) parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                          setAmount(parts.join('.'));
+                       }}
+                       className={`text-center text-3xl font-extrabold h-24 rounded-3xl bg-white/5 border-white/10 focus-visible:ring-primary/50 ${!isValid && numAmount > 0 ? 'text-red-400' : ''}`}
                     />
                     <div className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-500 font-bold">₦</div>
                  </div>
                  <div className="flex justify-between items-center px-2 py-1">
                     <p className="text-sm font-medium text-gray-400">
-                       You receive: <span className="text-white font-bold tracking-tight">₦{(Number(amount) || 0).toLocaleString("en-NG", { minimumFractionDigits: 2 })}</span>
+                       Max: <span className="text-white font-bold">₦{availableBalance.toLocaleString()}</span>
                     </p>
+                    {numAmount > availableBalance && (
+                        <p className="text-[10px] text-red-500 font-bold uppercase">Insufficient Balance</p>
+                    )}
                  </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-blue-500/5 border border-blue-500/10 flex gap-3 items-start">
-                 <AlertCircle size={18} className="text-blue-500 shrink-0 mt-0.5" />
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex gap-3 items-start">
+                 <AlertCircle size={18} className="text-primary shrink-0 mt-0.5" />
                  <p className="text-xs text-gray-400 leading-normal">
-                    Funds will be sent to your primary linked bank account. 
-                    Processing may take up to 24-48 business hours.
+                    Funds will be sent to your verified bank account. 
+                    Processing typically takes 24-48 hours.
                  </p>
               </div>
 
               <Button 
                 type="submit" 
                 size="lg" 
-                className="w-full h-14 rounded-2xl font-bold text-base group"
+                className="w-full h-14 rounded-2xl font-bold text-base group mt-2"
                 disabled={!isValid || isSubmitting}
               >
-                 {isSubmitting ? "Processing..." : "Confirm Withdrawal"}
-                 {!isSubmitting && <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />}
+                 {isSubmitting ? (
+                    <Loader2 className="animate-spin" size={20} />
+                 ) : (
+                    <>
+                       Request Payout <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </>
+                 )}
               </Button>
            </form>
         </div>

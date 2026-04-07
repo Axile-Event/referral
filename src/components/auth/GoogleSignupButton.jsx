@@ -34,7 +34,11 @@ export function GoogleSignupButton({ variant = "signup" }) {
         const result = await googleSignup(response.access_token);
         
         if (result?.email || result?.username) {
-          toast.success("Account created successfully!", {
+          const successMsg = variant === "login" 
+            ? "Login successful! Welcome back." 
+            : "Account created successfully! Welcome to Axile.";
+
+          toast.success(successMsg, {
             style: {
               background: "#161622",
               color: "#fff",
@@ -42,8 +46,9 @@ export function GoogleSignupButton({ variant = "signup" }) {
             }
           });
           
+          // Route Google signup users to setup-profile for username + PIN setup
           if (result.needs_username) {
-            router.push("/dashboard/settings");
+            router.push("/setup-profile");
           } else {
             router.push("/dashboard");
           }

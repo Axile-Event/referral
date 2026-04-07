@@ -27,44 +27,10 @@ export default function ReferralDetailsPage({ params: paramsPromise }) {
   const tickets = stats?.tickets || [];
   const isLoading = (isEventLoading || isStatsLoading) && (!selectedEvent || !stats);
   
-  // Calculate status-aware stats
-  const { settledTotal, pendingTotal, checkedInCount } = React.useMemo(() => {
-    let settled = 0;
-    let pending = 0;
-    let count = 0;
-    
-    if (stats?.tickets) {
-      stats.tickets.forEach(ticket => {
-        const rewardType = selectedEvent?.referral_reward_type || stats?.referral_reward_type;
-        const rewardAmount = Number(selectedEvent?.referral_reward_amount || stats?.referral_reward_amount || 0);
-        const rewardPercentage = Number(selectedEvent?.referral_reward_percentage || stats?.referral_reward_percentage || 0);
-        const ticketPrice = Number(ticket.category_price || 0);
-
-        let reward = 0;
-        if (rewardType === 'flat') {
-          reward = rewardAmount;
-        } else if (rewardType === 'percentage') {
-          reward = (ticketPrice * rewardPercentage) / 100;
-        }
-
-        const isSettled = ticket.status?.toLowerCase() === "used" || 
-                         ticket.status?.toLowerCase() === "checked_in" || 
-                         ticket.is_checked_in === true;
-        
-        if (isSettled) {
-          settled += reward;
-          count += 1;
-        } else {
-          pending += reward;
-        }
-      });
-    } else {
-      // Fallback if no tickets list but summary exists
-      settled = stats?.referral_revenue || 0;
-    }
-    
-    return { settledTotal: settled, pendingTotal: pending, checkedInCount: count };
-  }, [stats, selectedEvent]);
+  // Use stats directly from the endpoint — no frontend recalculation needed
+  const settledTotal = stats?.referral_revenue || 0;
+  const pendingTotal = 0; // Backend handles this calculation
+  const checkedInCount = stats?.tickets_sold || 0;
 
   const formatCurrency = (val) => `₦${(val || 0).toLocaleString()}`;
 
@@ -78,7 +44,7 @@ export default function ReferralDetailsPage({ params: paramsPromise }) {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-10 animate-fade-in pb-32 pt-4 px-4 sm:px-0">
+    <div className="max-w-6xl mx-auto space-y-8 animate-fade-in pb-32 px-4 sm:px-0">
       
       {/* Navigation & Actions */}
       <div className="flex items-center justify-between">
@@ -128,22 +94,14 @@ export default function ReferralDetailsPage({ params: paramsPromise }) {
       </div>
 
       {/* Main Stats Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
          <SummaryCard 
             title="Referral Revenue" 
             value={formatCurrency(settledTotal)} 
             icon={CheckCircle} 
             color="text-green-500" 
             bg="bg-green-500/10" 
-            metric={`${checkedInCount} Checked In`}
-         />
-         <SummaryCard 
-            title="Pending Rewards" 
-            value={formatCurrency(pendingTotal)} 
-            icon={Clock} 
-            color="text-amber-500" 
-            bg="bg-amber-500/10" 
-            metric="Awaiting Check-in"
+            metric={`${checkedInCount} Ticket(s) Sold`}
          />
          <SummaryCard 
             title="Conversions" 
@@ -258,8 +216,8 @@ function SummaryCard({ title, value, icon: Icon, color, bg, metric }) {
             <span className="text-[11px] font-medium text-white/30">{metric}</span>
          </div>
          <div className="space-y-1 relative z-10">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-white/40">{title}</p>
-            <p className="text-4xl font-semibold text-white tracking-tight">{value}</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-white/30">{title}</p>
+            <p className="text-2xl font-black text-white leading-tight">{value}</p>
          </div>
       </div>
    );
@@ -280,7 +238,9 @@ function MetaItem({ icon: Icon, label, value, color = "text-white/40" }) {
 }
 
 function StatusBadge({ status }) {
-   const isSettled = status?.toLowerCase() === "used" || status?.toLowerCase() === "checked_in";
+   const isSettled = status?.toLowerCase() === "used" || 
+                     status?.toLowerCase() === "checked_in" ||
+                     status?.toLowerCase() === "confirmed";
    return (
       <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-semibold ${
          isSettled 

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button.jsx";
  * - onWithdraw: Action trigger
  * - onViewReports: Action trigger
  */
-export function WalletCard({ balance = 0, nairaVal = 0, onWithdraw, onViewReports }) {
+export function WalletCard({ balance = 0, onWithdraw, onViewReports }) {
   return (
     <div className="relative overflow-hidden bg-primary p-12 rounded-[3.5rem] text-white flex flex-col justify-between shadow-2xl shadow-primary/20 h-[380px] w-full">
       {/* Wallet Icon Background Element */}

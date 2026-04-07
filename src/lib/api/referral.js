@@ -29,6 +29,12 @@ export const referralApi = {
   getEventStats: (eventId) => 
     apiClient.get(`/referee/${eventId}/stats/`).then((res) => res.data),
 
+  /**
+   * GET /referee/dashboard/stats/ — Aggregated dashboard summary for the referee.
+   */
+  getDashboardStats: () =>
+    apiClient.get("/referee/dashboard/stats/").then((res) => res.data),
+
   // ==========================================
   // REFERRALS & TRACKING
   // ==========================================

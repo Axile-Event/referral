@@ -35,10 +35,7 @@ export default function ReferralEventsPage() {
       {/* Discovery Header Section */}
       <div className="flex flex-col gap-6 pt-4 relative z-10">
         <div className="max-w-2xl space-y-6">
-           <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 backdrop-blur-md px-3 py-1 rounded-full shadow-[0_0_20px_rgba(227,54,41,0.15)]">
-              <Zap size={14} className="text-primary fill-current" />
-              <span className="text-[11px] font-bold text-primary tracking-widest uppercase">Direct Marketplace</span>
-           </div>
+
 
            <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-white/95 leading-[1.1]">
               Discover Premium <br /> Referral Programs
