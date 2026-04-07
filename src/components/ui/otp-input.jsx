@@ -15,12 +15,13 @@ export const OTPInput = ({
   onChange, 
   onComplete,
   disabled = false,
-  error = false 
+  error = false,
+  centered = true,
+  size = "md" // "sm" | "md"
 }) => {
   const inputRef = useRef(null);
   const [isFocused, setIsFocused] = useState(false);
 
-  // Handle value change
   const handleChange = (e) => {
     const val = e.target.value.replace(/[^0-9]/g, "");
     const truncatedVal = val.slice(0, length);
@@ -32,13 +33,15 @@ export const OTPInput = ({
     }
   };
 
-  // Focus the hidden input when clicking on a box
   const handleBoxClick = () => {
     inputRef.current?.focus();
   };
 
   return (
-    <div className="relative flex items-center justify-center gap-2 sm:gap-4 w-full">
+    <div className={cn(
+      "relative flex items-center gap-2 sm:gap-4 w-full",
+      centered ? "justify-center" : "justify-start"
+    )}>
       {/* Hidden native input */}
       <input
         ref={inputRef}
@@ -66,7 +69,9 @@ export const OTPInput = ({
             key={idx}
             onClick={handleBoxClick}
             className={cn(
-              "w-12 h-14 sm:w-14 sm:h-16 rounded-xl sm:rounded-2xl border-2 flex items-center justify-center text-2xl font-bold transition-all duration-200 cursor-text",
+              "rounded-xl border-2 flex items-center justify-center font-bold transition-all duration-200 cursor-text",
+              // Size logic
+              size === "sm" ? "w-10 h-11 text-lg sm:w-11 sm:h-12" : "w-12 h-14 sm:w-14 sm:h-16 text-2xl",
               // Base state
               "bg-white/5 border-white/10 text-white",
               // Current focus state
@@ -80,9 +85,11 @@ export const OTPInput = ({
             )}
           >
             {char}
-            {/* Blinking cursor effect for current box */}
             {isCurrent && (
-              <div className="absolute w-0.5 h-6 bg-primary animate-pulse rounded-full" />
+              <div className={cn(
+                "absolute bg-primary animate-pulse rounded-full",
+                size === "sm" ? "w-0.5 h-4" : "w-0.5 h-6"
+              )} />
             )}
           </div>
         );

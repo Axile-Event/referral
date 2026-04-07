@@ -1,19 +1,22 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Compass, Zap, TrendingUp } from "lucide-react";
+import { Compass, Zap, TrendingUp, ShieldAlert, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import { useAuthStore } from "@/store/authStore";
 import { ReferralBanner } from "@/components/referral/referral-banner";
 import { SummaryCards } from "@/components/referral/summary-cards";
 import { ActivityTable } from "@/components/referral/activity-table";
+import { PinSetupModal } from "@/components/dashboard/PinSetupModal";
+import { UsernameBanner } from "@/components/dashboard/UsernameBanner";
 
 /**
  * DashboardPage
  */
 export default function DashboardPage() {
   const { user, fetchProfile, isAuthenticated } = useAuthStore();
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   
   // Ensure profile is loaded on mount
   useEffect(() => {
@@ -27,14 +30,53 @@ export default function DashboardPage() {
     ? user.name.split(" ")[0] 
     : (user?.Firstname || user?.firstname || "Partner");
 
+  // Status flags
+  const needsPin = user && !user.has_pin && !user.pin_set;
+  const needsUsername = user && (user.needs_username || (user.username === user.email));
+
   return (
-    <div className="w-full space-y-8 animate-fade-in pb-24">
-      {/* Banner & Header Section */}
-      <div className="space-y-4">
-        <ReferralBanner />
-        
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-6 border-b border-white/5 relative px-4 sm:px-6">
+    <div className="max-w-7xl mx-auto space-y-10 animate-fade-in pb-24 px-4 sm:px-6">
+
+      {/* PIN Security Modal */}
+      <PinSetupModal isOpen={isPinModalOpen} onClose={() => setIsPinModalOpen(false)} />
+
+      {/* Branded Banner */}
+      <ReferralBanner />
+
+      {/* Username Claim Banner (For Google Users) */}
+      {needsUsername && (
+        <UsernameBanner />
+      )}
+
+      {/* PIN Security Prompt (If they closed the modal) */}
+      {needsPin && (
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+             <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-500 shrink-0">
+                <ShieldAlert size={20} />
+             </div>
+             <div>
+                <p className="text-sm font-bold text-white">Security Alert: Set your PIN</p>
+                <p className="text-xs text-amber-500/80 font-medium">Protect your earnings by setting a 4-digit security code.</p>
+             </div>
+          </div>
+          <Button 
+            onClick={() => setIsPinModalOpen(true)}
+            variant="ghost" 
+            className="text-amber-500 hover:text-amber-400 hover:bg-amber-500/10 font-bold text-xs uppercase tracking-widest"
+          >
+            Set PIN Now <ArrowRight size={14} className="ml-2" />
+          </Button>
+        </div>
+      )}
+
+      {/* Enhanced Header Section */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-6 border-b border-white/5 relative">
         <div className="space-y-3">
+           <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full border border-primary/20">
+              <Zap size={12} className="text-primary fill-current" />
+              <span className="text-[11px] font-semibold text-primary">Partner account</span>
+           </div>
            <h1 className="text-4xl font-semibold tracking-tight text-white/95">Welcome back, {userName}</h1>
            <p className="text-gray-400 text-[15px] font-normal">Track referral performance across your events.</p>
         </div>
@@ -47,10 +89,9 @@ export default function DashboardPage() {
           </Button>
         </div>
       </div>
-      </div>
 
       {/* Summary Metrics */}
-      <div className="space-y-4 px-4 sm:px-6">
+      <div className="space-y-4">
         <div className="flex items-center gap-2 mb-2">
            <TrendingUp size={16} className="text-primary" />
                 <p className="text-[12px] font-semibold text-white/40 uppercase tracking-wide">Performance overview</p>
