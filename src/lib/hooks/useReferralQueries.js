@@ -23,69 +23,31 @@ async function fetchAllEventStats() {
 
 /**
  * useRefereeStats
- * Fetches the global summary statistics for the dashboard.
+ * Fetches the global summary statistics from GET /referee/dashboard/stats/
+ * Falls back to event-based aggregation if the endpoint fails.
  */
 export function useRefereeStats() {
   return useQuery({
-    queryKey: ["referee", "stats", "aggregated"],
+    queryKey: ["referee", "stats", "dashboard"],
     queryFn: async () => {
       try {
-        const eventStats = await fetchAllEventStats();
-        
-        let totals = {
-          tickets_sold: 0,
-          referral_revenue: 0,
-          pending_earnings: 0,
-          checked_in: 0,
-          balance: 0
-        };
-
-        eventStats.forEach(({ event, stats }) => {
-            const tickets = stats.tickets || [];
-            totals.tickets_sold += (stats.tickets_sold || 0);
-
-            tickets.forEach(ticket => {
-                const rewardType = event?.referral_reward_type || stats?.referral_reward_type;
-                const rewardAmount = Number(event?.referral_reward_amount || stats?.referral_reward_amount || 0);
-                const rewardPercentage = Number(event?.referral_reward_percentage || stats?.referral_reward_percentage || 0);
-                const ticketPrice = Number(ticket.category_price || 0);
-
-                let reward = 0;
-                if (rewardType === 'flat') {
-                    reward = rewardAmount;
-                } else if (rewardType === 'percentage') {
-                    reward = (ticketPrice * rewardPercentage) / 100;
-                }
-
-                const isSettled = ticket.status?.toLowerCase() === "used" || 
-                                 ticket.status?.toLowerCase() === "checked_in" || 
-                                 ticket.status?.toLowerCase() === "confirmed" || 
-                                 ticket.is_checked_in === true;
-
-                if (isSettled) {
-                    totals.referral_revenue += reward;
-                    totals.checked_in += 1;
-                } else {
-                    totals.pending_earnings += reward;
-                }
-            });
-
-            // Fallback for events with 0 tickets but summary revenue (shouldn't happen with status rule, but for edge cases)
-            if (tickets.length === 0) {
-                totals.referral_revenue += (stats.referral_revenue || 0);
-            }
-        });
-
-        // Try wallet stats as bonus
-        try {
-          const wallet = await walletApi.getStats();
-          totals.balance = wallet.balance || 0;
-        } catch (e) { /* ignore 404 */ }
-
-        return totals;
+        const data = await referralApi.getDashboardStats();
+        console.log("Dashboard Stats Response:", data);
+        return data;
       } catch (error) {
-        console.error("Aggregation failed:", error);
-        return { tickets_sold: 0, referral_revenue: 0, pending_earnings: 0, checked_in: 0, balance: 0 };
+        console.error("Dashboard stats failed, falling back to event aggregation:", error);
+        // Fallback: aggregate from per-event stats
+        try {
+          const eventStats = await fetchAllEventStats();
+          let totals = { tickets_sold: 0, referral_revenue: 0, available_balance: 0 };
+          eventStats.forEach(({ stats }) => {
+            totals.tickets_sold += stats.tickets_sold || 0;
+            totals.referral_revenue += stats.referral_revenue || 0;
+          });
+          return totals;
+        } catch (e) {
+          return { tickets_sold: 0, referral_revenue: 0, available_balance: 0 };
+        }
       }
     },
     refetchInterval: 30000,
