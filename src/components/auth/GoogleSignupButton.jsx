@@ -46,8 +46,9 @@ export function GoogleSignupButton({ variant = "signup" }) {
             }
           });
           
+          // Route Google signup users to setup-profile for username + PIN setup
           if (result.needs_username) {
-            router.push("/dashboard/settings");
+            router.push("/setup-profile");
           } else {
             router.push("/dashboard");
           }
