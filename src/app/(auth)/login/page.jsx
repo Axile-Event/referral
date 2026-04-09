@@ -37,7 +37,6 @@ export default function LoginPage() {
       const finalMsg = parseApiError(error);
       
       // If user is not verified, redirect to OTP page
-      // Typical backend messages: "User is not active", "Account not verified", etc.
       if (
         finalMsg.toLowerCase().includes("verified") || 
         finalMsg.toLowerCase().includes("active") ||

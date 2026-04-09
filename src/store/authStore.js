@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import Cookies from "js-cookie";
+import { authApi } from "@/lib/api/auth";
 
 // Import token refresh timer functions (dynamic import to avoid circular dependency)
 let startTokenRefreshTimer, stopTokenRefreshTimer;
@@ -20,7 +21,59 @@ export const useAuthStore = create(
       refreshToken: null,
       hydrated: false,
       isAuthenticated: false,
-      login: (userData, token, refresh, role) => {
+      isLoading: false,
+
+      /**
+       * Primary Login Action (Async)
+       */
+      login: async (email, password) => {
+        set({ isLoading: true });
+        try {
+          // Some backends expect 'username', others 'email'
+          // We try to be flexible by sending both as the identifier
+          const response = await authApi.login({ 
+            email, 
+            username: email, 
+            password 
+          });
+
+          const { user, access, refresh, role, token } = response;
+          const finalToken = access || token;
+
+          get().setAuth(user, finalToken, refresh, role);
+          return response;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      /**
+       * Google Authentication Action (Async)
+       */
+      googleSignup: async (accessToken) => {
+        set({ isLoading: true });
+        try {
+          const response = await authApi.googleSignup({ 
+            access_token: accessToken,
+            token: accessToken 
+          });
+
+          const { user, access, refresh, role, token } = response;
+          const finalToken = access || token;
+
+          if (finalToken) {
+            get().setAuth(user, finalToken, refresh, role);
+          }
+          return response;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      /**
+       * Internal state setter for auth data
+       */
+      setAuth: (userData, token, refresh, role) => {
         // Shared cookie for cross-subdomain auth
         if (typeof window !== "undefined") {
           const cookieData = { token, refreshToken: refresh, role };
@@ -60,9 +113,11 @@ export const useAuthStore = create(
           startTokenRefreshTimer();
         }
       },
+
       logout: () => {
         if (typeof window !== "undefined") {
           Cookies.remove("axile_shared_auth", { domain: ".axile.ng" });
+          localStorage.removeItem("auth-storage");
         }
 
         if (stopTokenRefreshTimer) {
@@ -77,6 +132,7 @@ export const useAuthStore = create(
           isAuthenticated: false,
         });
       },
+
       setHydrated: () => set({ hydrated: true }),
       setUser: (userData) =>
         set((state) => ({
@@ -113,3 +169,4 @@ export const useAuthStore = create(
 );
 
 export default useAuthStore;
+
