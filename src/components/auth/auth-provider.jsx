@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { useAuthStore } from "@/store/authStore";
-import { useUserStore } from "@/store/userStore";
 
 /**
  * AuthProvider
@@ -11,8 +10,7 @@ import { useUserStore } from "@/store/userStore";
  * Currently includes Google OAuth and state hydration.
  */
 export function AuthProvider({ children }) {
-  const { token } = useAuthStore();
-  const { fetchProfile } = useUserStore();
+  const { token, fetchProfile } = useAuthStore();
   const [hydrated, setHydrated] = useState(false);
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 

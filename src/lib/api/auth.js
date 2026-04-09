@@ -28,11 +28,20 @@ export const authApi = {
   login: (payload) =>
     apiClient.post("/referee/login/", payload)
       .catch(async (err) => {
-        // Fallback to root endpoint if namespaced fails
+        // Fallback to various endpoints if namespaced fails
         if (err.response?.status === 404 || err.response?.status === 401) {
            const baseUrl = apiClient.defaults.baseURL;
            const axios = require("axios");
-           return axios.post(`${baseUrl}/login/`, payload);
+           const endpoints = ["/auth/login/", "/login/"];
+           
+           for (const endpoint of endpoints) {
+             try {
+               return await axios.post(`${baseUrl}${endpoint}`, payload);
+             } catch (e) {
+               // Continue to next fallback if it's 404, but keep the error if it's others
+               if (e.response?.status !== 404) err = e; 
+             }
+           }
         }
         throw err;
       })
@@ -51,6 +60,7 @@ export const authApi = {
 
   // GET/PATCH /referee/profile/
   getProfile: () => apiClient.get("/referee/profile/").then((r) => r.data),
+  getProfileFallback: () => apiClient.get("/profile/").then((r) => r.data),
   updateProfile: (data) => apiClient.patch("/referee/profile/", data).then((r) => r.data),
 
   // PIN Operations

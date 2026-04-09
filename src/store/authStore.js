@@ -138,6 +138,36 @@ export const useAuthStore = create(
         set((state) => ({
           user: { ...state.user, ...userData },
         })),
+
+      /**
+       * Fetch Profile (Async)
+       * Tries namespaced referee profile, falls back to root if 404s.
+       */
+      fetchProfile: async () => {
+        try {
+          const profile = await authApi.getProfile();
+          if (profile) {
+            get().setUser(profile?.user || profile?.profile || profile);
+            return profile;
+          }
+        } catch (error) {
+          // Fallback if referee namespace is not yet deployed or mismatch
+          if (error.response?.status === 404) {
+            try {
+              const response = await authApi.getProfileFallback();
+              if (response) {
+                const pData = response.data || response;
+                get().setUser(pData?.user || pData?.profile || pData);
+                return pData;
+              }
+            } catch (fallbackError) {
+              console.error("AuthStore: Profile fallback also failed", fallbackError);
+            }
+          }
+          console.error("AuthStore: Profile fetch failed", error);
+          throw error;
+        }
+      },
       
       // Sync state from shared cookie if localStorage is empty
       syncWithCookie: () => {

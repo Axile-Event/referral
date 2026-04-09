@@ -17,11 +17,26 @@ export const useUserStore = create((set) => ({
   fetchProfile: async () => {
     set({ isLoading: true });
     try {
-      const { data } = await userApi.getProfile();
-      set({ profile: data?.profile || data?.user || data });
-      return data?.profile || data?.user || data;
-    } catch {
+      const response = await userApi.getProfile();
+      const pData = response.data || response;
+      const profile = pData?.profile || pData?.user || pData;
+      set({ profile });
+      return profile;
+    } catch (error) {
+      // Fallback if referee namespace is not yet deployed or mismatch
+      if (error.response?.status === 404) {
+        try {
+          const response = await userApi.getProfileFallback();
+          const pData = response.data || response;
+          const profile = pData?.profile || pData?.user || pData;
+          set({ profile });
+          return profile;
+        } catch (fallbackError) {
+          console.error("UserStore: Profile fallback also failed", fallbackError);
+        }
+      }
       toast.error("Failed to load profile", toastTheme);
+      throw error;
     } finally {
       set({ isLoading: false });
     }
