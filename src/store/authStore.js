@@ -156,19 +156,6 @@ export const useAuthStore = create(
             return profile;
           }
         } catch (error) {
-          // Fallback if referee namespace is not yet deployed or mismatch
-          if (error.response?.status === 404) {
-            try {
-              const response = await authApi.getProfileFallback();
-              if (response) {
-                const pData = response.data || response;
-                get().setUser(pData?.user || pData?.profile || pData);
-                return pData;
-              }
-            } catch (fallbackError) {
-              console.error("AuthStore: Profile fallback also failed", fallbackError);
-            }
-          }
           console.error("AuthStore: Profile fetch failed", error);
           throw error;
         }
