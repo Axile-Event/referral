@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { useAuthStore } from "@/store/authStore";
 
@@ -10,17 +9,8 @@ import { useAuthStore } from "@/store/authStore";
  * Currently includes Google OAuth and state hydration.
  */
 export function AuthProvider({ children }) {
-  const { fetchProfile } = useAuthStore();
-  const [hydrated, setHydrated] = useState(false);
+  const hydrated = useAuthStore((state) => state.hydrated);
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-
-  useEffect(() => {
-    const init = async () => {
-      await fetchProfile();
-      setHydrated(true);
-    };
-    init();
-  }, [fetchProfile]);
 
   if (!hydrated) {
     return <div className="min-h-screen bg-[#0a0a14]" />;
