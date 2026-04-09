@@ -1,340 +1,115 @@
 import { create } from "zustand";
-import { authApi } from "@/lib/api/auth";
-import { transformSignupData, transformOtpData, transformLoginData, normalizeUserProfile, transformResetPasswordData } from "@/lib/utils/authTransform";
-import { tokenStorage } from "@/lib/utils/tokenStorage";
+import { persist } from "zustand/middleware";
+import Cookies from "js-cookie";
 
-/**
- * Auth Store (Zustand)
- * Aligned with referee auth flow in API_DOCUMENTATION.MD
- * State: user, isAuthenticated, isLoading, error
- * Actions: login, googleLogin, signup, verifyOtp, logout, fetchProfile
- */
-export const useAuthStore = create((set, get) => ({
-  user: null,
-  username: (typeof window !== "undefined" ? localStorage.getItem("axile_username") : null),
-  isAuthenticated: (typeof window !== "undefined" && !!tokenStorage.getAccessToken()),
-  isLoading: false,
-  error: null,
+// Import token refresh timer functions (dynamic import to avoid circular dependency)
+let startTokenRefreshTimer, stopTokenRefreshTimer;
+if (typeof window !== "undefined") {
+  import("../lib/axios").then((module) => {
+    startTokenRefreshTimer = module.startTokenRefreshTimer;
+    stopTokenRefreshTimer = module.stopTokenRefreshTimer;
+  });
+}
 
-  /**
-   * Login with email and password
-   */
-  login: async (email, password) => {
-    set({ isLoading: true, error: null });
-    try {
-      const payload = transformLoginData(email, password);
-      console.log("Attempting Login with payload:", payload);
-      
-      const res = await authApi.login(payload);
-      // Backend returns { access, refresh }
-      if (res.access) {
-        tokenStorage.setTokens(res.access, res.refresh);
-      }
-      
-      const profile = await authApi.getProfile();
-      const normalizedProfile = normalizeUserProfile(profile);
-      
-      // Synchronize username
-      if (normalizedProfile.username) {
-        set({ username: normalizedProfile.username });
-        localStorage.setItem("axile_username", normalizedProfile.username);
-      }
+const useAuthStore = create(
+  persist(
+    (set, get) => ({
+      user: null,
+      role: null,
+      token: null,
+      refreshToken: null,
+      hydrated: false,
+      isAuthenticated: false,
+      login: (userData, token, refresh, role) => {
+        // Shared cookie for cross-subdomain auth
+        if (typeof window !== "undefined") {
+          const cookieData = { token, refreshToken: refresh, role };
+          Cookies.set("axile_shared_auth", JSON.stringify(cookieData), { 
+            domain: ".axile.ng", 
+            expires: 7,
+            secure: true,
+            sameSite: 'Lax'
+          });
 
-      set({ user: normalizedProfile, isAuthenticated: true });
-      return normalizedProfile;
-    } catch (err) {
-      console.error("Login Backend Error Response:", err.response?.data);
-      const msg = err.response?.data?.error || err.response?.data?.message || err.response?.data?.detail || err.message;
-      set({ error: msg });
-      throw err; // Throw so component catch block triggers
-    } finally {
-      set({ isLoading: false });
-    }
-  },
+          localStorage.removeItem("organizer-storage");
+          localStorage.removeItem("Axile_pin_reminder_dismissed");
 
-  /**
-   * Google OAuth login
-   */
-  googleSignup: async (token) => {
-    set({ isLoading: true, error: null });
-    try {
-      // Backend may expect "token" or "access_token" or capitalized "Token"
-      // We send both common variants for robustness
-      const res = await authApi.googleSignup({ 
-        token: token,
-        access_token: token,
-        Token: token 
-      });
+          const authData = {
+            state: {
+              user: userData,
+              token,
+              refreshToken: refresh,
+              role,
+              isAuthenticated: true,
+              hydrated: true,
+            },
+            version: 0,
+          };
+          localStorage.setItem("auth-storage", JSON.stringify(authData));
+        }
+
+        set({
+          user: userData,
+          token,
+          refreshToken: refresh,
+          role,
+          isAuthenticated: true,
+        });
+
+        if (startTokenRefreshTimer) {
+          startTokenRefreshTimer();
+        }
+      },
+      logout: () => {
+        if (typeof window !== "undefined") {
+          Cookies.remove("axile_shared_auth", { domain: ".axile.ng" });
+        }
+
+        if (stopTokenRefreshTimer) {
+          stopTokenRefreshTimer();
+        }
+
+        set({
+          user: null,
+          role: null,
+          token: null,
+          refreshToken: null,
+          isAuthenticated: false,
+        });
+      },
+      setHydrated: () => set({ hydrated: true }),
+      setUser: (userData) =>
+        set((state) => ({
+          user: { ...state.user, ...userData },
+        })),
       
-      if (res.access) {
-        tokenStorage.setTokens(res.access, res.refresh);
-        // Task: Capture User.Username (capital U)
-        if (res.user?.Username) {
-          const username = res.user.Username;
-          set({ username });
-          localStorage.setItem("axile_username", username);
+      // Sync state from shared cookie if localStorage is empty
+      syncWithCookie: () => {
+        if (typeof window === "undefined" || get().token) return;
+        
+        const shared = Cookies.get("axile_shared_auth");
+        if (shared) {
+          try {
+            const { token, refreshToken, role } = JSON.parse(shared);
+            if (token) {
+              set({ token, refreshToken, role, isAuthenticated: true });
+              if (startTokenRefreshTimer) startTokenRefreshTimer();
+            }
+          } catch (e) {
+            console.error("Failed to sync shared auth", e);
+          }
         }
       }
-      const profile = await authApi.getProfile();
-      const normalizedProfile = normalizeUserProfile(profile);
-      set({ user: normalizedProfile, isAuthenticated: true });
-      return { ...normalizedProfile, needs_username: res.needs_username };
-    } catch (err) {
-      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
-      set({ error: msg });
-      throw err;
-    } finally {
-      set({ isLoading: false });
+    }),
+    {
+      name: "auth-storage",
+      onRehydrateStorage: () => (state) => {
+        state.setHydrated();
+        // Check for shared cookie on hydration
+        state.syncWithCookie();
+      },
     }
-  },
+  )
+);
 
-  /**
-   * Signup with field transformation for correct API casing
-   */
-  signup: async (data) => {
-    set({ isLoading: true, error: null });
-    try {
-      // Use transformSignupData to ensure correct casing (Username, Firstname, etc.)
-      const payload = transformSignupData(data);
-      const res = await authApi.signup(payload);
-      return res;
-    } catch (err) {
-      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
-      set({ error: msg });
-      throw err;
-    } finally {
-      set({ isLoading: false });
-    }
-  },
-
-  /**
-   * Verify OTP sent to email
-   */
-  verifyOtp: async (email, otp) => {
-    set({ isLoading: true, error: null });
-    try {
-      const payload = transformOtpData(email, otp);
-      console.log("Verifying OTP with payload:", payload);
-      
-      const res = await authApi.verifyOtp(payload);
-      if (res.access) {
-        tokenStorage.setTokens(res.access, res.refresh);
-        // Task: Capture user.Username from verify-otp response
-        if (res.user?.Username) {
-          const username = res.user.Username;
-          set({ username });
-          localStorage.setItem("axile_username", username);
-        }
-        const profile = await authApi.getProfile();
-        const normalizedProfile = normalizeUserProfile(profile);
-        set({ user: normalizedProfile, isAuthenticated: true });
-      }
-      return res;
-    } catch (err) {
-      // LOG THE BACKEND ERROR BODY SO WE CAN SEE MISSING FIELDS
-      console.error("OTP Verification Backend Response:", err.response?.data);
-      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
-      set({ error: msg });
-      throw err;
-    } finally {
-      set({ isLoading: false });
-    }
-  },
-
-  /**
-   * Resend OTP code to the provided email
-   */
-  resendOtp: async (email) => {
-    set({ isLoading: true, error: null });
-    try {
-      const res = await authApi.resendOtp(email);
-      return res;
-    } catch (err) {
-      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
-      set({ error: msg });
-      throw err;
-    } finally {
-      set({ isLoading: false });
-    }
-  },
-
-  /**
-   * Request password reset OTP
-   */
-  forgotPassword: async (email) => {
-    set({ isLoading: true, error: null });
-    try {
-      const res = await authApi.forgotPassword(email);
-      return res;
-    } catch (err) {
-      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
-      set({ error: msg });
-      throw err;
-    } finally {
-      set({ isLoading: false });
-    }
-  },
-
-  /**
-   * Verify password reset OTP
-   */
-  verifyResetOtp: async (email, otp) => {
-    set({ isLoading: true, error: null });
-    try {
-      const payload = transformOtpData(email, otp);
-      const res = await authApi.verifyResetOtp(payload);
-      return res;
-    } catch (err) {
-      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
-      set({ error: msg });
-      throw err;
-    } finally {
-      set({ isLoading: false });
-    }
-  },
-
-  /**
-   * Reset password using OTP and new password
-   */
-  resetPassword: async (email, otp, newPassword, uid = "", token = "") => {
-    set({ isLoading: true, error: null });
-    try {
-      const payload = transformResetPasswordData(email, otp, newPassword, uid, token);
-      const res = await authApi.resetPassword(payload);
-      return res;
-    } catch (err) {
-      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
-      set({ error: msg });
-      throw err;
-    } finally {
-      set({ isLoading: false });
-    }
-  },
-
-  /**
-   * Fetch current user profile
-   */
-   fetchProfile: async () => {
-    const token = tokenStorage.getAccessToken();
-    if (!token) {
-      console.log("fetchProfile: No access token found");
-      return;
-    }
-    
-    try {
-      console.log("fetchProfile: Fetching profile with token");
-      const profile = await authApi.getProfile();
-      console.log("fetchProfile: Raw profile from API:", profile);
-      
-      const normalizedProfile = normalizeUserProfile(profile);
-      console.log("fetchProfile: Normalized profile:", normalizedProfile);
-      
-      // Synchronize username
-      if (normalizedProfile.username) {
-        set({ username: normalizedProfile.username });
-        localStorage.setItem("axile_username", normalizedProfile.username);
-      }
-
-      set({ user: normalizedProfile, isAuthenticated: true });
-    } catch (err) {
-      console.error("DEBUG: Failed to fetch /referee/profile/:", {
-        status: err.response?.status,
-        data: err.response?.data || err.message
-      });
-      if (err.response?.status === 401) {
-        get().logout();
-      }
-    }
-  },
-
-  /**
-   * Update current user profile
-   */
-  updateProfile: async (data) => {
-    set({ isLoading: true, error: null });
-    try {
-      const res = await authApi.updateProfile(data);
-      const normalizedProfile = normalizeUserProfile(res.profile || res.data || res);
-      
-      // Synchronize username
-      if (normalizedProfile.username) {
-        set({ username: normalizedProfile.username });
-        localStorage.setItem("axile_username", normalizedProfile.username);
-      }
-
-      set({ user: normalizedProfile });
-      return normalizedProfile;
-    } catch (err) {
-      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
-      set({ error: msg });
-      throw err;
-    } finally {
-      set({ isLoading: false });
-    }
-  },
-
-  /**
-   * Update user password
-   */
-  changePassword: async (old_password, new_password) => {
-    set({ isLoading: true, error: null });
-    try {
-      await authApi.changePassword(old_password, new_password);
-      return true;
-    } catch (err) {
-      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
-      set({ error: msg });
-      return false;
-    } finally {
-      set({ isLoading: false });
-    }
-  },
-
-  /**
-   * Set user PIN
-   */
-  setPin: async (pin) => {
-    set({ isLoading: true, error: null });
-    try {
-      await authApi.createPin(pin);
-      // Update local state to reflect PIN is set
-      const currentUser = get().user;
-      if (currentUser) {
-        set({ user: { ...currentUser, has_pin: true, pin_set: true } });
-      }
-      return true;
-    } catch (err) {
-      const msg = err.response?.data?.error || err.response?.data?.message || err.message;
-      set({ error: msg });
-      return false;
-    } finally {
-      set({ isLoading: false });
-    }
-  },
-
-  /**
-   * Logout and clear local state
-   */
-  logout: async () => {
-    const refresh = tokenStorage.getRefreshToken();
-    if (refresh) {
-      try { await authApi.logout(refresh); } catch {}
-    }
-    
-    tokenStorage.clearTokens();
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("axile_username");
-    }
-    set({ user: null, username: null, isAuthenticated: false });
-  },
-
-  setUsername: (username) => {
-    set({ username });
-    if (typeof window !== "undefined") {
-      localStorage.setItem("axile_username", username);
-    }
-  },
-
-  setUser: (user) => set({ user: user ? normalizeUserProfile(user) : null, isAuthenticated: !!user }),
-  clearError: () => set({ error: null }),
-}));
+export default useAuthStore;
