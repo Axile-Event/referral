@@ -1,14 +1,31 @@
 "use client";
 
+import React, { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button.jsx";
 import { Menu, User, Bell } from "lucide-react";
+import Cookies from "js-cookie";
 import { useAuthStore } from "@/store/authStore";
 
 export function Navbar({ onMenuClick }) {
   const pathname = usePathname();
-  const { user } = useAuthStore();
+  const { user, token, syncWithCookie, logout } = useAuthStore();
+
+  // Cross-tab sync: Check for shared cookie on mount and token changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const shared = Cookies.get("axile_shared_auth");
+      
+      if (!shared && token) {
+        // Ghost session: cookie is gone but store is still authenticated
+        logout();
+      } else if (shared && !token) {
+        // New session: cookie exists but store isn't aware yet
+        syncWithCookie();
+      }
+    }
+  }, [token, syncWithCookie, logout]);
   
   const isAuthPage = pathname.includes("/login") || pathname.includes("/signup");
   const isProtected = pathname.includes("/dashboard") || pathname.includes("/events");
