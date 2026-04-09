@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import Cookies from "js-cookie";
 import { authApi } from "@/lib/api/auth";
+import { tokenStorage } from "@/lib/utils/tokenStorage";
 
 // Import token refresh timer functions (dynamic import to avoid circular dependency)
 let startTokenRefreshTimer, stopTokenRefreshTimer;
@@ -84,6 +85,9 @@ export const useAuthStore = create(
             sameSite: 'Lax'
           });
 
+          // Sync with the standalone tokenStorage used by apiClient
+          tokenStorage.setTokens(token, refresh);
+
           localStorage.removeItem("organizer-storage");
           localStorage.removeItem("Axile_pin_reminder_dismissed");
 
@@ -118,6 +122,7 @@ export const useAuthStore = create(
         if (typeof window !== "undefined") {
           Cookies.remove("axile_shared_auth", { domain: ".axile.ng" });
           localStorage.removeItem("auth-storage");
+          tokenStorage.clearTokens();
         }
 
         if (stopTokenRefreshTimer) {
@@ -179,6 +184,7 @@ export const useAuthStore = create(
             const { token, refreshToken, role } = JSON.parse(shared);
             if (token) {
               set({ token, refreshToken, role, isAuthenticated: true });
+              tokenStorage.setTokens(token, refreshToken);
               if (startTokenRefreshTimer) startTokenRefreshTimer();
             }
           } catch (e) {
