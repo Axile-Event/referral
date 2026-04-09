@@ -54,16 +54,24 @@ export const useAuthStore = create(
       googleSignup: async (accessToken) => {
         set({ isLoading: true });
         try {
+          console.log("AuthStore: Initiating googleSignup with accessToken");
           const response = await authApi.googleSignup({ 
             access_token: accessToken,
             token: accessToken 
           });
 
-          const { user, access, refresh, role, token } = response;
-          const finalToken = access || token;
+          console.log("AuthStore: googleSignup response reached store", response);
+          
+          // Map backend response fields accurately
+          const { access, refresh, token, refresh_token, referral_user, email } = response;
+          const finalToken = access || token || response.access_token;
+          const finalRefresh = refresh || refresh_token || response.refresh_token;
+          const finalUser = referral_user || { email: email || response.email };
 
           if (finalToken) {
-            get().setAuth(user, finalToken, refresh, role);
+            get().setAuth(finalUser, finalToken, finalRefresh, response.role || "user");
+          } else {
+             console.warn("AuthStore: googleSignup succeeded but no token returned", response);
           }
           return response;
         } finally {
@@ -119,6 +127,7 @@ export const useAuthStore = create(
       },
 
       logout: () => {
+        console.log("AuthStore: Logout triggered");
         if (typeof window !== "undefined") {
           Cookies.remove("axile_shared_auth", { domain: ".axile.ng" });
           localStorage.removeItem("auth-storage");
