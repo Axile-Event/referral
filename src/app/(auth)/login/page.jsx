@@ -165,7 +165,7 @@ export default function LoginPage() {
                 <input type="checkbox" className="w-4 h-4 rounded border-white/10 bg-white/5 accent-primary cursor-pointer" />
                 <span className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors py-1">Remember me</span>
               </label>
-              <Link href="/forgot-password" size="sm" className="text-sm font-bold text-primary hover:text-primary/80 transition-colors">
+              <Link href="/forgot-password" className="text-sm font-bold text-primary hover:text-primary/80 transition-colors">
                  Forgot password?
               </Link>
             </div>
