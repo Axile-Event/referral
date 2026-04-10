@@ -13,9 +13,16 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn.js";
 import { Button } from "@/components/ui/button.jsx";
+import { useAuthStore } from "@/store/authStore";
 
 export function Sidebar({ isOpen, onClose }) {
   const pathname = usePathname();
+  const { logout } = useAuthStore();
+
+  const handleLogout = () => {
+    logout();
+    onClose?.();
+  };
 
   const menuItems = [
     { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -91,20 +98,42 @@ export function Sidebar({ isOpen, onClose }) {
         <div className="px-3 py-6 space-y-1 border-t border-white/10">
           {bottomItems.map((item) => {
             const isActive = pathname === item.href;
+            const isLogout = item.name === "Logout";
+            
+            const content = (
+              <>
+                <item.icon size={18} className={cn(!item.className && isActive ? "text-white" : !item.className ? "text-gray-400 group-hover:text-white" : "")} />
+                <span>{item.name}</span>
+              </>
+            );
+
+            const baseClassName = cn(
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors font-medium text-sm group",
+              isActive 
+                ? "bg-primary text-white" 
+                : item.className || "text-gray-400 hover:bg-white/5 hover:text-white"
+            );
+
+            if (isLogout) {
+              return (
+                <button
+                  key={item.name}
+                  onClick={handleLogout}
+                  className={baseClassName}
+                >
+                  {content}
+                </button>
+              );
+            }
+
             return (
               <Link
                 key={item.name}
                 href={item.href}
                 onClick={onClose}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors font-medium text-sm group",
-                  isActive 
-                    ? "bg-primary text-white" 
-                    : item.className || "text-gray-400 hover:bg-white/5 hover:text-white"
-                )}
+                className={baseClassName}
               >
-                <item.icon size={18} className={cn(!item.className && isActive ? "text-white" : !item.className ? "text-gray-400 group-hover:text-white" : "")} />
-                <span>{item.name}</span>
+                {content}
               </Link>
             );
           })}

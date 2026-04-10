@@ -15,8 +15,8 @@ export const metadata = {
   title: "Axile Referral System",
   description: "Earn money by referring events to your network",
   icons: {
-    icon: "/axile-logo-main-cropped.png",
-    apple: "/axile-logo-main-cropped.png",
+    icon: "/axile-logo-cropped.png",
+    apple: "/axile-logo-cropped.png",
   },
   robots: "index, follow",
 };

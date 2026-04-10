@@ -33,7 +33,11 @@ export function GoogleSignupButton({ variant = "signup" }) {
         // Backend expects the access_token to be sent to /referee/google-signup/
         const result = await googleSignup(response.access_token);
         
-        if (result?.email || result?.username) {
+        // Check for tokens or user data at various expected paths
+        const isSuccess = result?.access || result?.token || result?.email || 
+                         result?.username || result?.referral_user || result?.access_token;
+
+        if (isSuccess) {
           const successMsg = variant === "login" 
             ? "Login successful! Welcome back." 
             : "Account created successfully! Welcome to Axile.";
@@ -46,12 +50,9 @@ export function GoogleSignupButton({ variant = "signup" }) {
             }
           });
           
-          // Route Google signup users to setup-profile for username + PIN setup
-          if (result.needs_username) {
-            router.push("/setup-profile");
-          } else {
-            router.push("/dashboard");
-          }
+          // Always route to dashboard; the GoogleOnboardingModal in ProtectedLayout 
+          // will handle the username/PIN setup if needed.
+          router.push("/dashboard");
         }
       } catch (error) {
         const errorMsg = error?.response?.data?.message || 

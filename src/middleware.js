@@ -9,9 +9,14 @@ export function middleware(request) {
 
   // 2. Define path groups
   const isAuthPage = pathname === '/login' || pathname === '/signup'
-  const isProtectedPage = pathname.startsWith('/dashboard') || pathname.startsWith('/referrals')
+  const isProtectedPage = pathname.startsWith('/dashboard') || pathname.startsWith('/referrals') || pathname === '/'
 
-  // 3. Redirect Authenticated users away from Login/Signup
+  // 3. Handle Root Path redirect
+  if (pathname === '/') {
+    return NextResponse.redirect(new URL(isAuthenticated ? '/dashboard' : '/login', request.url))
+  }
+
+  // 4. Redirect Authenticated users away from Login/Signup
   if (isAuthenticated && isAuthPage) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
@@ -26,6 +31,7 @@ export function middleware(request) {
 
 export const config = {
   matcher: [
+    '/',
     '/login',
     '/signup',
     '/dashboard/:path*',

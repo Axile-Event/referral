@@ -8,7 +8,8 @@ import { tokenStorage } from "@/lib/utils/tokenStorage";
 
 export const authApi = {
   // Section 2.1: Email/password signup
-  signup: (data) => apiClient.post("/signup/", data).then((r) => r.data),
+  signup: (data) => apiClient.post("/referee/signup/", data).then((r) => r.data),
+  
   
   // Section 2.1: Verify OTP
   verifyOtp: (payload) => apiClient.post("/verify-otp/", payload).then((r) => r.data),

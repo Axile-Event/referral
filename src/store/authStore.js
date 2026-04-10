@@ -20,9 +20,21 @@ export const useAuthStore = create(
       role: null,
       token: null,
       refreshToken: null,
-      hydrated: false,
-      isAuthenticated: false,
       isLoading: false,
+      hydrated: false,
+
+      /**
+       * Email/Password Signup Action (Async)
+       */
+      signup: async (data) => {
+        set({ isLoading: true });
+        try {
+          const response = await authApi.signup(data);
+          return response;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
 
       /**
        * Primary Login Action (Async)
@@ -85,13 +97,20 @@ export const useAuthStore = create(
       setAuth: (userData, token, refresh, role) => {
         // Shared cookie for cross-subdomain auth
         if (typeof window !== "undefined") {
-          const cookieData = { token, refreshToken: refresh, role };
-          Cookies.set("axile_shared_auth", JSON.stringify(cookieData), { 
-            domain: ".axile.ng", 
+          const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+          
+          const cookieOptions = {
             expires: 7,
             secure: true,
             sameSite: 'Lax'
-          });
+          };
+
+          if (!isLocalhost) {
+            cookieOptions.domain = ".axile.ng";
+          }
+
+          const cookieData = { token, refreshToken: refresh, role };
+          Cookies.set("axile_shared_auth", JSON.stringify(cookieData), cookieOptions);
 
           // Sync with the standalone tokenStorage used by apiClient
           tokenStorage.setTokens(token, refresh);
@@ -129,7 +148,10 @@ export const useAuthStore = create(
       logout: () => {
         console.log("AuthStore: Logout triggered");
         if (typeof window !== "undefined") {
-          Cookies.remove("axile_shared_auth", { domain: ".axile.ng" });
+          const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+          const cookieOptions = !isLocalhost ? { domain: ".axile.ng" } : {};
+          
+          Cookies.remove("axile_shared_auth", cookieOptions);
           localStorage.removeItem("auth-storage");
           tokenStorage.clearTokens();
         }
