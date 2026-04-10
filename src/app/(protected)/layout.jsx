@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar.jsx";
 import { Navbar } from "@/components/layout/navbar.jsx";
 import { useAuthStore } from "@/store/authStore";
+import { GoogleOnboardingModal } from "@/components/auth/GoogleOnboardingModal.jsx";
 import { Loader2 } from "lucide-react";
 
 export default function ProtectedLayout({ children }) {
@@ -32,6 +33,7 @@ export default function ProtectedLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-[#0a0a14] flex flex-col overflow-x-hidden">
+      <GoogleOnboardingModal />
       <Navbar onMenuClick={() => setIsSidebarOpen(true)} />
       
       <div className="flex flex-1 relative w-full">

@@ -10,17 +10,24 @@ import { useAuthStore } from "@/store/authStore";
  * Currently includes Google OAuth and state hydration.
  */
 export function AuthProvider({ children }) {
-  const { fetchProfile } = useAuthStore();
+  const { token, fetchProfile } = useAuthStore();
   const [hydrated, setHydrated] = useState(false);
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
   useEffect(() => {
     const init = async () => {
-      await fetchProfile();
-      setHydrated(true);
+      try {
+        if (token) {
+          await fetchProfile();
+        }
+      } catch (error) {
+        console.error("Initial profile fetch failed:", error);
+      } finally {
+        setHydrated(true);
+      }
     };
     init();
-  }, [fetchProfile]);
+  }, [fetchProfile, token]);
 
   if (!hydrated) {
     return <div className="min-h-screen bg-[#0a0a14]" />;

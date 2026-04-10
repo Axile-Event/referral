@@ -7,6 +7,7 @@ import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { Input } from "@/components/ui/input.jsx";
+import { authApi } from "@/lib/api/auth";
 import { useAuthStore } from "@/store/authStore";
 import {
   AuthSplitLayout,

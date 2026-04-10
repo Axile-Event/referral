@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import Cookies from "js-cookie";
+import { authApi } from "@/lib/api/auth";
+import { tokenStorage } from "@/lib/utils/tokenStorage";
 
 // Import token refresh timer functions (dynamic import to avoid circular dependency)
 let startTokenRefreshTimer, stopTokenRefreshTimer;
@@ -18,18 +20,100 @@ export const useAuthStore = create(
       role: null,
       token: null,
       refreshToken: null,
+      isLoading: false,
       hydrated: false,
-      isAuthenticated: false,
-      login: (userData, token, refresh, role) => {
+
+      /**
+       * Email/Password Signup Action (Async)
+       */
+      signup: async (data) => {
+        set({ isLoading: true });
+        try {
+          const response = await authApi.signup(data);
+          return response;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      /**
+       * Primary Login Action (Async)
+       */
+      login: async (email, password) => {
+        set({ isLoading: true });
+        try {
+          // Some backends expect 'username', others 'email'
+          // We try to be flexible by sending both as the identifier
+          const response = await authApi.login({ 
+            email, 
+            username: email, 
+            password 
+          });
+
+          const { user, access, refresh, role, token } = response;
+          const finalToken = access || token;
+
+          get().setAuth(user, finalToken, refresh, role);
+          return response;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      /**
+       * Google Authentication Action (Async)
+       */
+      googleSignup: async (accessToken) => {
+        set({ isLoading: true });
+        try {
+          console.log("AuthStore: Initiating googleSignup with accessToken");
+          const response = await authApi.googleSignup({ 
+            access_token: accessToken,
+            token: accessToken 
+          });
+
+          console.log("AuthStore: googleSignup response reached store", response);
+          
+          // Map backend response fields accurately
+          const { access, refresh, token, refresh_token, referral_user, email } = response;
+          const finalToken = access || token || response.access_token;
+          const finalRefresh = refresh || refresh_token || response.refresh_token;
+          const finalUser = referral_user || { email: email || response.email };
+
+          if (finalToken) {
+            get().setAuth(finalUser, finalToken, finalRefresh, response.role || "user");
+          } else {
+             console.warn("AuthStore: googleSignup succeeded but no token returned", response);
+          }
+          return response;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      /**
+       * Internal state setter for auth data
+       */
+      setAuth: (userData, token, refresh, role) => {
         // Shared cookie for cross-subdomain auth
         if (typeof window !== "undefined") {
-          const cookieData = { token, refreshToken: refresh, role };
-          Cookies.set("axile_shared_auth", JSON.stringify(cookieData), { 
-            domain: ".axile.ng", 
+          const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+          
+          const cookieOptions = {
             expires: 7,
             secure: true,
             sameSite: 'Lax'
-          });
+          };
+
+          if (!isLocalhost) {
+            cookieOptions.domain = ".axile.ng";
+          }
+
+          const cookieData = { token, refreshToken: refresh, role };
+          Cookies.set("axile_shared_auth", JSON.stringify(cookieData), cookieOptions);
+
+          // Sync with the standalone tokenStorage used by apiClient
+          tokenStorage.setTokens(token, refresh);
 
           localStorage.removeItem("organizer-storage");
           localStorage.removeItem("Axile_pin_reminder_dismissed");
@@ -60,9 +144,16 @@ export const useAuthStore = create(
           startTokenRefreshTimer();
         }
       },
+
       logout: () => {
+        console.log("AuthStore: Logout triggered");
         if (typeof window !== "undefined") {
-          Cookies.remove("axile_shared_auth", { domain: ".axile.ng" });
+          const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+          const cookieOptions = !isLocalhost ? { domain: ".axile.ng" } : {};
+          
+          Cookies.remove("axile_shared_auth", cookieOptions);
+          localStorage.removeItem("auth-storage");
+          tokenStorage.clearTokens();
         }
 
         if (stopTokenRefreshTimer) {
@@ -77,11 +168,29 @@ export const useAuthStore = create(
           isAuthenticated: false,
         });
       },
+
       setHydrated: () => set({ hydrated: true }),
       setUser: (userData) =>
         set((state) => ({
           user: { ...state.user, ...userData },
         })),
+
+      /**
+       * Fetch Profile (Async)
+       * Tries namespaced referee profile, falls back to root if 404s.
+       */
+      fetchProfile: async () => {
+        try {
+          const profile = await authApi.getProfile();
+          if (profile) {
+            get().setUser(profile?.user || profile?.profile || profile);
+            return profile;
+          }
+        } catch (error) {
+          console.error("AuthStore: Profile fetch failed", error);
+          throw error;
+        }
+      },
       
       // Sync state from shared cookie if localStorage is empty
       syncWithCookie: () => {
@@ -93,6 +202,7 @@ export const useAuthStore = create(
             const { token, refreshToken, role } = JSON.parse(shared);
             if (token) {
               set({ token, refreshToken, role, isAuthenticated: true });
+              tokenStorage.setTokens(token, refreshToken);
               if (startTokenRefreshTimer) startTokenRefreshTimer();
             }
           } catch (e) {
@@ -113,3 +223,4 @@ export const useAuthStore = create(
 );
 
 export default useAuthStore;
+

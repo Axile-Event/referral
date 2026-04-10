@@ -6,6 +6,7 @@ export const userApi = {
 
   // GET/PATCH /referee/profile/ — profile
   getProfile: () => client.get("/referee/profile/"),
+  getProfileFallback: () => client.get("/profile/"),
   updateProfile: (data) => client.patch("/referee/profile/", data),
 
   // Password reset: /password/reset/, etc.
