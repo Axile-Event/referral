@@ -247,21 +247,73 @@ export const useAuthStore = create(
       
       // Sync state from shared cookie if localStorage is empty
       syncWithCookie: () => {
-        if (typeof window === "undefined" || get().token) return;
+        if (typeof window === "undefined") return;
+        
+        // 1. Cross-Domain Session Bridge: Check URL for sync data
+        const searchParams = new URLSearchParams(window.location.search);
+        const urlSyncData = searchParams.get("ax_sync");
+        
+        if (urlSyncData) {
+          try {
+            const decoded = decodeURIComponent(urlSyncData);
+            const parsed = JSON.parse(decoded);
+            const { token, refreshToken, role } = parsed;
+            
+            if (token) {
+              set({ 
+                token, 
+                refreshToken: refreshToken || null, 
+                role: role || null, 
+                isAuthenticated: true 
+              });
+
+              tokenStorage.setTokens(token, refreshToken);
+
+              // Set a LOCAL cookie so it persists on this domain too
+              const cookieOpts = { 
+                expires: 7, 
+                path: "/",
+                sameSite: 'Lax',
+                secure: window.location.protocol === 'https:'
+              };
+              const domain = getCookieDomain();
+              if (domain) cookieOpts.domain = domain;
+              
+              Cookies.set("axile_shared_auth", decoded, cookieOpts);
+
+              // Clean up the URL
+              const newUrl = new URL(window.location.href);
+              newUrl.searchParams.delete("ax_sync");
+              window.history.replaceState({}, '', newUrl.toString());
+              
+              if (startTokenRefreshTimer) startTokenRefreshTimer();
+              return true;
+            }
+          } catch (e) {
+            console.error("Session bridge sync failed in Referral app", e);
+          }
+        }
+
+        // 2. Standard Cookie Sync (Works on .axile.ng subdomains)
+        if (get().token) return; // Don't overwrite if already have a local token
         
         const shared = Cookies.get("axile_shared_auth");
         if (shared) {
           try {
-            const { token, refreshToken, role } = JSON.parse(shared);
+            const decoded = shared.startsWith("%") ? decodeURIComponent(shared) : shared;
+            const parsed = JSON.parse(decoded);
+            const { token, refreshToken, role } = parsed;
             if (token) {
               set({ token, refreshToken, role, isAuthenticated: true });
               tokenStorage.setTokens(token, refreshToken);
               if (startTokenRefreshTimer) startTokenRefreshTimer();
+              return true;
             }
           } catch (e) {
-            console.error("Failed to sync shared auth", e);
+            console.error("Failed to sync shared auth in Referral app", e);
           }
         }
+        return false;
       }
     }),
     {

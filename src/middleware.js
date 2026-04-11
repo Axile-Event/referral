@@ -9,7 +9,7 @@ export function middleware(request) {
 
   // 2. Define path groups
   const isAuthPage = pathname === '/login' || pathname === '/signup'
-  const isProtectedPage = pathname.startsWith('/dashboard') || pathname.startsWith('/referrals')
+  const isProtectedPage = pathname === '/dashboard' || pathname.startsWith('/dashboard/') || pathname.startsWith('/referrals') || pathname === '/wallet'
 
   // 3. Redirect Authenticated users away from Login/Signup
   if (isAuthenticated && isAuthPage) {
@@ -18,7 +18,9 @@ export function middleware(request) {
 
   // 4. Redirect Unauthenticated users away from Protected pages
   if (!isAuthenticated && isProtectedPage) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    const mainAppUrl = (process.env.NEXT_PUBLIC_MAIN_APP_URL || 'https://app.axile.ng').replace(/\/$/, '')
+    const callbackUrl = encodeURIComponent(request.url)
+    return NextResponse.redirect(`${mainAppUrl}/login?callbackUrl=${callbackUrl}`)
   }
 
   return NextResponse.next()
@@ -28,7 +30,9 @@ export const config = {
   matcher: [
     '/login',
     '/signup',
+    '/dashboard',
     '/dashboard/:path*',
-    '/referrals/:path*'
+    '/referrals/:path*',
+    '/wallet'
   ],
 }
