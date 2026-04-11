@@ -24,6 +24,19 @@ export const useAuthStore = create(
       isAuthenticated: false,
       isLoading: false,
       authMethod: null, // "email" or "google"
+ 
+       /**
+        * Primary Signup Action (Async)
+        */
+      signup: async (data) => {
+        set({ isLoading: true });
+        try {
+          const response = await authApi.signup(data);
+          return response;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
 
       /**
        * Primary Login Action (Async)
@@ -194,7 +207,7 @@ export const useAuthStore = create(
           get().setUser(userData);
           return response;
         } catch (error) {
-          console.error("AuthStore: Update profile failed", error);
+          console.error("AuthStore: Update profile failed", error.response?.data || error.message);
           throw error;
         } finally {
           set({ isLoading: false });

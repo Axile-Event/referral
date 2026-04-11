@@ -65,9 +65,21 @@ export default function SettingsPage() {
     e.preventDefault();
     if (hasExistingUsername) return; // safety catch
     if (!usernameVal) return toast.error("Username is required", toastTheme);
-    await updateProfile({ username: usernameVal });
-    // After success, it will update profile state and disable the field if successful
-    toast.success("Username set successfully!", toastTheme);
+    
+    try {
+      await updateProfile({ username: usernameVal });
+      // After success, it will update profile state and disable the field if successful
+      toast.success("Username set successfully!", toastTheme);
+    } catch (err) {
+      console.error("Settings: Username update failed", err.response?.data || err.message);
+      const errorData = err.response?.data;
+      const msg = errorData?.username?.[0] || 
+                  errorData?.Username?.[0] ||
+                  errorData?.error || 
+                  errorData?.detail ||
+                  "Failed to set username";
+      toast.error(msg, toastTheme);
+    }
   };
 
   const handlePasswordSubmit = async (e) => {
