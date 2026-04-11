@@ -86,12 +86,15 @@ export const useAuthStore = create(
         // Shared cookie for cross-subdomain auth
         if (typeof window !== "undefined") {
           const cookieData = { token, refreshToken: refresh, role };
-          Cookies.set("axile_shared_auth", JSON.stringify(cookieData), { 
-            domain: ".axile.ng", 
+          const isProd = window.location.hostname.endsWith(".axile.ng");
+          const cookieOptions = { 
             expires: 7,
-            secure: true,
-            sameSite: 'Lax'
-          });
+            secure: isProd || window.location.protocol === "https:",
+            sameSite: 'Lax',
+            ...(isProd && { domain: ".axile.ng" })
+          };
+
+          Cookies.set("axile_shared_auth", JSON.stringify(cookieData), cookieOptions);
 
           // Sync with the standalone tokenStorage used by apiClient
           tokenStorage.setTokens(token, refresh);
@@ -129,7 +132,9 @@ export const useAuthStore = create(
       logout: () => {
         console.log("AuthStore: Logout triggered");
         if (typeof window !== "undefined") {
-          Cookies.remove("axile_shared_auth", { domain: ".axile.ng" });
+          const isProd = window.location.hostname.endsWith(".axile.ng");
+          const cookieOptions = isProd ? { domain: ".axile.ng" } : {};
+          Cookies.remove("axile_shared_auth", cookieOptions);
           localStorage.removeItem("auth-storage");
           tokenStorage.clearTokens();
         }
