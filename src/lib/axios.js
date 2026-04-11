@@ -128,24 +128,22 @@ api.interceptors.request.use(
     // If sending FormData, don't force a JSON/multipart content-type.
     // The browser will set the correct multipart boundary.
     if (typeof FormData !== "undefined" && config?.data instanceof FormData) {
-      const headers = config.headers;
-      if (headers) {
+      if (config.headers) {
         // Axios v1 may use AxiosHeaders (has .delete/.set).
-        if (typeof headers.delete === "function") {
-          headers.delete("Content-Type");
-          headers.delete("content-type");
+        if (typeof config.headers.delete === "function") {
+          config.headers.delete("Content-Type");
+          config.headers.delete("content-type");
         }
-        if (typeof headers.set === "function") {
-          // Ensure nothing re-adds it later in the pipeline.
-          headers.set("Content-Type", undefined);
-          headers.set("content-type", undefined);
+        if (typeof config.headers.set === "function") {
+          config.headers.set("Content-Type", undefined);
+          config.headers.set("content-type", undefined);
         }
 
-        // Also handle plain object headers.
+        // Also handle plain object headers safely
         try {
-          delete headers["Content-Type"];
-          delete headers["content-type"];
-        } catch {
+          delete config.headers["Content-Type"];
+          delete config.headers["content-type"];
+        } catch (e) {
           // ignore
         }
       }

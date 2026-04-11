@@ -41,6 +41,7 @@ export const createAuthError = (error, context = "") => {
  * Validation error formatter
  */
 export const formatValidationError = (errors) => {
+  if (!errors) return "An unexpected error occurred";
   if (typeof errors === "string") return errors;
   if (typeof errors === "object") {
     const messages = Object.values(errors)

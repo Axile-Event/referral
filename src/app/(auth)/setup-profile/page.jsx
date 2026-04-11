@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
+import { useUserStore } from "@/store/userStore";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PinInputBox } from "@/components/ui/pin-input-box";
@@ -29,7 +31,8 @@ const toastTheme = {
  */
 export default function SetupProfilePage() {
   const router = useRouter();
-  const { user, authMethod, updateProfile, setPin, isLoading } = useAuthStore();
+  const { user, authMethod } = useAuthStore();
+  const { updateProfile, setPin, isLoading, fetchProfile } = useUserStore();
   
   const [step, setStep] = useState(1); // 1 = username, 2 = pin
   const [usernameVal, setUsernameVal] = useState("");
