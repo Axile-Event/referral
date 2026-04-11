@@ -29,6 +29,7 @@ export const authApi = {
 
   // GET/PATCH /referee/profile/
   getProfile: () => apiClient.get("/referee/profile/").then((r) => r.data),
+  getProfileFallback: () => apiClient.get("/profile/").then((r) => r.data),
   updateProfile: (data) => apiClient.patch("/referee/profile/", data).then((r) => r.data),
 
   // Section 2.4: Referee PIN
