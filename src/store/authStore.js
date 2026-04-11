@@ -23,6 +23,7 @@ export const useAuthStore = create(
       hydrated: false,
       isAuthenticated: false,
       isLoading: false,
+      authMethod: null, // "email" or "google"
 
       /**
        * Primary Login Action (Async)
@@ -42,6 +43,7 @@ export const useAuthStore = create(
           const finalToken = access || token;
 
           get().setAuth(user, finalToken, refresh, role);
+          set({ authMethod: "email" });
           return response;
         } finally {
           set({ isLoading: false });
@@ -70,6 +72,7 @@ export const useAuthStore = create(
 
           if (finalToken) {
             get().setAuth(finalUser, finalToken, finalRefresh, response.role || "user");
+            set({ authMethod: "google" });
           } else {
              console.warn("AuthStore: googleSignup succeeded but no token returned", response);
           }
@@ -149,6 +152,7 @@ export const useAuthStore = create(
           token: null,
           refreshToken: null,
           isAuthenticated: false,
+          authMethod: null,
         });
       },
 
@@ -163,15 +167,53 @@ export const useAuthStore = create(
        * Tries namespaced referee profile, falls back to root if 404s.
        */
       fetchProfile: async () => {
+        set({ isLoading: true });
         try {
           const profile = await authApi.getProfile();
           if (profile) {
-            get().setUser(profile?.user || profile?.profile || profile);
+            const userData = profile?.user || profile?.profile || profile;
+            get().setUser(userData);
             return profile;
           }
         } catch (error) {
           console.error("AuthStore: Profile fetch failed", error);
           throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      /**
+       * Update Profile (Async)
+       */
+      updateProfile: async (data) => {
+        set({ isLoading: true });
+        try {
+          const response = await authApi.updateProfile(data);
+          const userData = response?.user || response?.profile || response;
+          get().setUser(userData);
+          return response;
+        } catch (error) {
+          console.error("AuthStore: Update profile failed", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      /**
+       * Set PIN (Async)
+       */
+      setPin: async (pin) => {
+        set({ isLoading: true });
+        try {
+          const response = await authApi.createPin(pin);
+          return response;
+        } catch (error) {
+          console.error("AuthStore: Set PIN failed", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
         }
       },
       
