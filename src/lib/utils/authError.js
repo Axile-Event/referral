@@ -7,7 +7,10 @@
  * Extract error message from API error response
  */
 export const getErrorMessage = (error, defaultMessage = "An error occurred") => {
-  // Check nested response structure
+  // Check nested response structure – order matters
+  if (error?.response?.data?.error) {
+    return error.response.data.error;
+  }
   if (error?.response?.data?.message) {
     return error.response.data.message;
   }

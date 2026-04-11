@@ -22,10 +22,7 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use((config) => {
   const token = tokenStorage.getAccessToken();
   if (token && token !== "undefined" && token !== "null") {
-    console.log(`apiClient: Attaching token to ${config.url}`);
     config.headers.Authorization = `Bearer ${token}`;
-  } else {
-    console.log(`apiClient: No token found for ${config.url}`);
   }
   return config;
 });
@@ -43,13 +40,11 @@ apiClient.interceptors.response.use(
                        originalRequest.url?.includes("/google-signup");
 
     if (error.response?.status === 401 && !originalRequest._retry && !isAuthPath) {
-      console.warn(`apiClient: 401 Unauthorized on ${originalRequest.url}. Attempting refresh...`);
       originalRequest._retry = true;
 
       try {
         const refresh = tokenStorage.getRefreshToken();
         if (!refresh || refresh === "undefined" || refresh === "null") {
-          console.warn("apiClient: No refresh token available, logging out.");
           tokenStorage.clearTokens();
           if (typeof window !== "undefined") {
             window.location.href = "/login";
@@ -57,27 +52,23 @@ apiClient.interceptors.response.use(
           return Promise.reject(error);
         }
 
-        // Attempt to refresh access token using refresh token
-        console.log("apiClient: Calling refresh endpoint...");
         const res = await axios.post(
           `${API_BASE_URL}/referee/token/refresh/`,
           { refresh }
         ).catch(async (e) => {
             if (e.response?.status === 404) {
-                console.log("apiClient: Namespaced refresh 404, trying root...");
                 return await axios.post(`${API_BASE_URL}/token/refresh/`, { refresh });
             }
             throw e;
         });
 
         if (res.data.access) {
-          console.log("apiClient: Token refresh successful.");
           tokenStorage.setTokens(res.data.access, refresh);
           originalRequest.headers.Authorization = `Bearer ${res.data.access}`;
           return apiClient(originalRequest);
         }
       } catch (refreshError) {
-        console.error("apiClient: Token refresh failed, logging out:", refreshError.response?.data || refreshError.message);
+        console.error("apiClient: Token refresh failed:", refreshError.response?.data || refreshError.message);
         tokenStorage.clearTokens();
         if (typeof window !== "undefined") {
           window.location.href = "/login";

@@ -35,7 +35,7 @@ function VerifyOtpForm() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [otpExpiryTimer]);
+  }, []); // Only start on mount
 
   const formatCountdown = (seconds) => {
     const minutes = Math.floor(seconds / 60);
@@ -73,9 +73,6 @@ function VerifyOtpForm() {
     }
   };
   
-  console.log("--- VerifyOtpPage Debug ---");
-  console.log("Email from Search Params:", email);
-  
   const { control, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
       otp: "",
@@ -88,20 +85,32 @@ function VerifyOtpForm() {
       return;
     }
 
-    if (otpExpiryTimer <= 0) {
-      toast.error("This OTP has expired. Please request a new code.");
-      return;
-    }
-
     try {
       await verifyOtp(email, data.otp);
       toast.success("Account verified successfully! You can now login.");
       router.push("/login");
     } catch (error) {
-      // Use central error handling for consistent messaging
       const errorMsg = getErrorMessage(error, "Verification failed. Please check your OTP and email.");
-      toast.error(errorMsg);
-      console.error("OTP Verification Error:", error);
+      
+      // Detect session expiry — auto-resend to refresh the backend session
+      const isSessionExpired = 
+        errorMsg.toLowerCase().includes("expired") ||
+        errorMsg.toLowerCase().includes("invalid email") ||
+        errorMsg.toLowerCase().includes("session");
+
+      if (isSessionExpired) {
+        toast.error("Your session expired. Sending a new code to your email...", { duration: 4000 });
+        try {
+          await resendOtp(email);
+          setOtpExpiryTimer(600); // reset frontend timer to match new OTP
+          startCooldown();
+          toast.success("A fresh verification code has been sent!", { duration: 3000 });
+        } catch {
+          toast.error("Could not resend code. Please go back and sign up again.");
+        }
+      } else {
+        toast.error(errorMsg);
+      }
     }
   };
 

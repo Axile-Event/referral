@@ -14,7 +14,7 @@ export const REFERRAL_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
  * 1. Always use event_slug (identifier)
  * 2. Always use username
  * 
- * New Format: referral.axile.ng/event/{event-slug}/{username}
+ * New Format: referral.axile.ng/events/{event-slug}/{username}
  */
 export function generateReferralLink(data) {
   if (!data) return "";
@@ -26,10 +26,10 @@ export function generateReferralLink(data) {
   if (!username || !identifier) return "";
   
   // Use current window location as baseUrl
-  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const baseUrl = process.env.NEXT_PUBLIC_AXILE_DEV_URL;
   const baseUrlNew = "https://axile.ng";
 
-  return `${baseUrlNew}/event/${identifier}/${username}`;
+  return `${baseUrlNew}/events/${identifier}/${username}`;
 }
 
 /**

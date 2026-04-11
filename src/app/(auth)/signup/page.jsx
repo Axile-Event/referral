@@ -34,8 +34,6 @@ export default function SignUpPage() {
 
   const onSubmit = async (data) => {
     try {
-      console.log("hit page signup button")
-       console.log(data)
       await signup(data);
       toast.success("Signup successful. Check your email for the OTP verification code.");
       // Redirect to OTP verification page with email as query param
