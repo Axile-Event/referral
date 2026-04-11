@@ -60,7 +60,10 @@ export default function SettingsPage() {
 
   // Determine if they actually have a set username vs a default email placeholder
   const isGoogle = authMethod === "google";
-  const needsUsername = profile && (profile.needs_username || (profile.username && profile.username === profile.email) || !profile.username);
+  const u = profile?.username || profile?.Username;
+  const email = profile?.email || profile?.Email;
+  const isPlaceholder = u && email && u.toLowerCase() === email.toLowerCase();
+  const needsUsername = profile && (profile.needs_username || isPlaceholder || !u);
   const hasExistingUsername = !needsUsername;
   
   const needsPin = profile && !profile.has_pin && !profile.pin_set;

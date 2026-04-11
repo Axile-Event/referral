@@ -103,13 +103,15 @@ export const useAuthStore = create(
           console.log("AuthStore: googleSignup response reached store", response);
           
           // Map backend response fields accurately
-          const { access, refresh, token, refresh_token, referral_user, email } = response;
+          const { access, refresh, token, refresh_token, referral_user, email, role } = response;
           const finalToken = access || token || response.access_token;
           const finalRefresh = refresh || refresh_token || response.refresh_token;
-          const finalUser = referral_user || { email: email || response.email };
+          
+          // Be extra flexible with user object location
+          const finalUser = referral_user || response.user || response.profile || { email: email || response.email };
 
           if (finalToken) {
-            get().setAuth(finalUser, finalToken, finalRefresh, response.role || "user", "google");
+            get().setAuth(finalUser, finalToken, finalRefresh, role || response.role || "user", "google");
           } else {
              console.warn("AuthStore: googleSignup succeeded but no token returned", response);
           }
@@ -210,6 +212,60 @@ export const useAuthStore = create(
        * Fetch Profile (Async)
        * Tries namespaced referee profile, falls back to root if 404s.
        */
+      /**
+       * Update Profile (Async)
+       */
+      updateProfile: async (data) => {
+        set({ isLoading: true });
+        try {
+          const response = await authApi.updateProfile(data);
+          // If response contains updated user, sync it
+          const updatedUser = response?.user || response?.profile || response;
+          if (updatedUser) {
+            get().setUser(updatedUser);
+          }
+          return response;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      /**
+       * Change Password (Async)
+       */
+      changePassword: async (old_password, new_password) => {
+        set({ isLoading: true });
+        try {
+          await authApi.changePassword(old_password, new_password);
+          return true;
+        } catch (error) {
+          console.error("AuthStore: Password change failed", error);
+          return false;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      /**
+       * Set Security PIN (Async)
+       */
+      setPin: async (pin) => {
+        set({ isLoading: true });
+        try {
+          await authApi.createPin(pin);
+          // After setting pin, we should mark user as having a pin locally
+          set((state) => ({
+            user: { ...state.user, has_pin: true, pin_set: true }
+          }));
+          return true;
+        } catch (error) {
+          console.error("AuthStore: PIN setup failed", error);
+          return false;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
       fetchProfile: async () => {
         try {
           const profile = await authApi.getProfile();
