@@ -25,8 +25,8 @@ export function generateReferralLink(data) {
   
   if (!username || !identifier) return "";
   
-  // Use development URL or production APP URL
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://axilereferraldev.vercel.app";
+  // Use standardized Referral URL
+  const baseUrl = process.env.NEXT_PUBLIC_REFERRAL_URL?.replace(/\/$/, "") || "https://referral.axile.ng";
   return `${baseUrl}/event/${identifier}/${username}`;
 }
 
@@ -35,7 +35,14 @@ export function generateReferralLink(data) {
  * Falls back to axiledev.vercel.app for development testing.
  */
 export function getMainAppUrl() {
-  return process.env.NEXT_PUBLIC_MAIN_APP_URL?.replace(/\/$/, "") || "https://axiledev.vercel.app";
+  return process.env.NEXT_PUBLIC_MAIN_APP_URL?.replace(/\/$/, "") || "https://app.axile.ng";
+}
+
+/**
+ * Get the target URL for the Axile landing page.
+ */
+export function getLandingPageUrl() {
+  return process.env.NEXT_PUBLIC_LANDING_URL?.replace(/\/$/, "") || "https://axile.ng";
 }
 
 /**
