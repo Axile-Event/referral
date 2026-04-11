@@ -34,7 +34,10 @@ export default function DashboardPage() {
   // Status flags
   const { authMethod } = useAuthStore();
   const needsPin = user && !user.has_pin && !user.pin_set;
-  const needsUsername = user && (user.needs_username || (user.username && user.username === user.email) || !user.username);
+  const u = user?.username || user?.Username;
+  const email = user?.email || user?.Email;
+  const isPlaceholder = u && email && u.toLowerCase() === email.toLowerCase();
+  const needsUsername = user && (user.needs_username || isPlaceholder || !u);
   
   // Only show the specific banners to Google users as they go through the onboarding modal
   const showClaimBanner = authMethod === "google" && needsUsername;

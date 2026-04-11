@@ -16,8 +16,8 @@ import { toast } from "react-hot-toast";
  * Required for Google OAuth users with incomplete profiles.
  */
 export function GoogleOnboardingModal() {
-  const { user, setUser } = useAuthStore();
-  const { updateProfile, setPin, isLoading: storeLoading } = useUserStore();
+  const { user, setUser, updateProfile, setPin, isLoading: storeLoading } = useAuthStore();
+  const { authMethod } = useAuthStore();
   
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(1); // 1: Username, 2: PIN, 3: Success
@@ -25,13 +25,15 @@ export function GoogleOnboardingModal() {
   const [pin, setPinVal] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
   const [error, setError] = useState("");
-
-  // Determine if modal should show
-  const { authMethod } = useAuthStore();
   
   useEffect(() => {
     if (user && authMethod === "google") {
-      const needsUsername = user.needs_username || (user.username && user.username === user.email) || !user.username;
+      const u = user.username || user.Username;
+      const email = user.email || user.Email;
+      
+      const isPlaceholder = u && email && u.toLowerCase() === email.toLowerCase();
+      const needsUsername = user.needs_username || isPlaceholder || !u;
+      
       const needsPin = !user.has_pin && !user.pin_set;
       
       if (needsUsername || needsPin) {
