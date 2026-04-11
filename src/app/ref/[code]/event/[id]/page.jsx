@@ -2,17 +2,19 @@
 
 import { use, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { buildRedirectUrl } from "@/lib/utils/referral";
+import Cookies from "js-cookie";
+import { buildRedirectUrl, getCookieDomain } from "@/lib/utils/referral";
 import { trackReferralClick } from "@/lib/api/referral";
 
 /**
- * Referral Redirect Page
+ * Referral Redirect Page (Legacy Format)
  * Path: /ref/[code]/event/[id]
  * 
  * Logic:
  * 1. Extract and clean params
- * 2. Track click (fire and forget)
- * 3. Redirect to main app
+ * 2. Set ref_username cookie for cross-domain persistence
+ * 3. Track click (fire and forget)
+ * 4. Redirect to Landing Page event page
  */
 export default function ReferralRedirectPage({ params: paramsPromise }) {
   const router = useRouter();
@@ -34,14 +36,26 @@ export default function ReferralRedirectPage({ params: paramsPromise }) {
     // Clean event ID (remove 'event:' prefix)
     const cleanId = id.replace("event:", "");
 
+    // Set ref_username cookie (7 days) with cross-subdomain support
+    const cookieOpts = {
+      expires: 7,
+      path: "/",
+      sameSite: "lax",
+      secure: window.location.protocol === "https:"
+    };
+    const domain = getCookieDomain();
+    if (domain) cookieOpts.domain = domain;
+    
+    Cookies.set("ref_username", code, cookieOpts);
+
     // Track click (fire and forget - do not await)
     trackReferralClick(code, cleanId);
 
-    // Redirect to main app using utility (dynamic base URL)
+    // Redirect to landing page event page (buildRedirectUrl now targets landing)
     const targetUrl = buildRedirectUrl(cleanId, code);
     
-    // Immediate redirection
-    router.replace(targetUrl);
+    // Use window.location for cross-origin redirect
+    window.location.href = targetUrl;
   }, [params, router]);
 
   // Minimal centered loader UI
@@ -61,3 +75,4 @@ export default function ReferralRedirectPage({ params: paramsPromise }) {
     </div>
   );
 }
+

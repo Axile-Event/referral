@@ -3,7 +3,7 @@
 import { use, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
-import { getLandingPageUrl } from "@/lib/utils/referral";
+import { getCookieDomain, getLandingPageUrl } from "@/lib/utils/referral";
 
 /**
  * Referral Entry Page
@@ -20,13 +20,16 @@ export default function ReferralEntryPage({ params: paramsPromise }) {
       console.log(`Processing referral: Event=${slug}, Referrer=${username}`);
       
       // Set the ref_username cookie (7 days) with cross-subdomain support
-      Cookies.set("ref_username", username, { 
+      const cookieOpts = { 
         expires: 7, 
         path: "/",
-        domain: ".axile.ng", // Allows landing/app subdomains to read it
         sameSite: "lax",
-        secure: true
-      });
+        secure: window.location.protocol === "https:"
+      };
+      const domain = getCookieDomain();
+      if (domain) cookieOpts.domain = domain;
+      
+      Cookies.set("ref_username", username, cookieOpts);
 
       // Target: https://axile.ng/events/{slug}?ref={username}
       const landingUrl = getLandingPageUrl();

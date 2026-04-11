@@ -7,6 +7,22 @@ export const REFERRAL_STORAGE_KEY = "axile_referral_entry";
 export const REFERRAL_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 /**
+ * Get the correct cookie domain for cross-subdomain sharing.
+ * - Production (.axile.ng subdomains): returns ".axile.ng"
+ * - Dev/Vercel (.vercel.app): returns undefined (browser-default, current domain only)
+ * - Localhost: returns undefined
+ */
+export function getCookieDomain() {
+  if (typeof window === "undefined") return undefined;
+  const hostname = window.location.hostname;
+  if (hostname.endsWith(".axile.ng") || hostname === "axile.ng") {
+    return ".axile.ng";
+  }
+  // Dev/Vercel/localhost — don't set domain, cookie scopes to current origin
+  return undefined;
+}
+
+/**
  * Generate a shareable referral link for a referee and event.
  * Backend provides: { event_slug, username }
  * 
@@ -46,17 +62,18 @@ export function getLandingPageUrl() {
 }
 
 /**
- * Build the redirect URL for the main app with referral attached.
+ * Build the redirect URL for the LANDING PAGE with referral attached.
  * 
- * Target: https://axile.ng/event/{clean_id}?ref={referee_id}
- * (Domain remains dynamic via getMainAppUrl per user request)
+ * Target: https://axile.ng/events/{clean_id}?ref={referee_username}
+ * Redirects to the Landing Page directly (not the Main App) to avoid
+ * a double-redirect through the Main App's /events/* middleware.
  */
 export function buildRedirectUrl(eventId, code) {
-  const mainAppUrl = getMainAppUrl();
+  const landingUrl = getLandingPageUrl();
   const cleanId = eventId ? eventId.replace("event:", "") : "";
   // Decoding then encoding ensures we don't end up with double-encoded values like %253A
   const safeCode = code ? decodeURIComponent(decodeURIComponent(code)) : "";
-  return `${mainAppUrl}/events/${encodeURIComponent(cleanId)}?ref=${safeCode}`;
+  return `${landingUrl}/events/${encodeURIComponent(cleanId)}?ref=${safeCode}`;
 }
 
 /**
