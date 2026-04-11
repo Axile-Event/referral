@@ -60,9 +60,9 @@ export const OTPInput = ({
 
       {/* Visible boxes */}
       {Array.from({ length }).map((_, idx) => {
-        const char = value[idx] || "";
-        const isCurrent = isFocused && value.length === idx;
-        const isFilled = value.length > idx;
+        const char = (value || "")[idx] || "";
+        const isCurrent = isFocused && (value || "").length === idx;
+        const isFilled = (value || "").length > idx;
 
         return (
           <div

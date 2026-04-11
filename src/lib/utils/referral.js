@@ -25,9 +25,11 @@ export function generateReferralLink(data) {
   
   if (!username || !identifier) return "";
   
-  // Use development URL or production APP URL
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://axilereferraldev.vercel.app";
-  return `${baseUrl}/event/${identifier}/${username}`;
+  // Use current window location as baseUrl
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const baseUrlNew = "https://axile.ng";
+
+  return `${baseUrlNew}/event/${identifier}/${username}`;
 }
 
 /**

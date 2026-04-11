@@ -22,6 +22,8 @@ export const useAuthStore = create(
       refreshToken: null,
       isLoading: false,
       hydrated: false,
+      authMethod: null,
+
 
       /**
        * Email/Password Signup Action (Async)
@@ -53,7 +55,33 @@ export const useAuthStore = create(
           const { user, access, refresh, role, token } = response;
           const finalToken = access || token;
 
-          get().setAuth(user, finalToken, refresh, role);
+          get().setAuth(user, finalToken, refresh, role, "email");
+          return response;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      /**
+       * Verify OTP Action (Async)
+       */
+      verifyOtp: async (email, otp) => {
+        set({ isLoading: true });
+        try {
+          const response = await authApi.verifyOtp({ email, otp });
+          return response;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      /**
+       * Resend OTP Action (Async)
+       */
+      resendOtp: async (email) => {
+        set({ isLoading: true });
+        try {
+          const response = await authApi.resendOtp(email);
           return response;
         } finally {
           set({ isLoading: false });
@@ -81,7 +109,7 @@ export const useAuthStore = create(
           const finalUser = referral_user || { email: email || response.email };
 
           if (finalToken) {
-            get().setAuth(finalUser, finalToken, finalRefresh, response.role || "user");
+            get().setAuth(finalUser, finalToken, finalRefresh, response.role || "user", "google");
           } else {
              console.warn("AuthStore: googleSignup succeeded but no token returned", response);
           }
@@ -94,7 +122,7 @@ export const useAuthStore = create(
       /**
        * Internal state setter for auth data
        */
-      setAuth: (userData, token, refresh, role) => {
+      setAuth: (userData, token, refresh, role, authMethod = null) => {
         // Shared cookie for cross-subdomain auth
         if (typeof window !== "undefined") {
           const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
@@ -109,7 +137,7 @@ export const useAuthStore = create(
             cookieOptions.domain = ".axile.ng";
           }
 
-          const cookieData = { token, refreshToken: refresh, role };
+          const cookieData = { token, refreshToken: refresh, role, authMethod };
           Cookies.set("axile_shared_auth", JSON.stringify(cookieData), cookieOptions);
 
           // Sync with the standalone tokenStorage used by apiClient
@@ -124,6 +152,7 @@ export const useAuthStore = create(
               token,
               refreshToken: refresh,
               role,
+              authMethod,
               isAuthenticated: true,
               hydrated: true,
             },
@@ -137,6 +166,7 @@ export const useAuthStore = create(
           token,
           refreshToken: refresh,
           role,
+          authMethod,
           isAuthenticated: true,
         });
 
@@ -165,6 +195,7 @@ export const useAuthStore = create(
           role: null,
           token: null,
           refreshToken: null,
+          authMethod: null,
           isAuthenticated: false,
         });
       },
@@ -199,9 +230,9 @@ export const useAuthStore = create(
         const shared = Cookies.get("axile_shared_auth");
         if (shared) {
           try {
-            const { token, refreshToken, role } = JSON.parse(shared);
+            const { token, refreshToken, role, authMethod } = JSON.parse(shared);
             if (token) {
-              set({ token, refreshToken, role, isAuthenticated: true });
+              set({ token, refreshToken, role, authMethod, isAuthenticated: true });
               tokenStorage.setTokens(token, refreshToken);
               if (startTokenRefreshTimer) startTokenRefreshTimer();
             }

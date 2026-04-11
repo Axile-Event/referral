@@ -29,7 +29,7 @@ const toastTheme = {
 };
 
 export default function SettingsPage() {
-  const { user: profile, fetchProfile, updateProfile, logout, changePassword, setPin } = useAuthStore();
+  const { user: profile, fetchProfile, updateProfile, logout, changePassword, setPin, authMethod } = useAuthStore();
   const isLoading = useAuthStore(state => state.isLoading);
 
   // Profile/Username state
@@ -59,7 +59,11 @@ export default function SettingsPage() {
   const onlyDigits = (v) => v.replace(/\D/g, "").slice(0, 4);
 
   // Determine if they actually have a set username vs a default email placeholder
-  const hasExistingUsername = profile ? Boolean((profile.username || profile.Username) && (profile.username !== profile.email) && !(profile.username || "").includes('@') && !profile.needs_username) : false;
+  const isGoogle = authMethod === "google";
+  const needsUsername = profile && (profile.needs_username || (profile.username && profile.username === profile.email) || !profile.username);
+  const hasExistingUsername = !needsUsername;
+  
+  const needsPin = profile && !profile.has_pin && !profile.pin_set;
 
   const handleUsernameSubmit = async (e) => {
     e.preventDefault();
@@ -137,7 +141,11 @@ export default function SettingsPage() {
             <div>
               <h2 className="text-sm font-bold text-white tracking-tight">Profile Username</h2>
               <p className={`text-[11px] sm:text-xs font-medium ${hasExistingUsername ? "text-emerald-400" : "text-white/40"}`}>
-                {hasExistingUsername ? "✓ You already have a username set." : "Set a unique username for your account."}
+                {hasExistingUsername 
+                  ? "✓ You already have a username set." 
+                  : isGoogle 
+                    ? "Setup your username to finalize your Google profile." 
+                    : "Set a unique username for your account."}
               </p>
             </div>
           </div>
@@ -227,7 +235,13 @@ export default function SettingsPage() {
             </div>
             <div>
               <h2 className="text-sm font-bold text-white tracking-tight">Set PIN</h2>
-              <p className="text-[11px] sm:text-xs text-white/40 font-medium">Create a secure 4-digit numeric code.</p>
+              <p className={`text-[11px] sm:text-xs font-medium ${!needsPin ? "text-emerald-400" : "text-white/40"}`}>
+                {!needsPin 
+                  ? "✓ Your security PIN is active." 
+                  : isGoogle 
+                    ? "As a Google user, you must set a PIN to secure your wallet." 
+                    : "Create a secure 4-digit numeric code."}
+              </p>
             </div>
           </div>
 

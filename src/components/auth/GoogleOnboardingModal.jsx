@@ -27,11 +27,23 @@ export function GoogleOnboardingModal() {
   const [error, setError] = useState("");
 
   // Determine if modal should show
+  const { authMethod } = useAuthStore();
+  
   useEffect(() => {
-    if (user && !user.username) {
-      setIsOpen(true);
+    if (user && authMethod === "google") {
+      const needsUsername = user.needs_username || (user.username && user.username === user.email) || !user.username;
+      const needsPin = !user.has_pin && !user.pin_set;
+      
+      if (needsUsername || needsPin) {
+        setIsOpen(true);
+        // Start at PIN step if username is already good
+        if (!needsUsername && needsPin) {
+          setStep(2);
+        }
+      }
     }
-  }, [user]);
+  }, [user, authMethod]);
+
 
   const handleUsernameSubmit = async (e) => {
     e.preventDefault();

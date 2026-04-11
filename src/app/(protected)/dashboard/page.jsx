@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Compass, Zap, TrendingUp, ShieldAlert, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import { useAuthStore } from "@/store/authStore";
+import { useRefereeStats } from "@/lib/hooks/useReferralQueries";
 import { ReferralBanner } from "@/components/referral/referral-banner";
 import { SummaryCards } from "@/components/referral/summary-cards";
 import { ActivityTable } from "@/components/referral/activity-table";
@@ -25,14 +26,19 @@ export default function DashboardPage() {
     }
   }, [isAuthenticated, user, fetchProfile]);
 
-  // Extract display name
-  const userName = user?.name 
-    ? user.name.split(" ")[0] 
-    : (user?.Firstname || user?.firstname || "Partner");
+  const { data: stats } = useRefereeStats();
+
+  // Extract display name - prioritize referral_username from stats
+  const userName = stats?.referral_username || stats?.username || user?.username || (user?.name ? user.name.split(" ")[0] : "Partner");
 
   // Status flags
+  const { authMethod } = useAuthStore();
   const needsPin = user && !user.has_pin && !user.pin_set;
-  const needsUsername = user && (user.needs_username || (user.username === user.email));
+  const needsUsername = user && (user.needs_username || (user.username && user.username === user.email) || !user.username);
+  
+  // Only show the specific banners to Google users as they go through the onboarding modal
+  const showClaimBanner = authMethod === "google" && needsUsername;
+
 
   return (
     <div className="max-w-7xl mx-auto space-y-10 animate-fade-in pb-24 px-4 sm:px-6">
@@ -44,9 +50,10 @@ export default function DashboardPage() {
       <ReferralBanner />
 
       {/* Username Claim Banner (For Google Users) */}
-      {needsUsername && (
+      {showClaimBanner && (
         <UsernameBanner />
       )}
+
 
       {/* PIN Security Prompt (If they closed the modal) */}
       {needsPin && (
