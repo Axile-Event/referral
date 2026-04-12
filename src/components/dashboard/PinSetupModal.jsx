@@ -37,26 +37,33 @@ export function PinSetupModal({ isOpen, onClose }) {
     }
   }, [isOpen]);
 
-  const handleNext = () => {
-    if (pin.length === 4) {
+  const handleNext = (val) => {
+    const currentPin = typeof val === "string" ? val : pin;
+    if (currentPin.length === 4) {
       setStep(2);
     } else {
       toast.error("Please enter a 4-digit PIN", toastTheme);
     }
   };
 
-  const handleFinalSubmit = async (value) => {
-    if (value !== pin) {
+  const handleFinalSubmit = async (val) => {
+    const currentConfirmPin = typeof val === "string" ? val : confirmPin;
+    if (currentConfirmPin !== pin) {
       setError(true);
       toast.error("PINs do not match. Try again.", toastTheme);
       setConfirmPin("");
       return;
     }
 
-    const success = await setPin(pin);
-    if (success) {
-      toast.success("Security PIN activated!", toastTheme);
-      onClose();
+    try {
+      const success = await setPin(pin);
+      if (success) {
+        toast.success("Security PIN activated!", toastTheme);
+        onClose();
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || err.response?.data?.error || err.response?.data?.detail || "Failed to activate PIN";
+      toast.error(msg, toastTheme);
     }
   };
 
