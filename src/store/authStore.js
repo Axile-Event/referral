@@ -162,10 +162,14 @@ export const useAuthStore = create(
       logout: () => {
         console.log("AuthStore: Logout triggered");
         if (typeof window !== "undefined") {
-          const removeOpts = {};
+          // 1. Remove from parent domain (.axile.ng)
           const domain = getCookieDomain();
-          if (domain) removeOpts.domain = domain;
-          Cookies.remove("axile_shared_auth", removeOpts);
+          if (domain) {
+            Cookies.remove("axile_shared_auth", { domain });
+          }
+          // 2. Remove from current subdomain (just in case)
+          Cookies.remove("axile_shared_auth", { path: '/' });
+          
           localStorage.removeItem("auth-storage");
           tokenStorage.clearTokens();
         }
