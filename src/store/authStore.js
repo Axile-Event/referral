@@ -91,10 +91,10 @@ export const useAuthStore = create(
 
           console.log("AuthStore: googleSignup response reached store", response);
           
-          // Map backend response fields accurately
+          // Map backend response fields accurately (handling both flat and nested structures)
           const { access, refresh, token, refresh_token, referral_user, email } = response;
-          const finalToken = access || token || response.access_token;
-          const finalRefresh = refresh || refresh_token || response.refresh_token;
+          const finalToken = access || token || response.access_token || referral_user?.access || referral_user?.token;
+          const finalRefresh = refresh || refresh_token || response.refresh_token || referral_user?.refresh || referral_user?.refresh_token;
           const finalUser = referral_user || { email: email || response.email };
 
           if (finalToken) {
