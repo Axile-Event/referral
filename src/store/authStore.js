@@ -236,6 +236,9 @@ export const useAuthStore = create(
         set({ isLoading: true });
         try {
           const response = await authApi.createPin(pin);
+          if (get().user) {
+            get().setUser({ has_pin: true, pin_set: true });
+          }
           return response;
         } catch (error) {
           console.error("AuthStore: Set PIN failed", error);
