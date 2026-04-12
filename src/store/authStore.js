@@ -190,21 +190,36 @@ export const useAuthStore = create(
           user: { ...state.user, ...userData },
         })),
 
-      /**
-       * Fetch Profile (Async)
-       * Tries namespaced referee profile, falls back to root if 404s.
-       */
       fetchProfile: async () => {
         set({ isLoading: true });
         try {
-          const profile = await authApi.getProfile();
-          if (profile) {
-            const userData = profile?.user || profile?.profile || profile;
+          // 1. Try referee-specific profile
+          try {
+            const profile = await authApi.getProfile();
+            if (profile) {
+              const userData = profile?.user || profile?.profile || profile;
+              get().setUser(userData);
+              return profile;
+            }
+          } catch (err) {
+            // If it's a 404, we'll try the root profile fallback
+            if (err.response?.status === 404) {
+              console.warn("AuthStore: Referee profile not found, trying root profile fallback...");
+            } else {
+              throw err;
+            }
+          }
+
+          // 2. Fallback: try root profile endpoint (usually /profile/)
+          // Some users might exist in the main User table but not yet in the Referee profile table
+          const rootProfile = await authApi.getProfileFallback();
+          if (rootProfile) {
+            const userData = rootProfile?.user || rootProfile?.profile || rootProfile;
             get().setUser(userData);
-            return profile;
+            return rootProfile;
           }
         } catch (error) {
-          console.error("AuthStore: Profile fetch failed", error);
+          console.error("AuthStore: Profile fetch failed completely", error);
           throw error;
         } finally {
           set({ isLoading: false });
