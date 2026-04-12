@@ -244,6 +244,22 @@ export const useAuthStore = create(
           set({ isLoading: false });
         }
       },
+
+      /**
+       * Change Password (Async)
+       */
+      changePassword: async (oldPassword, newPassword) => {
+        set({ isLoading: true });
+        try {
+          const response = await authApi.changePassword(oldPassword, newPassword);
+          return response;
+        } catch (error) {
+          console.error("AuthStore: Change password failed", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
       
       // Sync state from shared cookie if localStorage is empty
       syncWithCookie: () => {

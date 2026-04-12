@@ -86,10 +86,15 @@ export default function SettingsPage() {
     e.preventDefault();
     if (!passData.old || !passData.new) return toast.error("Old and new passwords are required", toastTheme);
     if (passData.new !== passData.confirm) return toast.error("Passwords do not match", toastTheme);
-    const success = await changePassword(passData.old, passData.new);
-    if (success) {
-      toast.success("Password updated successfully!", toastTheme);
-      setPassData({ old: "", new: "", confirm: "" });
+    try {
+      const success = await changePassword(passData.old, passData.new);
+      if (success) {
+        toast.success("Password updated successfully!", toastTheme);
+        setPassData({ old: "", new: "", confirm: "" });
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || err.response?.data?.error || err.response?.data?.detail || "Failed to update password";
+      toast.error(msg, toastTheme);
     }
   };
 
@@ -98,11 +103,16 @@ export default function SettingsPage() {
     if (pinData.pin.length !== 4) return toast.error("PIN must be exactly 4 digits", toastTheme);
     if (pinData.pin !== pinData.confirm) return toast.error("PINs do not match", toastTheme);
     
-    // Call setPin endpoint (/referee/pin/ with { "pin": "..." })
-    const success = await setPin(pinData.pin);
-    if (success) {
-      toast.success("PIN set successfully!", toastTheme);
-      setPinData({ pin: "", confirm: "" });
+    try {
+      // Call setPin endpoint (/referee/pin/ with { "pin": "..." })
+      const success = await setPin(pinData.pin);
+      if (success) {
+        toast.success("PIN set successfully!", toastTheme);
+        setPinData({ pin: "", confirm: "" });
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || err.response?.data?.error || err.response?.data?.detail || "Failed to set PIN";
+      toast.error(msg, toastTheme);
     }
   };
 
