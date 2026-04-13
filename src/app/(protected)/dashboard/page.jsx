@@ -31,7 +31,7 @@ export default function DashboardPage() {
     : (user?.Firstname || user?.firstname || "Partner");
 
   // Status flags
-  const needsPin = user && !user.has_pin && !user.pin_set;
+  const needsPin = user && !user.has_pin && !user.pin_set && !useAuthStore.getState().pinHash;
   const needsUsername = user && (user.needs_username || (user.username === user.email));
 
   return (

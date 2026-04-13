@@ -14,6 +14,26 @@ if (typeof window !== "undefined") {
 }
 
 /**
+ * Securely hashes a PIN using SHA-256
+ */
+const hashPin = async (pin) => {
+  if (typeof window === "undefined" || !window.crypto || !window.crypto.subtle) {
+    // Fallback or handle non-browser environment
+    return null;
+  }
+  try {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(String(pin));
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  } catch (err) {
+    console.error("Hashing failed:", err);
+    return null;
+  }
+};
+
+/**
  * Get the correct cookie domain for cross-subdomain sharing.
  * Production (.axile.ng): returns ".axile.ng"
  * Dev/Vercel/localhost: returns undefined (current domain only)
@@ -38,6 +58,8 @@ export const useAuthStore = create(
       isAuthenticated: false,
       isLoading: false,
       authMethod: null, // "email" or "google"
+      pinHash: null,    // Securely stored hashed PIN
+      isPinSetRemotely: false,
  
        /**
         * Primary Signup Action (Async)
@@ -171,6 +193,7 @@ export const useAuthStore = create(
           Cookies.remove("axile_shared_auth", { path: '/' });
           
           localStorage.removeItem("auth-storage");
+          localStorage.removeItem("Axile_pin_hash"); // Clear secure pin
           tokenStorage.clearTokens();
         }
 
@@ -185,6 +208,8 @@ export const useAuthStore = create(
           refreshToken: null,
           isAuthenticated: false,
           authMethod: null,
+          pinHash: null,
+          isPinSetRemotely: false,
         });
       },
 
@@ -250,11 +275,22 @@ export const useAuthStore = create(
 
       /**
        * Set PIN (Async)
+       * Stores hashed version locally for secure local verification
        */
       setPin: async (pin) => {
         set({ isLoading: true });
         try {
           const response = await authApi.createPin(pin);
+          
+          // Securely hash and store the PIN on the client
+          const hashedPin = await hashPin(pin);
+          if (hashedPin) {
+            set({ pinHash: hashedPin, isPinSetRemotely: true });
+            if (typeof window !== "undefined") {
+               localStorage.setItem("Axile_pin_hash", hashedPin);
+            }
+          }
+
           if (get().user) {
             get().setUser({ has_pin: true, pin_set: true });
           }
@@ -265,6 +301,22 @@ export const useAuthStore = create(
         } finally {
           set({ isLoading: false });
         }
+      },
+
+      /**
+       * Verify a PIN against the securely stored local hash
+       */
+      verifyStoredPin: async (inputPin) => {
+        const { pinHash } = get();
+        if (!pinHash) {
+          // Fallback to localStorage if state is lost
+          const localHash = typeof window !== "undefined" ? localStorage.getItem("Axile_pin_hash") : null;
+          if (!localHash) return false;
+          set({ pinHash: localHash });
+        }
+        
+        const inputHash = await hashPin(inputPin);
+        return inputHash === (pinHash || get().pinHash);
       },
 
       /**
