@@ -40,8 +40,27 @@ export default function SetupProfilePage() {
   useEffect(() => {
     if (authMethod !== "google") {
       router.push("/dashboard");
+      return;
     }
-  }, [authMethod, router]);
+
+    const hasPin = user?.has_pin || user?.pin_set || useAuthStore.getState().pinHash;
+    const needsUsername = user?.needs_username || (user?.username === user?.email);
+
+    if (!needsUsername && hasPin) {
+      router.push("/dashboard");
+      return;
+    }
+
+    // If username is set but PIN is not, jump to step 2
+    if (!needsUsername && step === 1) {
+      setStep(2);
+    }
+    
+    // If PIN is already set, don't show step 2
+    if (hasPin && step === 2) {
+      router.push("/dashboard");
+    }
+  }, [authMethod, router, user, step]);
 
   const onlyDigits = (v) => v.replace(/\D/g, "").slice(0, 4);
 

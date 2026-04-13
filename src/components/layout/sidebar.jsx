@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn.js";
 import { Button } from "@/components/ui/button.jsx";
+import { useAuthStore } from "@/store/authStore";
 
 export function Sidebar({ isOpen, onClose }) {
   const pathname = usePathname();
@@ -53,6 +54,7 @@ export function Sidebar({ isOpen, onClose }) {
               alt="Axile" 
               className="h-16 w-auto object-contain brightness-110"
             />
+            
           </Link>
           <Button 
             variant="ghost" 
@@ -87,9 +89,28 @@ export function Sidebar({ isOpen, onClose }) {
           })}
         </nav>
 
-        {/* Bottom Nav */}
+      {/* Bottom Nav */}
         <div className="px-3 py-6 space-y-1 border-t border-white/10">
           {bottomItems.map((item) => {
+            if (item.name === "Logout") {
+              return (
+                <button
+                  key={item.name}
+                  onClick={async () => {
+                    await useAuthStore.getState().logout();
+                    window.location.href = "/login";
+                  }}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors font-medium text-sm group",
+                    item.className || "text-gray-400 hover:bg-white/5 hover:text-white"
+                  )}
+                >
+                  <item.icon size={18} />
+                  <span>{item.name}</span>
+                </button>
+              );
+            }
+
             const isActive = pathname === item.href;
             return (
               <Link
@@ -109,6 +130,7 @@ export function Sidebar({ isOpen, onClose }) {
             );
           })}
         </div>
+        
       </aside>
     </>
   );
