@@ -5,9 +5,10 @@ import { getLandingPageUrl } from "@/lib/utils/referral";
 export const revalidate = 60; // seconds
 
 export async function generateMetadata({ params }) {
-  // params promise has been resolved by Next.js in layout when exported as generateMetadata
-  const slug = params?.slug;
-  const username = params?.username;
+  // Next.js 15 requires awaiting the params promise
+  const resolvedParams = await params;
+  const slug = resolvedParams?.slug;
+  const username = resolvedParams?.username;
 
   if (!slug) {
     return {
