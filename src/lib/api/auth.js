@@ -40,8 +40,8 @@ export const authApi = {
     apiClient.post("/referee/change-pin/", { old_pin: oldPin, new_pin: newPin }).then((r) => r.data),
 
   // Section 2.4: Referee password change (authenticated)
-  changePassword: (old_password, new_password) => 
-    apiClient.post("/referee/password/change/", { old_password, new_password }).then((r) => r.data),
+  changePassword: (oldPassword, newPassword) => 
+    apiClient.post("/referee/password/change/", { old_password: oldPassword, new_password: newPassword, confirm_password: newPassword }).then((r) => r.data),
 
   // Section 2.4: Password reset (forgot password)
   forgotPassword: (email) => 
@@ -52,6 +52,6 @@ export const authApi = {
     apiClient.post("/referee/password/reset/verify-otp/", payload).then((r) => r.data),
     
   resetPassword: (payload) => 
-    apiClient.post("/referee/password/set/", payload).then((r) => r.data),
+    apiClient.post("/referee/password/reset/", payload).then((r) => r.data),
 };
 export default authApi;

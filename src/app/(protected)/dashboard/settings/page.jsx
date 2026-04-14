@@ -9,7 +9,8 @@ import {
   EyeOff,
   UserCircle,
   AtSign,
-  KeyRound
+  KeyRound,
+  Loader2
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
@@ -38,6 +39,8 @@ export default function SettingsPage() {
 
   // Password Update
   const [showPass, setShowPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [passData, setPassData] = useState({ old: "", new: "", confirm: "" });
 
   // PIN Setup
@@ -233,37 +236,71 @@ export default function SettingsPage() {
                 placeholder="Old Password" 
                 value={passData.old}
                 onChange={e => setPassData({...passData, old: e.target.value})}
+                disabled={isLoading}
                 className="bg-black/20 border-white/5 h-11 rounded-xl focus:border-rose-500/50 pl-10 pr-10 font-medium text-sm text-white"
               />
               <button 
                 type="button" 
                 onClick={() => setShowPass(!showPass)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors"
+                disabled={isLoading}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors disabled:opacity-50"
+                aria-label={showPass ? "Hide password" : "Show password"}
               >
                 {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Input 
-                type="password" 
-                placeholder="New Password" 
-                value={passData.new}
-                onChange={e => setPassData({...passData, new: e.target.value})}
-                className="bg-black/20 border-white/5 h-11 rounded-xl focus:border-rose-500/50 font-medium text-sm text-white px-4"
-              />
-              <Input 
-                type="password" 
-                placeholder="Confirm Password" 
-                value={passData.confirm}
-                onChange={e => setPassData({...passData, confirm: e.target.value})}
-                className="bg-black/20 border-white/5 h-11 rounded-xl focus:border-rose-500/50 font-medium text-sm text-white px-4"
-              />
+              <div className="relative group">
+                <Input 
+                  type={showNewPass ? "text" : "password"} 
+                  placeholder="New Password" 
+                  value={passData.new}
+                  onChange={e => setPassData({...passData, new: e.target.value})}
+                  disabled={isLoading}
+                  className="bg-black/20 border-white/5 h-11 rounded-xl focus:border-rose-500/50 font-medium text-sm text-white px-4 pr-10"
+                />
+                <button 
+                  type="button" 
+                  onClick={() => setShowNewPass(!showNewPass)}
+                  disabled={isLoading}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors disabled:opacity-50"
+                  aria-label={showNewPass ? "Hide password" : "Show password"}
+                >
+                  {showNewPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              <div className="relative group">
+                <Input 
+                  type={showConfirmPass ? "text" : "password"} 
+                  placeholder="Confirm Password" 
+                  value={passData.confirm}
+                  onChange={e => setPassData({...passData, confirm: e.target.value})}
+                  disabled={isLoading}
+                  className="bg-black/20 border-white/5 h-11 rounded-xl focus:border-rose-500/50 font-medium text-sm text-white px-4 pr-10"
+                />
+                <button 
+                  type="button" 
+                  onClick={() => setShowConfirmPass(!showConfirmPass)}
+                  disabled={isLoading}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors disabled:opacity-50"
+                  aria-label={showConfirmPass ? "Hide password" : "Show password"}
+                >
+                  {showConfirmPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
             <div className="pt-2 flex justify-end">
-              <Button type="submit" disabled={isLoading} className="h-11 px-6 rounded-xl font-bold text-[11px] uppercase tracking-wider bg-rose-600 hover:bg-rose-500 text-white transition-all w-full sm:w-auto shadow-sm">
-                 Change Password
+              <Button type="submit" disabled={isLoading} className="h-11 px-6 rounded-xl font-bold text-[11px] uppercase tracking-wider bg-rose-600 hover:bg-rose-500 text-white transition-all w-full sm:w-auto shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                {isLoading ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" />
+                    <span>Updating...</span>
+                  </>
+                ) : (
+                  "Change Password"
+                )}
               </Button>
             </div>
           </form>

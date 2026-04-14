@@ -56,55 +56,9 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen bg-[#0a0a14] overflow-hidden">
       {/* Left Side: Brand Visual */}
-      <div className="hidden lg:flex w-1/2 relative overflow-hidden bg-black">
-        <motion.div 
-          initial={{ scale: 1.1, opacity: 0 }}
-          animate={{ scale: 1, opacity: 0.6 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop')" }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14] via-[#0a0a14]/60 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent opacity-50" />
-        
-        <div className="relative z-10 p-16 flex flex-col justify-between h-full">
-           <Link href="/">
-             <img 
-                src="/axile-logo-main-cropped.png" 
-                alt="Axile" 
-                className="h-10 w-auto object-contain hover:grayscale-0 transition-all opacity-90"
-              />
-          </Link>
-          
-          <div className="space-y-6 max-w-lg mb-48">
-            <motion.div 
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="px-4 py-1 rounded-full bg-white/5 border border-white/10 w-fit backdrop-blur-sm flex items-center gap-2"
-            >
-               <Sparkles size={14} className="text-primary" />
-               <span className="text-sm font-bold text-gray-300">Ready to Earn More?</span>
-            </motion.div>
-            <motion.h1 
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="text-6xl font-extrabold text-white tracking-tight leading-[1.1]"
-            >
-              Sign In to <br />
-              <span className="text-primary">Start Earning</span>
-            </motion.h1>
-            <motion.p 
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="text-xl text-gray-400 font-medium max-w-sm"
-            >
-              Track your referrals, manage your rewards, and discover new ways to make money.
-            </motion.p>
-          </div>
-        </div>
+      <div className="hidden lg:flex w-1/2 relative overflow-hidden items-center justify-center"
+        style={{ backgroundImage: "url('/Axile Earn.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <div className="absolute inset-0 bg-black/20" />
       </div>
 
       {/* Right Side: Login Form */}
@@ -120,6 +74,20 @@ export default function LoginPage() {
             </motion.div>
             <h2 className="text-4xl font-bold text-white tracking-tight">Login to Your Account</h2>
             <p className="text-gray-400 font-medium">Access your earning dashboard to continue</p>
+          </div>
+
+          {/* Google Login - Top Priority */}
+          <div>
+            <GoogleSignupButton variant="login" />
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-white/10" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-[#0a0a14] px-4 text-gray-500 font-medium">Or login with email</span>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -179,17 +147,6 @@ export default function LoginPage() {
               )}
             </Button>
           </form>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-white/10" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-[#0a0a14] px-4 text-gray-500 font-medium">Or continue with</span>
-            </div>
-          </div>
-
-          <GoogleSignupButton variant="login" />
 
           <div className="space-y-6 text-center">
             <p className="text-gray-400 font-medium">
