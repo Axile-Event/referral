@@ -45,13 +45,14 @@ export const authApi = {
 
   // Section 2.4: Password reset (forgot password)
   forgotPassword: (email) => 
-    apiClient.post("/referee/password/reset/", { email }).then((r) => r.data),
+    apiClient.post("/password-reset/request/", { email }).then((r) => r.data),
 
-  // Verify Reset OTP & Set New Password
+  // Verify Reset OTP
   verifyResetOtp: (payload) => 
-    apiClient.post("/referee/password/reset/verify-otp/", payload).then((r) => r.data),
+    apiClient.post("/password-reset/verify/", payload).then((r) => r.data),
     
+  // Confirm new password
   resetPassword: (payload) => 
-    apiClient.post("/referee/password/reset/", payload).then((r) => r.data),
+    apiClient.post("/password-reset/confirm/", payload).then((r) => r.data),
 };
 export default authApi;
