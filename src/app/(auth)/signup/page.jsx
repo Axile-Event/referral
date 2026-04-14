@@ -45,46 +45,10 @@ export default function SignUpPage() {
 
   return (
     <div className="flex min-h-screen bg-[#0a0a14] overflow-hidden">
-      {/* Left Side: Dynamic Visual & Brand */}
-      <div className="hidden lg:flex w-1/2 relative overflow-hidden">
-        <motion.div 
-          initial={{ scale: 1.1, opacity: 0 }}
-          animate={{ scale: 1, opacity: 0.6 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop')" }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14] via-[#0a0a14]/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent" />
-        
-        <div className="relative z-10 p-16 flex flex-col justify-between h-full">
-          <Link href="/">
-             <img 
-                src="/axile-logo-main-cropped.png" 
-                alt="Axile" 
-                className="h-12 w-auto object-contain hover:scale-105 transition-transform"
-              />
-          </Link>
-
-          <div className="space-y-6 max-w-lg mb-48">
-            <motion.h1 
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="text-6xl font-extrabold text-white tracking-tight leading-tight"
-            >
-              Start <span className="text-primary">Making Money</span> Referring Others
-            </motion.h1>
-            <motion.p 
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="text-xl text-gray-300 font-medium leading-relaxed"
-            >
-              Invite your network to exclusive events and earn rewards for every successful referral you make.
-            </motion.p>
-          </div>
-        </div>
+      {/* Left Side: Referral Program Image Background */}
+      <div className="hidden lg:flex w-1/2 relative overflow-hidden items-center justify-center"
+        style={{ backgroundImage: "url('/Axile Earn.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <div className="absolute inset-0 bg-black/20" />
       </div>
 
       {/* Right Side: Form Container */}
@@ -99,12 +63,26 @@ export default function SignUpPage() {
              >
                 <UserIcon size={28} />
              </motion.div>
-             <h2 className="text-4xl font-bold text-white tracking-tight">Join to Start Earning</h2>
-             <p className="text-gray-400 font-medium">The platform where your network becomes your net worth.</p>
+             <h2 className="text-4xl font-bold text-white tracking-tight">Start Your Referral Journey</h2>
+             <p className="text-gray-400 font-medium">Make money instantly by referring people. Earn rewards with every successful referral.</p>
+          </div>
+
+          {/* Google Signup - Top Priority */}
+          <div>
+            <GoogleSignupButton variant="signup" />
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-white/10" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-[#0a0a14] px-4 text-gray-500 font-medium">Or create account with email</span>
+            </div>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 relative z-10">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Input 
@@ -191,17 +169,6 @@ export default function SignUpPage() {
               )}
             </Button>
           </form>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-white/10" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-[#0a0a14] px-4 text-gray-500 font-medium">Or create account with</span>
-            </div>
-          </div>
-
-          <GoogleSignupButton variant="signup" />
 
           {/* Footer */}
           <p className="text-center text-gray-400 font-medium">
