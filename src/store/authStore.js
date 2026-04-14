@@ -368,6 +368,63 @@ export const useAuthStore = create(
           set({ isLoading: false });
         }
       },
+
+      /**
+       * Forgot Password - Send recovery code to email
+       */
+      forgotPassword: async (email) => {
+        set({ isLoading: true });
+        try {
+          const response = await authApi.forgotPassword(email);
+          return response;
+        } catch (error) {
+          console.error("AuthStore: Forgot password failed", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      /**
+       * Verify Reset OTP & get token
+       */
+      verifyResetOtp: async (email, otp) => {
+        set({ isLoading: true });
+        try {
+          const response = await authApi.verifyResetOtp({ email, otp });
+          return response;
+        } catch (error) {
+          console.error("AuthStore: Verify reset OTP failed", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      /**
+       * Reset Password with new password
+       */
+      resetPassword: async (email, otp, newPassword, uid, token) => {
+        set({ isLoading: true });
+        try {
+          const payload = {
+            email,
+            otp,
+            new_password: newPassword
+          };
+          // Add uid/token if provided
+          if (uid) payload.uid = uid;
+          if (token) payload.token = token;
+          
+          const response = await authApi.resetPassword(payload);
+          return response;
+        } catch (error) {
+          console.error("AuthStore: Reset password failed", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
       
       // Sync state from shared cookie if localStorage is empty
       syncWithCookie: () => {
