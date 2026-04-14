@@ -27,13 +27,14 @@ export default function DashboardPage() {
 
   // Check localStorage for PIN hash on mount (in case hydration misses it)
   useEffect(() => {
-    if (!pinHash && typeof window !== "undefined") {
-      const localHash = localStorage.getItem("Axile_pin_hash");
+    const userEmail = user?.email || user?.Email;
+    if (userEmail && !pinHash && typeof window !== "undefined") {
+      const localHash = localStorage.getItem(`Axile_pin_hash_${userEmail}`);
       if (localHash) {
         useAuthStore.setState({ pinHash: localHash });
       }
     }
-  }, [pinHash]);
+  }, [pinHash, user]);
 
   // Extract display name
   const userName = user?.name 
