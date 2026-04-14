@@ -43,7 +43,7 @@ export const authApi = {
   changePassword: (old_password, new_password) => 
     apiClient.post("/referee/password/change/", { old_password, new_password }).then((r) => r.data),
 
-  // Section 2.4: Password reset
+  // Section 2.4: Password reset (forgot password)
   forgotPassword: (email) => 
     apiClient.post("/referee/password/reset/", { email }).then((r) => r.data),
 
