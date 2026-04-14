@@ -43,8 +43,10 @@ export function EventCard({ event }) {
       toast.error("Please set your username in settings first!");
       return;
     }
-    const text = `Check out ${event.name}! Get your tickets here: ${referralLink}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    const message = event.share_message 
+      ? `${event.share_message} Get your tickets here: ${referralLink}`
+      : `Check out ${event.name}! Get your tickets here: ${referralLink}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   const shareOnTwitter = () => {
@@ -52,8 +54,10 @@ export function EventCard({ event }) {
       toast.error("Please set your username in settings first!");
       return;
     }
-    const text = `Check out ${event.name}! Get your tickets here: ${referralLink}`;
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+    const message = event.share_message 
+      ? `${event.share_message} Get your tickets here: ${referralLink}`
+      : `Check out ${event.name}! Get your tickets here: ${referralLink}`;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   // Determine reward text
