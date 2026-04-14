@@ -47,7 +47,7 @@ export function GoogleSignupButton({ variant = "signup" }) {
           });
           
           // Route Google signup users to setup-profile for username + PIN setup
-          if (result.needs_username) {
+          if (result.needs_username || result.username === result.email) {
             router.push("/setup-profile");
           } else {
             router.push("/dashboard");
