@@ -52,6 +52,6 @@ export const authApi = {
     apiClient.post("/referee/password/reset/verify-otp/", payload).then((r) => r.data),
     
   resetPassword: (payload) => 
-    apiClient.post("/referee/password/set/", payload).then((r) => r.data),
+    apiClient.post("/referee/password/reset/", payload).then((r) => r.data),
 };
 export default authApi;
