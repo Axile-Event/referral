@@ -29,7 +29,7 @@ const toastTheme = {
 };
 
 export default function SettingsPage() {
-  const { user: profile, fetchProfile, updateProfile, logout, changePassword, setPin } = useAuthStore();
+  const { user: profile, fetchProfile, updateProfile, logout, changePassword, setPin, pinHash, isPinSetRemotely } = useAuthStore();
   const isLoading = useAuthStore(state => state.isLoading);
 
   // Profile/Username state
@@ -50,6 +50,16 @@ export default function SettingsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchProfile]);
 
+  // Check localStorage for PIN hash on mount (restore if missing from state)
+  useEffect(() => {
+    if (!pinHash && typeof window !== "undefined") {
+      const localHash = localStorage.getItem("Axile_pin_hash");
+      if (localHash) {
+        useAuthStore.setState({ pinHash: localHash });
+      }
+    }
+  }, [pinHash]);
+
   useEffect(() => {
     if (profile) {
         setUsernameVal(profile.username || profile.Username || "");
@@ -60,6 +70,10 @@ export default function SettingsPage() {
 
   // Determine if they actually have a set username vs a default email placeholder
   const hasExistingUsername = profile ? Boolean((profile.username || profile.Username) && (profile.username !== profile.email) && !(profile.username || "").includes('@') && !profile.needs_username) : false;
+
+  // Check if PIN is already set (check localStorage too as backup)
+  const localPinHash = typeof window !== "undefined" ? localStorage.getItem("Axile_pin_hash") : null;
+  const hasExistingPin = Boolean(pinHash || localPinHash || profile?.has_pin || profile?.pin_set || isPinSetRemotely);
 
   const handleUsernameSubmit = async (e) => {
     e.preventDefault();
@@ -249,37 +263,46 @@ export default function SettingsPage() {
             </div>
             <div>
               <h2 className="text-sm font-bold text-white tracking-tight">Set PIN</h2>
-              <p className="text-[11px] sm:text-xs text-white/40 font-medium">Create a secure 4-digit numeric code.</p>
+              <p className={`text-[11px] sm:text-xs font-medium ${hasExistingPin ? "text-emerald-400" : "text-white/40"}`}>
+                {hasExistingPin ? "✓ You already have a PIN set." : "Create a secure 4-digit numeric code."}
+              </p>
             </div>
           </div>
 
-          <form onSubmit={handlePinSetup} className="flex flex-col gap-6">
-            <div className="space-y-2">
-              <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest ml-1">New 4-digit PIN</p>
-              <OTPInput 
-                length={4} 
-                value={pinData.pin}
-                onChange={v => setPinData({...pinData, pin: v})}
-                centered={false}
-                size="sm"
-              />
+          {hasExistingPin ? (
+            <div className="text-center py-6 px-4 bg-emerald-500/5 border border-emerald-500/20 rounded-xl">
+              <p className="text-sm font-semibold text-emerald-400">PIN is protected</p>
+              <p className="text-xs text-white/50 mt-1">Your security PIN has been set and locked.</p>
             </div>
-            <div className="space-y-2">
-              <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest ml-1">Confirm PIN</p>
-              <OTPInput 
-                length={4} 
-                value={pinData.confirm}
-                onChange={v => setPinData({...pinData, confirm: v})}
-                centered={false}
-                size="sm"
-              />
-            </div>
-            <div className="flex justify-end">
-              <Button type="submit" disabled={isLoading} className="h-11 px-8 rounded-xl font-bold text-[11px] uppercase tracking-wider bg-emerald-500 hover:bg-emerald-400 text-white transition-all w-full sm:w-auto shadow-sm">
-                 Set PIN
-              </Button>
-            </div>
-          </form>
+          ) : (
+            <form onSubmit={handlePinSetup} className="flex flex-col gap-6">
+              <div className="space-y-2">
+                <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest ml-1">New 4-digit PIN</p>
+                <OTPInput 
+                  length={4} 
+                  value={pinData.pin}
+                  onChange={v => setPinData({...pinData, pin: v})}
+                  centered={false}
+                  size="sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest ml-1">Confirm PIN</p>
+                <OTPInput 
+                  length={4} 
+                  value={pinData.confirm}
+                  onChange={v => setPinData({...pinData, confirm: v})}
+                  centered={false}
+                  size="sm"
+                />
+              </div>
+              <div className="flex justify-end">
+                <Button type="submit" disabled={isLoading} className="h-11 px-8 rounded-xl font-bold text-[11px] uppercase tracking-wider bg-emerald-500 hover:bg-emerald-400 text-white transition-all w-full sm:w-auto shadow-sm">
+                   Set PIN
+                </Button>
+              </div>
+            </form>
+          )}
         </div>
 
       </motion.div>

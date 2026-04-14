@@ -8,24 +8,24 @@ import { tokenStorage } from "@/lib/utils/tokenStorage";
 
 export const authApi = {
   // Section 2.1: Email/password signup
-  signup: (data) => apiClient.post("/signup/", data).then((r) => r.data),
+  signup: (data) => apiClient.post("/referee/signup/", data).then((r) => r.data),
   
   // Section 2.1: Verify OTP
-  verifyOtp: (payload) => apiClient.post("/verify-otp/", payload).then((r) => r.data),
+  verifyOtp: (payload) => apiClient.post("/referee/verify-otp/", payload).then((r) => r.data),
 
   // Section 2.2: Login
-  login: (payload) => apiClient.post("/login/", payload).then((r) => r.data),
+  login: (payload) => apiClient.post("/referee/login/", payload).then((r) => r.data),
 
   // Section 2.3: Google (referee)
   googleSignup: (payload) =>
     apiClient.post("/referee/google-signup/", payload).then((r) => r.data),
 
-  // POST /resend-otp/ (Standard Axile pattern)
+  // POST /referee/resend-otp/ (Standard Axile pattern)
   resendOtp: (email) => 
-    apiClient.post("/resend-otp/", { email }).then((r) => r.data),
+    apiClient.post("/referee/resend-otp/", { email }).then((r) => r.data),
 
   // Section 2.4: Other
-  logout: (refresh) => apiClient.post("/logout/", { refresh }).then((r) => r.data),
+  logout: (refresh) => apiClient.post("/referee/logout/", { refresh }).then((r) => r.data),
 
   // GET/PATCH /referee/profile/
   getProfile: () => apiClient.get("/referee/profile/").then((r) => r.data),
@@ -41,17 +41,17 @@ export const authApi = {
 
   // Section 2.4: Referee password change (authenticated)
   changePassword: (old_password, new_password) => 
-    apiClient.post("/password/change/", { old_password, new_password }).then((r) => r.data),
+    apiClient.post("/referee/password/change/", { old_password, new_password }).then((r) => r.data),
 
   // Section 2.4: Password reset
   forgotPassword: (email) => 
-    apiClient.post("/password/reset/", { email }).then((r) => r.data),
+    apiClient.post("/referee/password/reset/", { email }).then((r) => r.data),
 
   // Verify Reset OTP & Set New Password
   verifyResetOtp: (payload) => 
-    apiClient.post("/password/reset/verify-otp/", payload).then((r) => r.data),
+    apiClient.post("/referee/password/reset/verify-otp/", payload).then((r) => r.data),
     
   resetPassword: (payload) => 
-    apiClient.post("/password/set/", payload).then((r) => r.data),
+    apiClient.post("/referee/password/set/", payload).then((r) => r.data),
 };
 export default authApi;

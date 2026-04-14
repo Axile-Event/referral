@@ -100,6 +100,40 @@ export const useAuthStore = create(
       },
 
       /**
+       * Verify OTP Action (Async)
+       * Called during signup flow after user receives OTP via email
+       */
+      verifyOtp: async (email, otp) => {
+        set({ isLoading: true });
+        try {
+          const response = await authApi.verifyOtp({ email, otp });
+          // After verification, user gets tokens and is logged in
+          if (response?.access || response?.token) {
+            const { user, access, refresh, role, token } = response;
+            const finalToken = access || token;
+            get().setAuth(user, finalToken, refresh, role);
+          }
+          return response;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      /**
+       * Resend OTP Action (Async)
+       * For users who didn't receive their verification code
+       */
+      resendOtp: async (email) => {
+        set({ isLoading: true });
+        try {
+          const response = await authApi.resendOtp(email);
+          return response;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      /**
        * Google Authentication Action (Async)
        */
       googleSignup: async (accessToken) => {
