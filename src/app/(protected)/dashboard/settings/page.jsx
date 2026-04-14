@@ -29,7 +29,7 @@ const toastTheme = {
 };
 
 export default function SettingsPage() {
-  const { user: profile, fetchProfile, updateProfile, logout, changePassword, setPin } = useAuthStore();
+  const { user: profile, fetchProfile, updateProfile, logout, changePassword, setPin, pinHash, isPinSetRemotely } = useAuthStore();
   const isLoading = useAuthStore(state => state.isLoading);
 
   // Profile/Username state
@@ -50,6 +50,16 @@ export default function SettingsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchProfile]);
 
+  // Check localStorage for PIN hash on mount (restore if missing from state)
+  useEffect(() => {
+    if (!pinHash && typeof window !== "undefined") {
+      const localHash = localStorage.getItem("Axile_pin_hash");
+      if (localHash) {
+        useAuthStore.setState({ pinHash: localHash });
+      }
+    }
+  }, [pinHash]);
+
   useEffect(() => {
     if (profile) {
         setUsernameVal(profile.username || profile.Username || "");
@@ -60,6 +70,10 @@ export default function SettingsPage() {
 
   // Determine if they actually have a set username vs a default email placeholder
   const hasExistingUsername = profile ? Boolean((profile.username || profile.Username) && (profile.username !== profile.email) && !(profile.username || "").includes('@') && !profile.needs_username) : false;
+
+  // Check if PIN is already set (check localStorage too as backup)
+  const localPinHash = typeof window !== "undefined" ? localStorage.getItem("Axile_pin_hash") : null;
+  const hasExistingPin = Boolean(pinHash || localPinHash || profile?.has_pin || profile?.pin_set || isPinSetRemotely);
 
   const handleUsernameSubmit = async (e) => {
     e.preventDefault();
@@ -248,26 +262,17 @@ export default function SettingsPage() {
               <Fingerprint size={16} />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-white tracking-tight">Security PIN</h2>
-              <p className={`text-[11px] sm:text-xs font-medium ${(profile?.has_pin || profile?.pin_set || useAuthStore.getState().pinHash) ? "text-emerald-400" : "text-white/40"}`}>
-                {(profile?.has_pin || profile?.pin_set || useAuthStore.getState().pinHash) ? "✓ Your security PIN is active." : "Create a secure 4-digit numeric code."}
+              <h2 className="text-sm font-bold text-white tracking-tight">Set PIN</h2>
+              <p className={`text-[11px] sm:text-xs font-medium ${hasExistingPin ? "text-emerald-400" : "text-white/40"}`}>
+                {hasExistingPin ? "✓ You already have a PIN set." : "Create a secure 4-digit numeric code."}
               </p>
             </div>
           </div>
 
-          {(profile?.has_pin || profile?.pin_set || useAuthStore.getState().pinHash) ? (
-            <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-4 flex items-center justify-between">
-               <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-xs font-bold text-emerald-500/80 uppercase tracking-widest">PIN setup complete</span>
-               </div>
-               <Button 
-                variant="ghost" 
-                onClick={() => toast.error("PIN updates are coming soon", toastTheme)}
-                className="text-[10px] font-bold text-white/20 hover:text-white/40 uppercase tracking-widest px-0"
-               >
-                 Change?
-               </Button>
+          {hasExistingPin ? (
+            <div className="text-center py-6 px-4 bg-emerald-500/5 border border-emerald-500/20 rounded-xl">
+              <p className="text-sm font-semibold text-emerald-400">PIN is protected</p>
+              <p className="text-xs text-white/50 mt-1">Your security PIN has been set and locked.</p>
             </div>
           ) : (
             <form onSubmit={handlePinSetup} className="flex flex-col gap-6">

@@ -46,21 +46,21 @@ export default function SetupProfilePage() {
     const hasPin = user?.has_pin || user?.pin_set || useAuthStore.getState().pinHash;
     const needsUsername = user?.needs_username || (user?.username === user?.email);
 
+    // If both username is set AND PIN is set, they're done - go to dashboard
     if (!needsUsername && hasPin) {
       router.push("/dashboard");
       return;
     }
 
-    // If username is set but PIN is not, jump to step 2
-    if (!needsUsername && step === 1) {
-      setStep(2);
-    }
+    // For new users: ALWAYS show username form first (step 1)
+    // Only move to step 2 after they successfully submit username
+    // The handleUsernameSubmit function will call setStep(2)
     
-    // If PIN is already set, don't show step 2
+    // If PIN is already set and we're viewing step 2, redirect to dashboard
     if (hasPin && step === 2) {
       router.push("/dashboard");
     }
-  }, [authMethod, router, user, step]);
+  }, [authMethod, router, user]);
 
   const onlyDigits = (v) => v.replace(/\D/g, "").slice(0, 4);
 
