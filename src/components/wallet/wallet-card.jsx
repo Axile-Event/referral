@@ -23,8 +23,8 @@ export function WalletCard({ balance = 0, onWithdraw, onViewReports }) {
           AVAILABLE BALANCE
         </p>
         <div className="space-y-1">
-          <h2 className="text-8xl font-extrabold tracking-[-3px] leading-tight flex items-baseline">
-            <span className="text-5xl mr-2 font-bold opacity-90">₦</span>
+          <h2 className="text-4xl sm:text-6xl md:text-8xl font-extrabold tracking-[-3px] leading-tight flex items-center gap-2 mt-6">
+            <span className="text-2xl sm:text-4xl md:text-5xl font-bold opacity-90">₦</span>
             {balance.toLocaleString(undefined, { minimumFractionDigits: 1 })}
           </h2>
         </div>

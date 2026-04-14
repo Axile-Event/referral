@@ -425,7 +425,8 @@ export const useAuthStore = create(
           const payload = {
             email,
             otp,
-            new_password: newPassword
+            new_password: newPassword,
+            confirm_password: newPassword
           };
           // Add uid/token if provided
           if (uid) payload.uid = uid;
