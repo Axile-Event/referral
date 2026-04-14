@@ -15,7 +15,7 @@ import { UsernameBanner } from "@/components/dashboard/UsernameBanner";
  * DashboardPage
  */
 export default function DashboardPage() {
-  const { user, fetchProfile, isAuthenticated } = useAuthStore();
+  const { user, fetchProfile, isAuthenticated, pinHash, isPinSetRemotely } = useAuthStore();
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   
   // Ensure profile is loaded on mount
@@ -25,13 +25,24 @@ export default function DashboardPage() {
     }
   }, [isAuthenticated, user, fetchProfile]);
 
+  // Check localStorage for PIN hash on mount (in case hydration misses it)
+  useEffect(() => {
+    if (!pinHash && typeof window !== "undefined") {
+      const localHash = localStorage.getItem("Axile_pin_hash");
+      if (localHash) {
+        useAuthStore.setState({ pinHash: localHash });
+      }
+    }
+  }, [pinHash]);
+
   // Extract display name
   const userName = user?.name 
     ? user.name.split(" ")[0] 
     : (user?.Firstname || user?.firstname || "Partner");
 
-  // Status flags
-  const needsPin = user && !user.has_pin && !user.pin_set && !useAuthStore.getState().pinHash;
+  // Status flags - Check local pinHash first (more reliable for fresh signups)
+  const hasPinSet = pinHash || user?.has_pin || user?.pin_set || isPinSetRemotely;
+  const needsPin = user && !hasPinSet;
   const needsUsername = user && (user.needs_username || (user.username === user.email));
 
   return (
