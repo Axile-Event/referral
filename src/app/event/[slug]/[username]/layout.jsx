@@ -16,17 +16,36 @@ export async function generateMetadata({ params }) {
     };
   }
 
-  // 1. Fetch Event Data Server-Side for SEO indexing
   let event = null;
+  const targetUrl = `${API_BASE_URL}/event/`; // Fetch array of public events
   try {
-    const res = await fetch(`${API_BASE_URL}/events/${slug}/`, {
+    console.log("Fetching event metadata from:", targetUrl);
+    const res = await fetch(targetUrl, {
       next: { revalidate: 60 }
     });
+    console.log("Metadata Fetch Status:", res.status);
     if (res.ok) {
-      event = await res.json();
+      const data = await res.json();
+      const allEvents = Array.isArray(data) ? data : (data.events || data.data || []);
+      
+      // Match the event inside the returned array
+      // The slug from the URL typically looks like 'EV-27795' or 'event:EV-27795'
+      event = allEvents.find(e => 
+        e.event_id === slug || 
+        e.event_id === `event:${slug}` || 
+        (e.event_slug && e.event_slug === slug)
+      );
+      
+      if (event) {
+        console.log("Fetched event title:", event.event_name || event.title);
+      } else {
+        console.warn(`Event ${slug} not found in the public events array.`, allEvents);
+      }
+    } else {
+      console.error("Failed to fetch event metadata. Response text:", await res.text());
     }
   } catch (error) {
-    console.error("Error fetching event metadata:", error);
+    console.error("Error fetching event metadata:", error.message);
   }
 
   if (!event) {
@@ -37,9 +56,11 @@ export async function generateMetadata({ params }) {
   }
 
   const landingUrl = getLandingPageUrl();
-  const title = event.title || event.name || "Axile Event";
+  // Using exact keys from Axile API testing: event_name, event_image, event_price
+  const title = event.event_name || event.title || event.name || "Axile Event";
   const description = event.description || `Get tickets for ${title} on Axile.`;
   const eventUrl = `${landingUrl}/events/${slug}?ref=${username}`;
+  const imageUrl = event.event_image || event.image;
 
   // 2. Map properties to Next.js metadata format
   return {
@@ -49,14 +70,14 @@ export async function generateMetadata({ params }) {
       title: title,
       description: description,
       url: eventUrl,
-      images: event.image ? [event.image] : [],
+      images: imageUrl ? [imageUrl] : [],
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
       title: title,
       description: description,
-      images: event.image ? [event.image] : [],
+      images: imageUrl ? [imageUrl] : [],
     },
   };
 }
