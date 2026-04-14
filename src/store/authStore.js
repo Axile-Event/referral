@@ -58,7 +58,7 @@ export const useAuthStore = create(
       isAuthenticated: false,
       isLoading: false,
       authMethod: null, // "email" or "google"
-      pinHash: null,    // Securely stored hashed PIN
+      pinHash: null,    // Correctly set to null initially
       isPinSetRemotely: false,
  
        /**
@@ -91,8 +91,8 @@ export const useAuthStore = create(
           const { user, access, refresh, role, token } = response;
           const finalToken = access || token;
 
-          get().setAuth(user, finalToken, refresh, role);
           set({ authMethod: "email" });
+          get().setAuth(user, finalToken, refresh, role);
           return response;
         } finally {
           set({ isLoading: false });
@@ -154,8 +154,8 @@ export const useAuthStore = create(
           const finalUser = referral_user || { email: email || response.email };
 
           if (finalToken) {
-            get().setAuth(finalUser, finalToken, finalRefresh, response.role || "user");
             set({ authMethod: "google" });
+            get().setAuth(finalUser, finalToken, finalRefresh, response.role || "user");
           } else {
              console.warn("AuthStore: googleSignup succeeded but no token returned", response);
           }
@@ -188,6 +188,9 @@ export const useAuthStore = create(
           localStorage.removeItem("organizer-storage");
           localStorage.removeItem("Axile_pin_reminder_dismissed");
 
+          const currentEmail = userData?.email || userData?.Email;
+          const userPinHash = currentEmail ? localStorage.getItem(`Axile_pin_hash_${currentEmail}`) : null;
+
           const authData = {
             state: {
               user: userData,
@@ -196,9 +199,16 @@ export const useAuthStore = create(
               role,
               isAuthenticated: true,
               hydrated: true,
+              authMethod: get().authMethod,
+              pinHash: userPinHash,
             },
             version: 0,
           };
+          
+          if (userPinHash) {
+             set({ pinHash: userPinHash });
+          }
+          
           localStorage.setItem("auth-storage", JSON.stringify(authData));
         }
 
@@ -227,7 +237,7 @@ export const useAuthStore = create(
           Cookies.remove("axile_shared_auth", { path: '/' });
           
           localStorage.removeItem("auth-storage");
-          localStorage.removeItem("Axile_pin_hash"); // Clear secure pin
+          // Axile_pin_hash is NOT removed to ensure frontend remains aware of PIN status across sessions
           tokenStorage.clearTokens();
         }
 
@@ -242,7 +252,7 @@ export const useAuthStore = create(
           refreshToken: null,
           isAuthenticated: false,
           authMethod: null,
-          pinHash: null,
+          pinHash: null, // Clear in-memory state but keep user-specific localStorage
           isPinSetRemotely: false,
         });
       },
@@ -262,6 +272,11 @@ export const useAuthStore = create(
             if (profile) {
               const userData = profile?.user || profile?.profile || profile;
               get().setUser(userData);
+              
+              // If backend says PIN is set, but local hash is missing, mark it set remotely
+              if (userData.has_pin || userData.pin_set) {
+                set({ isPinSetRemotely: true });
+              }
               return profile;
             }
           } catch (err) {
@@ -320,8 +335,8 @@ export const useAuthStore = create(
           const hashedPin = await hashPin(pin);
           if (hashedPin) {
             set({ pinHash: hashedPin, isPinSetRemotely: true });
-            if (typeof window !== "undefined") {
-               localStorage.setItem("Axile_pin_hash", hashedPin);
+            if (typeof window !== "undefined" && get().user?.email) {
+               localStorage.setItem(`Axile_pin_hash_${get().user.email}`, hashedPin);
             }
           }
 

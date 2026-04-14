@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
+import { useRefereeStats } from "@/lib/hooks/useReferralQueries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { OTPInput } from "@/components/ui/otp-input";
@@ -52,27 +53,40 @@ export default function SettingsPage() {
 
   // Check localStorage for PIN hash on mount (restore if missing from state)
   useEffect(() => {
-    if (!pinHash && typeof window !== "undefined") {
-      const localHash = localStorage.getItem("Axile_pin_hash");
+    const userEmail = profile?.email || profile?.Email;
+    if (userEmail && !pinHash && typeof window !== "undefined") {
+      const localHash = localStorage.getItem(`Axile_pin_hash_${userEmail}`);
       if (localHash) {
         useAuthStore.setState({ pinHash: localHash });
       }
     }
-  }, [pinHash]);
+  }, [pinHash, profile]);
+
+  const { data: stats, isLoading: isStatsLoading } = useRefereeStats();
+  const canonicalUsername = stats?.referral_username || profile?.username || profile?.Username || profile?.referral_username || profile?.user?.username || "";
 
   useEffect(() => {
-    if (profile) {
-        setUsernameVal(profile.username || profile.Username || "");
+    if (canonicalUsername && !usernameVal) {
+        setUsernameVal(canonicalUsername);
     }
-  }, [profile]);
+  }, [canonicalUsername, usernameVal]);
 
   const onlyDigits = (v) => v.replace(/\D/g, "").slice(0, 4);
 
   // Determine if they actually have a set username vs a default email placeholder
-  const hasExistingUsername = profile ? Boolean((profile.username || profile.Username) && (profile.username !== profile.email) && !(profile.username || "").includes('@') && !profile.needs_username) : false;
+  // Check both profile info and dashboard stats (backend's source of truth)
+  const hasExistingUsername = profile ? Boolean(
+    canonicalUsername && 
+    (canonicalUsername !== profile.email) && 
+    !canonicalUsername.includes('@') &&
+    profile.needs_username !== true &&
+    profile.needs_username !== "true" &&
+    stats?.needs_username === false
+  ) : false;
 
-  // Check if PIN is already set (check localStorage too as backup)
-  const localPinHash = typeof window !== "undefined" ? localStorage.getItem("Axile_pin_hash") : null;
+  // Check if PIN is already set (check user-specific localStorage too as backup)
+  const userEmail = profile?.email || profile?.Email;
+  const localPinHash = (typeof window !== "undefined" && userEmail) ? localStorage.getItem(`Axile_pin_hash_${userEmail}`) : null;
   const hasExistingPin = Boolean(pinHash || localPinHash || profile?.has_pin || profile?.pin_set || isPinSetRemotely);
 
   const handleUsernameSubmit = async (e) => {

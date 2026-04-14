@@ -38,26 +38,22 @@ export default function SetupProfilePage() {
 
   // Redirect if not a Google user or already authenticated with complete profile
   useEffect(() => {
-    if (authMethod !== "google") {
+    // Only redirect to dashboard if they specifically used email login 
+    // (Google users must stay here for setup, and null means we're still loading state)
+    if (authMethod === "email") {
       router.push("/dashboard");
       return;
     }
 
-    const hasPin = user?.has_pin || user?.pin_set || useAuthStore.getState().pinHash;
-    const needsUsername = user?.needs_username || (user?.username === user?.email);
+    // Wait for user and authMethod to be fully ready
+    if (!user || authMethod !== "google") return;
 
-    // If both username is set AND PIN is set, they're done - go to dashboard
-    if (!needsUsername && hasPin) {
-      router.push("/dashboard");
-      return;
-    }
+    const hasPinSet = user?.has_pin || user?.pin_set || useAuthStore.getState().pinHash;
+    const isUsernameReal = (user?.username && user?.username !== user?.email && !user?.username.includes('@') && !user?.needs_username);
 
-    // For new users: ALWAYS show username form first (step 1)
-    // Only move to step 2 after they successfully submit username
-    // The handleUsernameSubmit function will call setStep(2)
-    
-    // If PIN is already set and we're viewing step 2, redirect to dashboard
-    if (hasPin && step === 2) {
+    // ONLY redirect if we are 100% sure they have both a real username and a PIN
+    if (isUsernameReal && hasPinSet) {
+      console.log("SetupProfile: Profile complete, redirecting to dashboard");
       router.push("/dashboard");
     }
   }, [authMethod, router, user]);
