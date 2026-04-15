@@ -1,142 +1,87 @@
-import { getEventMeta } from "@/lib/eventMetaStore";
+import { API_BASE_URL } from "@/lib/api/baseUrl";
+import { getLandingPageUrl } from "@/lib/utils/referral";
 
 // Revalidate every 60 seconds so metadata stays fresh without blocking requests
 export const revalidate = 60;
 
+/**
+ * getEvent - Fetches all events and finds the one matching the slug/id
+ */
+async function getEvent(slug) {
+  if (!slug) return null;
+  
+  try {
+    const res = await fetch(`${API_BASE_URL}/event`, {
+      next: { revalidate: 60 },
+      headers: {
+        "Accept": "application/json"
+      }
+    });
+
+    if (!res.ok) return null;
+    
+    const events = await res.json();
+    if (!Array.isArray(events)) return null;
+
+    // Normalize slug for comparison (the slug in URL might be a cleaned event_id)
+    const cleanSlug = slug.toLowerCase();
+
+    return events.find(e => {
+      const eventSlug = (e.event_slug || "").toLowerCase();
+      const eventId = (e.event_id || "").toLowerCase();
+      const cleanedId = eventId.replace("event:", "");
+      
+      return eventSlug === cleanSlug || cleanedId === cleanSlug || eventId === cleanSlug;
+    });
+  } catch (error) {
+    console.error("[getEvent] Error:", error.message);
+    return null;
+  }
+}
+
 export async function generateMetadata({ params }) {
-  // Next.js 15 requires awaiting the params promise
   const resolvedParams = await params;
   const slug = resolvedParams?.slug;
   const username = resolvedParams?.username;
 
-  // ---- Build canonical URL ----
-  const SITE_URL =
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-    "https://referral.axile.ng";
-  const pageUrl = username
-    ? `${SITE_URL}/event/${slug}/${username}`
-    : `${SITE_URL}/event/${slug}`;
-
-  // ---- Generic Axile fallback (NEVER say "Event Not Found" to crawlers) ----
   const fallbackMetadata = {
-    title: "Join this Event on Axile",
-    description:
-      "Get your tickets and join the event through Axile — the smart event platform.",
-    openGraph: {
-      title: "Join this Event on Axile",
-      description:
-        "Get your tickets and join the event through Axile — the smart event platform.",
-      url: pageUrl,
-      type: "website",
-      siteName: "Axile",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: "Join this Event on Axile",
-      description:
-        "Get your tickets and join the event through Axile — the smart event platform.",
-    },
+    title: "Join this Event | Axile",
+    description: "I saw this and thought of you! Check out this event on Axile and get your tickets.",
   };
 
   if (!slug) return fallbackMetadata;
 
-  // ==================================================================
-  // Step 1 — Check the in-memory / temp-file cache (populated by the
-  //          client-side app when a logged-in user views their events).
-  //          This is the primary path that actually works for crawlers.
-  // ==================================================================
-  let event = getEventMeta(slug);
+  const event = await getEvent(slug);
 
-  // ==================================================================
-  // Step 2 — Cache miss → try the backend API as a hail-mary.
-  //          (Usually returns 401 for crawlers, but we try anyway.)
-  // ==================================================================
-  if (!event) {
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
-    if (API_BASE) {
-      const endpoints = [
-        `${API_BASE}/referee/events/${slug}/`,
-        `${API_BASE}/events/${slug}/`,
-      ];
+  if (!event) return fallbackMetadata;
 
-      for (const url of endpoints) {
-        try {
-          console.log("[OG Meta] Trying backend:", url);
-          const res = await fetch(url, {
-            next: { revalidate: 300 },
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-            },
-          });
-
-          if (res.ok) {
-            const data = await res.json();
-            // Handle various API response shapes
-            const parsed =
-              data?.event ||
-              data?.data ||
-              (data?.name ? data : null) ||
-              (data?.event_name ? data : null);
-
-            if (parsed) {
-              event = {
-                name: parsed.name || parsed.event_name || parsed.title,
-                image:
-                  parsed.image ||
-                  parsed.event_image ||
-                  parsed.banner ||
-                  parsed.cover_image,
-                description: parsed.description || parsed.event_description,
-              };
-              console.log("[OG Meta] Found event from backend:", event.name);
-              break;
-            }
-          }
-        } catch (e) {
-          console.warn("[OG Meta] Backend failed:", url, e.message);
-        }
-      }
-    }
+  // Map API fields to metadata requirements
+  const title = event.event_name || event.title || "Axile Event";
+  
+  // Create a better description if one isn't provided
+  let description = event.event_description || event.description;
+  if (!description) {
+    const date = event.event_date ? new Date(event.event_date).toLocaleDateString() : "";
+    const location = event.event_location || event.location || "";
+    description = `I saw this and thought of you! Join us for ${title}${location ? ` at ${location}` : ""}${date ? ` on ${date}` : ""}. Get your tickets via Axile.`;
+  } else {
+    // Prefix the personal message even if there is a description
+    description = `I saw this and thought of you! ${description}`;
   }
 
-  // ==================================================================
-  // Step 3 — Still nothing → use the generic Axile branding.
-  //          This is 1000× better than the old "Event Not Found".
-  // ==================================================================
-  if (!event) {
-    console.log(
-      "[OG Meta] No event data for slug:",
-      slug,
-      "— serving Axile branding"
-    );
-    return fallbackMetadata;
-  }
-
-  // ==================================================================
-  // Build rich metadata from the cached/fetched event data
-  // ==================================================================
-  const title = event.name || "Axile Event";
-  const description =
-    event.description || `Join ${title} — get your tickets via Axile.`;
-
-  // Ensure the image URL is absolute
-  let imageUrl = event.image;
-  if (imageUrl && !imageUrl.startsWith("http")) {
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
-    imageUrl = `${API_BASE}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
-  }
+  const imageUrl = event.event_image || event.image;
+  
+  const landingUrl = getLandingPageUrl();
+  const eventUrl = `${landingUrl}/events/${slug}${username ? `?ref=${username}` : ""}`;
 
   return {
-    title,
-    description,
+    title: title,
+    description: description,
     openGraph: {
       title,
       description,
-      url: pageUrl,
-      images: imageUrl
-        ? [{ url: imageUrl, width: 1200, height: 630, alt: title }]
-        : [],
+      url: eventUrl,
+      images: imageUrl ? [{ url: imageUrl, width: 1200, height: 630, alt: title }] : [],
       type: "website",
       siteName: "Axile",
     },
