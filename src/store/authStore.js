@@ -417,7 +417,7 @@ export const useAuthStore = create(
       },
 
       /**
-       * Reset Password with new password
+       * Reset Password - Confirm new password with OTP
        */
       resetPassword: async (email, otp, newPassword, uid, token) => {
         set({ isLoading: true });
@@ -433,9 +433,10 @@ export const useAuthStore = create(
           if (token) payload.token = token;
           
           const response = await authApi.resetPassword(payload);
+          console.log("AuthStore: Password reset confirmed", response);
           return response;
         } catch (error) {
-          console.error("AuthStore: Reset password failed", error);
+          console.error("AuthStore: Password reset confirm failed", error);
           throw error;
         } finally {
           set({ isLoading: false });
