@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { referralApi } from "@/lib/api/referral";
 import { walletApi } from "@/lib/api/wallet";
+import { bulkCacheEventMeta } from "@/lib/utils/cacheEventMeta";
 
 /**
  * fetchAllEventStats
@@ -167,6 +168,7 @@ export function useUserReferrals() {
 /**
  * useReferrableEvents
  * Fetches events eligible for referral.
+ * Also bulk-caches event metadata for OG tag generation.
  */
 export function useReferrableEvents() {
   return useQuery({
@@ -174,6 +176,13 @@ export function useReferrableEvents() {
     queryFn: async () => {
       const data = await referralApi.getReferrableEvents();
       console.log("DEBUG: Raw Response from /referee/events/:", data);
+
+      // Cache all event metadata so OG tags work when links are shared
+      const events = data?.events || [];
+      if (events.length > 0) {
+        bulkCacheEventMeta(events).catch(() => {});
+      }
+
       return data;
     },
   });

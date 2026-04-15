@@ -1,16 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Copy, Check, Calendar, MapPin, Share2, BarChart2 } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import { useAuthStore } from "@/store/authStore";
 import { generateReferralLink } from "@/lib/utils/referral";
+import { cacheEventMeta } from "@/lib/utils/cacheEventMeta";
 import { toast } from "react-hot-toast";
 import { motion } from "framer-motion";
 
 export function EventCard({ event }) {
   const [copied, setCopied] = useState(false);
+
+  // Push event metadata into the server-side cache so that
+  // social-media crawlers can read OG tags for referral links.
+  useEffect(() => {
+    cacheEventMeta(event);
+  }, [event?.event_slug]);
   const username = useAuthStore((s) => s.username);
   
   // The link generated to share
