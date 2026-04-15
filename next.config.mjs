@@ -10,6 +10,24 @@ const nextConfig = {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
+      // Allow event images served from the Axile backend (dev + prod)
+      {
+        protocol: "https",
+        hostname: "axile-dev-env.onrender.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**.onrender.com",
+      },
+      // Allow any S3/Cloudinary/CDN the backend might use for event banners
+      {
+        protocol: "https",
+        hostname: "**.amazonaws.com",
+      },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
     ],
   },
   async headers() {
