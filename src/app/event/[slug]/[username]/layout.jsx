@@ -1,8 +1,7 @@
-import { API_BASE_URL } from "@/lib/api/baseUrl";
 import { getLandingPageUrl } from "@/lib/utils/referral";
 
-// Optional: you can revalidate this layout periodically for fresh SEO data.
-export const revalidate = 60; // seconds
+// Revalidate every 60 seconds so metadata stays fresh without blocking requests
+export const revalidate = 60;
 
 export async function generateMetadata({ params }) {
   // Next.js 15 requires awaiting the params promise
@@ -10,83 +9,79 @@ export async function generateMetadata({ params }) {
   const slug = resolvedParams?.slug;
   const username = resolvedParams?.username;
 
-  if (!slug) {
-    return {
-      title: "Event Not Found | Axile",
-      description: "The event you are looking for does not exist or has been removed.",
-    };
-  }
+  const fallbackMetadata = {
+    title: "Event Not Found | Axile",
+    description: "The event you are looking for does not exist or has been removed.",
+  };
+
+  if (!slug) return fallbackMetadata;
+
+  // --- FIX: Fetch the specific event directly by its slug/ID ---
+  // Old code hit `/event/` (wrong endpoint, missing 's') and fetched ALL events.
+  // New code hits `/events/{slug}/` directly, which is faster and reliable.
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+  const targetUrl = `${API_BASE}/events/${slug}/`;
 
   let event = null;
-  const targetUrl = `${API_BASE_URL}/event/`; // Fetch array of public events
   try {
-    console.log("Fetching event metadata from:", targetUrl);
+    console.log("[OG Metadata] Fetching event from:", targetUrl);
     const res = await fetch(targetUrl, {
-      next: { revalidate: 60 }
+      next: { revalidate: 60 },
+      headers: { "Content-Type": "application/json" },
     });
-    console.log("Metadata Fetch Status:", res.status);
+
+    console.log("[OG Metadata] Response status:", res.status);
+
     if (res.ok) {
       const data = await res.json();
-      const allEvents = Array.isArray(data) ? data : (data.events || data.data || []);
-      
-      // Match the event inside the returned array
-      // The slug from the URL typically looks like 'EV-27795' or 'event:EV-27795'
-      event = allEvents.find(e => 
-        e.event_id === slug || 
-        e.event_id === `event:${slug}` || 
-        (e.event_slug && e.event_slug === slug)
-      );
-      
+      // API may return event at root level or nested under a key
+      event = data?.event || data?.data || (data?.event_id ? data : null);
       if (event) {
-        console.log("Fetched event title:", event.event_name || event.title);
+        console.log("[OG Metadata] Found event:", event.event_name || event.title || event.name);
       } else {
-        console.warn(`Event ${slug} not found in the public events array.`, allEvents);
+        console.warn("[OG Metadata] Response OK but could not parse event object:", data);
       }
     } else {
-      console.error("Failed to fetch event metadata. Response text:", await res.text());
+      console.warn("[OG Metadata] Event fetch failed with status:", res.status);
     }
   } catch (error) {
-    console.error("Error fetching event metadata:", error.message);
+    console.error("[OG Metadata] Network error fetching event:", error.message);
   }
 
-  if (!event) {
-    return {
-      title: "Event Not Found | Axile",
-      description: "The event you are looking for does not exist or has been removed."
-    };
-  }
+  // Graceful fallback if event not found
+  if (!event) return fallbackMetadata;
 
   const landingUrl = getLandingPageUrl();
-  // Using exact keys from Axile API testing: event_name, event_image, event_price
+  // Support all known field name variants from the Axile API
   const title = event.event_name || event.title || event.name || "Axile Event";
-  const description = event.description || `Get tickets for ${title} on Axile.`;
+  const description =
+    event.description ||
+    event.event_description ||
+    `Join ${title} — get your tickets via Axile.`;
   const eventUrl = `${landingUrl}/events/${slug}?ref=${username}`;
-  const imageUrl = event.event_image || event.image;
+  // Support all known image field name variants
+  const imageUrl = event.event_image || event.image || event.banner || event.cover_image;
 
-  // 2. Map properties to Next.js metadata format
   return {
-    title: title,
-    description: description,
+    title: `${title} | Axile`,
+    description,
     openGraph: {
-      title: title,
-      description: description,
+      title,
+      description,
       url: eventUrl,
-      images: imageUrl ? [imageUrl] : [],
+      images: imageUrl ? [{ url: imageUrl, width: 1200, height: 630, alt: title }] : [],
       type: "website",
+      siteName: "Axile",
     },
     twitter: {
       card: "summary_large_image",
-      title: title,
-      description: description,
+      title,
+      description,
       images: imageUrl ? [imageUrl] : [],
     },
   };
 }
 
 export default function EventReferralLayout({ children }) {
-  return (
-    <>
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }
